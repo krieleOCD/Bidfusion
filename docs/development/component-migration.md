@@ -2,7 +2,8 @@
 
 How existing local components get into BidFusion — **after** the target
 architecture has been reviewed and accepted by a human (ADR-0001). This
-document defines the procedure; no components are inventoried yet.
+document defines the procedure. The live Phase 2 record is the
+[Existing Component Inventory](./existing-component-inventory.md).
 
 ## Preconditions
 
@@ -45,9 +46,19 @@ Test
 
 ## Mapping template
 
-| Existing Component | Current Purpose | Target Module | Decision | Required Changes | Required Tests | Risk |
-| ------------------ | --------------- | ------------- | -------- | ---------------- | -------------- | ---- |
-| _(filled in Phase 2–3)_ | | | | | | |
+Every inventory decision uses this exact sequence:
+
+```text
+Existing Component
+→ Target Module
+→ Migration Decision
+→ Required Changes
+→ Required Tests
+```
+
+| Existing Component | Target Module | Migration Decision | Required Changes | Required Tests |
+| ------------------ | ------------- | ------------------ | ---------------- | -------------- |
+| _(filled in the inventory)_ | | | | |
 
 ## Decision values
 
