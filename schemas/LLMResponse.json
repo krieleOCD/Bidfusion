@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "JsonValue": {},
+    "LLMFinishReason": {
+      "description": "Provider-normalized successful termination reason.",
+      "enum": [
+        "completed",
+        "length"
+      ],
+      "title": "LLMFinishReason",
+      "type": "string"
+    },
+    "LLMUsage": {
+      "additionalProperties": false,
+      "description": "Optional normalized usage counters returned by a gateway.",
+      "properties": {
+        "input_tokens": {
+          "minimum": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "minimum": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "input_tokens",
+        "output_tokens"
+      ],
+      "title": "LLMUsage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Owned response contract without provider SDK objects.",
+  "properties": {
+    "request_id": {
+      "minLength": 1,
+      "title": "Request Id",
+      "type": "string"
+    },
+    "output_text": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Output Text"
+    },
+    "structured_output": {
+      "anyOf": [
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Structured Output"
+    },
+    "finish_reason": {
+      "$ref": "#/$defs/LLMFinishReason"
+    },
+    "route_id": {
+      "description": "Opaque gateway route identifier for audit, not provider selection.",
+      "minLength": 1,
+      "title": "Route Id",
+      "type": "string"
+    },
+    "usage": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LLMUsage"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "request_id",
+    "finish_reason",
+    "route_id"
+  ],
+  "title": "LLMResponse",
+  "type": "object"
+}

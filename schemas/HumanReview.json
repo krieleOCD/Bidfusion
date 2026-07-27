@@ -1,0 +1,387 @@
+{
+  "$defs": {
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "OCR or vision bounding box in the producer's declared coordinate space.",
+      "properties": {
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "number"
+        },
+        "coordinate_space": {
+          "default": "source",
+          "description": "Producer-defined space, e.g. \"pixels\", \"points\", or \"normalized\".",
+          "title": "Coordinate Space",
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "FieldCorrection": {
+      "additionalProperties": false,
+      "description": "Structured field-level correction made during extraction validation.",
+      "properties": {
+        "field_path": {
+          "minLength": 1,
+          "title": "Field Path",
+          "type": "string"
+        },
+        "original_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Value"
+        },
+        "corrected_value": {
+          "title": "Corrected Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field_path",
+        "corrected_value"
+      ],
+      "title": "FieldCorrection",
+      "type": "object"
+    },
+    "ReviewDecision": {
+      "description": "Decision of a human reviewer on a review subject.",
+      "enum": [
+        "CONFIRMED",
+        "CORRECTED",
+        "REJECTED",
+        "UNCERTAIN"
+      ],
+      "title": "ReviewDecision",
+      "type": "string"
+    },
+    "SourceLocator": {
+      "additionalProperties": false,
+      "description": "Typed location within a source; at least one locator is required.",
+      "properties": {
+        "whole_document": {
+          "default": false,
+          "title": "Whole Document",
+          "type": "boolean"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "block_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Block Id"
+        },
+        "paragraph_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paragraph Id"
+        },
+        "table_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Id"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "column": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column"
+        },
+        "cell_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cell Id"
+        },
+        "text_span": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextSpan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bounding_box": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "SourceLocator",
+      "type": "object"
+    },
+    "SourceReference": {
+      "additionalProperties": false,
+      "description": "Pointer to exact original content and, when available, its canonical block.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "filename": {
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "document_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Document Hash",
+          "type": "string"
+        },
+        "locator": {
+          "$ref": "#/$defs/SourceLocator"
+        },
+        "canonical_artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^ART-\\d{8}-\\d{6,}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical Artifact Id"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "bid_id",
+        "document_id",
+        "filename",
+        "document_hash",
+        "locator"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "TextSpan": {
+      "additionalProperties": false,
+      "description": "Half-open character range in canonical text.",
+      "properties": {
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "exclusiveMinimum": 0,
+          "title": "End",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TextSpan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Persisted validation or correction of AI/extraction output.\n\nThis is deliberately distinct from cross-functional ``BusinessReview``\nand ``Approval`` contracts in ``schemas.business``.",
+  "properties": {
+    "review_id": {
+      "pattern": "^REV-\\d{6,}$",
+      "title": "Review Id",
+      "type": "string"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "subject_type": {
+      "description": "Type of the reviewed object, e.g. \"requirement\", \"deadline\", \"match\"",
+      "title": "Subject Type",
+      "type": "string"
+    },
+    "subject_id": {
+      "description": "ID of the reviewed object",
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "decision": {
+      "$ref": "#/$defs/ReviewDecision"
+    },
+    "reviewer": {
+      "pattern": "^ACT-\\d{4,}$",
+      "title": "Reviewer",
+      "type": "string"
+    },
+    "reviewed_at": {
+      "format": "date-time",
+      "title": "Reviewed At",
+      "type": "string"
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comment"
+    },
+    "corrections": {
+      "items": {
+        "$ref": "#/$defs/FieldCorrection"
+      },
+      "title": "Corrections",
+      "type": "array"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SourceReference"
+      },
+      "title": "Sources",
+      "type": "array"
+    }
+  },
+  "required": [
+    "review_id",
+    "bid_id",
+    "subject_type",
+    "subject_id",
+    "decision",
+    "reviewer",
+    "reviewed_at"
+  ],
+  "title": "HumanReview",
+  "type": "object"
+}

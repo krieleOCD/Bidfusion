@@ -1,0 +1,971 @@
+{
+  "$defs": {
+    "ArtifactEnvelope": {
+      "additionalProperties": false,
+      "description": "First-class pipeline artifact metadata with transformation lineage.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "producer": {
+          "$ref": "#/$defs/ArtifactProducer"
+        },
+        "input_artifacts": {
+          "items": {
+            "$ref": "#/$defs/ArtifactReference"
+          },
+          "title": "Input Artifacts",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash",
+        "producer",
+        "created_at"
+      ],
+      "title": "ArtifactEnvelope",
+      "type": "object"
+    },
+    "ArtifactProducer": {
+      "additionalProperties": false,
+      "description": "Component and version that produced an artifact.",
+      "properties": {
+        "component": {
+          "minLength": 1,
+          "title": "Component",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "version"
+      ],
+      "title": "ArtifactProducer",
+      "type": "object"
+    },
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "description": "Immutable reference to exact artifact content.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "ArtifactType": {
+      "description": "Stable artifact kinds represented by Foundation contracts.",
+      "enum": [
+        "raw_document",
+        "ocr_result",
+        "canonical_document",
+        "extraction_result",
+        "normalized_bid_dataset",
+        "compliance_matrix",
+        "working_package"
+      ],
+      "title": "ArtifactType",
+      "type": "string"
+    },
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "OCR or vision bounding box in the producer's declared coordinate space.",
+      "properties": {
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "number"
+        },
+        "coordinate_space": {
+          "default": "source",
+          "description": "Producer-defined space, e.g. \"pixels\", \"points\", or \"normalized\".",
+          "title": "Coordinate Space",
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "DocumentMetadata": {
+      "additionalProperties": false,
+      "description": "Technical metadata of a canonical document.",
+      "properties": {
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Language"
+        },
+        "page_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Count"
+        },
+        "parser": {
+          "minLength": 1,
+          "title": "Parser",
+          "type": "string"
+        },
+        "parser_version": {
+          "minLength": 1,
+          "title": "Parser Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "parser",
+        "parser_version"
+      ],
+      "title": "DocumentMetadata",
+      "type": "object"
+    },
+    "DocumentRelationship": {
+      "additionalProperties": false,
+      "description": "A typed relationship between two documents of the same bid.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "from_document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "From Document Id",
+          "type": "string"
+        },
+        "to_document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "To Document Id",
+          "type": "string"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bid_id",
+        "from_document_id",
+        "to_document_id",
+        "kind"
+      ],
+      "title": "DocumentRelationship",
+      "type": "object"
+    },
+    "Figure": {
+      "additionalProperties": false,
+      "description": "A figure, image, drawing, or diagram.",
+      "properties": {
+        "figure_id": {
+          "minLength": 1,
+          "title": "Figure Id",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 0,
+          "title": "Order",
+          "type": "integer"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Caption"
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kind"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceReference"
+        }
+      },
+      "required": [
+        "figure_id",
+        "order",
+        "source"
+      ],
+      "title": "Figure",
+      "type": "object"
+    },
+    "Footnote": {
+      "additionalProperties": false,
+      "description": "A source-derived footnote or endnote.",
+      "properties": {
+        "footnote_id": {
+          "minLength": 1,
+          "title": "Footnote Id",
+          "type": "string"
+        },
+        "marker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marker"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceReference"
+        }
+      },
+      "required": [
+        "footnote_id",
+        "text",
+        "source"
+      ],
+      "title": "Footnote",
+      "type": "object"
+    },
+    "Page": {
+      "additionalProperties": false,
+      "description": "One page of canonical source-derived blocks.",
+      "properties": {
+        "page_number": {
+          "minimum": 1,
+          "title": "Page Number",
+          "type": "integer"
+        },
+        "sections": {
+          "items": {
+            "$ref": "#/$defs/Section"
+          },
+          "title": "Sections",
+          "type": "array"
+        },
+        "paragraphs": {
+          "items": {
+            "$ref": "#/$defs/Paragraph"
+          },
+          "title": "Paragraphs",
+          "type": "array"
+        },
+        "tables": {
+          "items": {
+            "$ref": "#/$defs/Table"
+          },
+          "title": "Tables",
+          "type": "array"
+        },
+        "figures": {
+          "items": {
+            "$ref": "#/$defs/Figure"
+          },
+          "title": "Figures",
+          "type": "array"
+        },
+        "footnotes": {
+          "items": {
+            "$ref": "#/$defs/Footnote"
+          },
+          "title": "Footnotes",
+          "type": "array"
+        },
+        "ocr_applied": {
+          "default": false,
+          "title": "Ocr Applied",
+          "type": "boolean"
+        },
+        "ocr_confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ocr Confidence"
+        }
+      },
+      "required": [
+        "page_number"
+      ],
+      "title": "Page",
+      "type": "object"
+    },
+    "Paragraph": {
+      "additionalProperties": false,
+      "description": "A paragraph with stable identity, order, hierarchy, and provenance.",
+      "properties": {
+        "paragraph_id": {
+          "minLength": 1,
+          "title": "Paragraph Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 0,
+          "title": "Order",
+          "type": "integer"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceReference"
+        }
+      },
+      "required": [
+        "paragraph_id",
+        "text",
+        "order",
+        "source"
+      ],
+      "title": "Paragraph",
+      "type": "object"
+    },
+    "Section": {
+      "additionalProperties": false,
+      "description": "A section node whose parent ID preserves document hierarchy.",
+      "properties": {
+        "section_id": {
+          "minLength": 1,
+          "title": "Section Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "level": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Level",
+          "type": "integer"
+        },
+        "order": {
+          "minimum": 0,
+          "title": "Order",
+          "type": "integer"
+        },
+        "parent_section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Section Id"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceReference"
+        }
+      },
+      "required": [
+        "section_id",
+        "title",
+        "order",
+        "source"
+      ],
+      "title": "Section",
+      "type": "object"
+    },
+    "SourceLocator": {
+      "additionalProperties": false,
+      "description": "Typed location within a source; at least one locator is required.",
+      "properties": {
+        "whole_document": {
+          "default": false,
+          "title": "Whole Document",
+          "type": "boolean"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "block_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Block Id"
+        },
+        "paragraph_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paragraph Id"
+        },
+        "table_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Id"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "column": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column"
+        },
+        "cell_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cell Id"
+        },
+        "text_span": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextSpan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bounding_box": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "SourceLocator",
+      "type": "object"
+    },
+    "SourceReference": {
+      "additionalProperties": false,
+      "description": "Pointer to exact original content and, when available, its canonical block.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "filename": {
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "document_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Document Hash",
+          "type": "string"
+        },
+        "locator": {
+          "$ref": "#/$defs/SourceLocator"
+        },
+        "canonical_artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^ART-\\d{8}-\\d{6,}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical Artifact Id"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "bid_id",
+        "document_id",
+        "filename",
+        "document_hash",
+        "locator"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "Table": {
+      "additionalProperties": false,
+      "description": "A structured source table.",
+      "properties": {
+        "table_id": {
+          "minLength": 1,
+          "title": "Table Id",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 0,
+          "title": "Order",
+          "type": "integer"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Caption"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/TableRow"
+          },
+          "title": "Rows",
+          "type": "array"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceReference"
+        }
+      },
+      "required": [
+        "table_id",
+        "order",
+        "source"
+      ],
+      "title": "Table",
+      "type": "object"
+    },
+    "TableCell": {
+      "additionalProperties": false,
+      "description": "A table cell, including merged-cell spans and exact provenance.",
+      "properties": {
+        "cell_id": {
+          "minLength": 1,
+          "title": "Cell Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "row": {
+          "minimum": 1,
+          "title": "Row",
+          "type": "integer"
+        },
+        "column": {
+          "minimum": 1,
+          "title": "Column",
+          "type": "integer"
+        },
+        "row_span": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Row Span",
+          "type": "integer"
+        },
+        "column_span": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Column Span",
+          "type": "integer"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceReference"
+        }
+      },
+      "required": [
+        "cell_id",
+        "text",
+        "row",
+        "column",
+        "source"
+      ],
+      "title": "TableCell",
+      "type": "object"
+    },
+    "TableRow": {
+      "additionalProperties": false,
+      "description": "A row in a canonical table.",
+      "properties": {
+        "row_number": {
+          "minimum": 1,
+          "title": "Row Number",
+          "type": "integer"
+        },
+        "cells": {
+          "items": {
+            "$ref": "#/$defs/TableCell"
+          },
+          "title": "Cells",
+          "type": "array"
+        }
+      },
+      "required": [
+        "row_number"
+      ],
+      "title": "TableRow",
+      "type": "object"
+    },
+    "TextSpan": {
+      "additionalProperties": false,
+      "description": "Half-open character range in canonical text.",
+      "properties": {
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "exclusiveMinimum": 0,
+          "title": "End",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TextSpan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Structured output created from a ``SecurityClearedArtifact`` input.",
+  "properties": {
+    "artifact": {
+      "$ref": "#/$defs/ArtifactEnvelope"
+    },
+    "source_artifact": {
+      "$ref": "#/$defs/ArtifactReference"
+    },
+    "document_id": {
+      "pattern": "^DOC-\\d{3,}$",
+      "title": "Document Id",
+      "type": "string"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "metadata": {
+      "$ref": "#/$defs/DocumentMetadata"
+    },
+    "pages": {
+      "items": {
+        "$ref": "#/$defs/Page"
+      },
+      "title": "Pages",
+      "type": "array"
+    },
+    "relationships": {
+      "items": {
+        "$ref": "#/$defs/DocumentRelationship"
+      },
+      "title": "Relationships",
+      "type": "array"
+    },
+    "source": {
+      "$ref": "#/$defs/SourceReference"
+    }
+  },
+  "required": [
+    "artifact",
+    "source_artifact",
+    "document_id",
+    "bid_id",
+    "metadata",
+    "source"
+  ],
+  "title": "CanonicalDocument",
+  "type": "object"
+}

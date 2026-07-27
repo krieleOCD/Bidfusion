@@ -1,0 +1,392 @@
+{
+  "$defs": {
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "OCR or vision bounding box in the producer's declared coordinate space.",
+      "properties": {
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "number"
+        },
+        "coordinate_space": {
+          "default": "source",
+          "description": "Producer-defined space, e.g. \"pixels\", \"points\", or \"normalized\".",
+          "title": "Coordinate Space",
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "ExtractionInfo": {
+      "additionalProperties": false,
+      "description": "How a source-derived fact was produced.",
+      "properties": {
+        "method": {
+          "description": "e.g. \"llm\", \"rule\", \"hybrid\", \"human\"",
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "producer": {
+          "minLength": 1,
+          "title": "Producer",
+          "type": "string"
+        },
+        "producer_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Producer Version",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Gateway-assigned model identifier; business modules do not select providers.",
+          "title": "Model"
+        },
+        "prompt_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt Version"
+        }
+      },
+      "required": [
+        "method",
+        "producer",
+        "producer_version"
+      ],
+      "title": "ExtractionInfo",
+      "type": "object"
+    },
+    "ScopeKind": {
+      "description": "Minimal categories for requested bid scope.",
+      "enum": [
+        "SERVICE",
+        "PRODUCT",
+        "DELIVERY",
+        "OTHER"
+      ],
+      "title": "ScopeKind",
+      "type": "string"
+    },
+    "SourceLocator": {
+      "additionalProperties": false,
+      "description": "Typed location within a source; at least one locator is required.",
+      "properties": {
+        "whole_document": {
+          "default": false,
+          "title": "Whole Document",
+          "type": "boolean"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "block_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Block Id"
+        },
+        "paragraph_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paragraph Id"
+        },
+        "table_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Id"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "column": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column"
+        },
+        "cell_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cell Id"
+        },
+        "text_span": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextSpan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bounding_box": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "SourceLocator",
+      "type": "object"
+    },
+    "SourceReference": {
+      "additionalProperties": false,
+      "description": "Pointer to exact original content and, when available, its canonical block.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "filename": {
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "document_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Document Hash",
+          "type": "string"
+        },
+        "locator": {
+          "$ref": "#/$defs/SourceLocator"
+        },
+        "canonical_artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^ART-\\d{8}-\\d{6,}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical Artifact Id"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "bid_id",
+        "document_id",
+        "filename",
+        "document_hash",
+        "locator"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "TextSpan": {
+      "additionalProperties": false,
+      "description": "Half-open character range in canonical text.",
+      "properties": {
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "exclusiveMinimum": 0,
+          "title": "End",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TextSpan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Source observation about requested service, product, or delivery scope.",
+  "properties": {
+    "scope_id": {
+      "minLength": 1,
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/ScopeKind"
+    },
+    "original_text": {
+      "minLength": 1,
+      "title": "Original Text",
+      "type": "string"
+    },
+    "normalized_text": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Normalized Text"
+    },
+    "source": {
+      "$ref": "#/$defs/SourceReference"
+    },
+    "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "extraction": {
+      "$ref": "#/$defs/ExtractionInfo"
+    }
+  },
+  "required": [
+    "scope_id",
+    "bid_id",
+    "kind",
+    "original_text",
+    "source",
+    "confidence",
+    "extraction"
+  ],
+  "title": "Scope",
+  "type": "object"
+}

@@ -1,0 +1,52 @@
+{
+  "additionalProperties": false,
+  "description": "Upstream commercial opportunity, separate from RFP processing.",
+  "properties": {
+    "opportunity_id": {
+      "pattern": "^OPP-\\d{6,}$",
+      "title": "Opportunity Id",
+      "type": "string"
+    },
+    "name": {
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "customer": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Customer"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "external_reference": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "External Reference"
+    }
+  },
+  "required": [
+    "opportunity_id",
+    "name",
+    "created_at"
+  ],
+  "title": "Opportunity",
+  "type": "object"
+}

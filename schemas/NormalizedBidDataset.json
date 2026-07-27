@@ -1,0 +1,736 @@
+{
+  "$defs": {
+    "ArtifactEnvelope": {
+      "additionalProperties": false,
+      "description": "First-class pipeline artifact metadata with transformation lineage.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "producer": {
+          "$ref": "#/$defs/ArtifactProducer"
+        },
+        "input_artifacts": {
+          "items": {
+            "$ref": "#/$defs/ArtifactReference"
+          },
+          "title": "Input Artifacts",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash",
+        "producer",
+        "created_at"
+      ],
+      "title": "ArtifactEnvelope",
+      "type": "object"
+    },
+    "ArtifactProducer": {
+      "additionalProperties": false,
+      "description": "Component and version that produced an artifact.",
+      "properties": {
+        "component": {
+          "minLength": 1,
+          "title": "Component",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "version"
+      ],
+      "title": "ArtifactProducer",
+      "type": "object"
+    },
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "description": "Immutable reference to exact artifact content.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "ArtifactType": {
+      "description": "Stable artifact kinds represented by Foundation contracts.",
+      "enum": [
+        "raw_document",
+        "ocr_result",
+        "canonical_document",
+        "extraction_result",
+        "normalized_bid_dataset",
+        "compliance_matrix",
+        "working_package"
+      ],
+      "title": "ArtifactType",
+      "type": "string"
+    },
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "OCR or vision bounding box in the producer's declared coordinate space.",
+      "properties": {
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "number"
+        },
+        "coordinate_space": {
+          "default": "source",
+          "description": "Producer-defined space, e.g. \"pixels\", \"points\", or \"normalized\".",
+          "title": "Coordinate Space",
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "ExtractionCompleteness": {
+      "additionalProperties": false,
+      "description": "Explicit execution accounting at the normalization fan-in boundary.",
+      "properties": {
+        "expected_streams": {
+          "items": {
+            "$ref": "#/$defs/ExtractionStream"
+          },
+          "minItems": 1,
+          "title": "Expected Streams",
+          "type": "array"
+        },
+        "completed_streams": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ExtractionStream"
+          },
+          "title": "Completed Streams",
+          "type": "array"
+        },
+        "failed_streams": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ExtractionStream"
+          },
+          "title": "Failed Streams",
+          "type": "array"
+        },
+        "skipped_streams": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ExtractionStream"
+          },
+          "title": "Skipped Streams",
+          "type": "array"
+        }
+      },
+      "required": [
+        "expected_streams"
+      ],
+      "title": "ExtractionCompleteness",
+      "type": "object"
+    },
+    "ExtractionStream": {
+      "description": "Bounded extraction streams that feed the normalization fan-in.",
+      "enum": [
+        "REQUIREMENT",
+        "DEADLINE",
+        "ENTITY",
+        "FORMALITY",
+        "SCOPE",
+        "COMMERCIAL",
+        "SECURITY",
+        "COMPLIANCE"
+      ],
+      "title": "ExtractionStream",
+      "type": "string"
+    },
+    "NormalizedObjectReference": {
+      "additionalProperties": false,
+      "description": "Reference to one normalized object and the extraction artifacts behind it.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "object_type": {
+          "$ref": "#/$defs/NormalizedObjectType"
+        },
+        "source_artifacts": {
+          "items": {
+            "$ref": "#/$defs/ArtifactReference"
+          },
+          "minItems": 1,
+          "title": "Source Artifacts",
+          "type": "array"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "bid_id",
+        "object_id",
+        "object_type",
+        "source_artifacts",
+        "sources"
+      ],
+      "title": "NormalizedObjectReference",
+      "type": "object"
+    },
+    "NormalizedObjectType": {
+      "description": "Business object kinds referenced by the first normalized dataset.",
+      "enum": [
+        "REQUIREMENT",
+        "DEADLINE",
+        "ENTITY",
+        "FORMALITY",
+        "SCOPE",
+        "COMMERCIAL_FINDING",
+        "SECURITY_FINDING",
+        "COMPLIANCE_FINDING"
+      ],
+      "title": "NormalizedObjectType",
+      "type": "string"
+    },
+    "NormalizedRelationship": {
+      "additionalProperties": false,
+      "description": "Typed relationship between normalized business objects.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "from_object_id": {
+          "minLength": 1,
+          "title": "From Object Id",
+          "type": "string"
+        },
+        "to_object_id": {
+          "minLength": 1,
+          "title": "To Object Id",
+          "type": "string"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "bid_id",
+        "from_object_id",
+        "to_object_id",
+        "kind",
+        "sources"
+      ],
+      "title": "NormalizedRelationship",
+      "type": "object"
+    },
+    "Severity": {
+      "description": "Generic severity scale used by findings and risks.",
+      "enum": [
+        "INFO",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "SourceLocator": {
+      "additionalProperties": false,
+      "description": "Typed location within a source; at least one locator is required.",
+      "properties": {
+        "whole_document": {
+          "default": false,
+          "title": "Whole Document",
+          "type": "boolean"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "block_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Block Id"
+        },
+        "paragraph_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paragraph Id"
+        },
+        "table_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Id"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "column": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column"
+        },
+        "cell_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cell Id"
+        },
+        "text_span": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextSpan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bounding_box": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "SourceLocator",
+      "type": "object"
+    },
+    "SourceReference": {
+      "additionalProperties": false,
+      "description": "Pointer to exact original content and, when available, its canonical block.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "filename": {
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "document_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Document Hash",
+          "type": "string"
+        },
+        "locator": {
+          "$ref": "#/$defs/SourceLocator"
+        },
+        "canonical_artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^ART-\\d{8}-\\d{6,}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical Artifact Id"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "bid_id",
+        "document_id",
+        "filename",
+        "document_hash",
+        "locator"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "TextSpan": {
+      "additionalProperties": false,
+      "description": "Half-open character range in canonical text.",
+      "properties": {
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "exclusiveMinimum": 0,
+          "title": "End",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TextSpan",
+      "type": "object"
+    },
+    "UnresolvedConflict": {
+      "additionalProperties": false,
+      "description": "Conflict preserved for QA or human review instead of silently resolved.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "conflict_id": {
+          "minLength": 1,
+          "title": "Conflict Id",
+          "type": "string"
+        },
+        "object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Object Ids",
+          "type": "array"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity",
+          "default": "MEDIUM"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "bid_id",
+        "conflict_id",
+        "object_ids",
+        "description",
+        "sources"
+      ],
+      "title": "UnresolvedConflict",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Typed, lineaged fan-in aggregate consumed by QA and Working Package.",
+  "properties": {
+    "artifact": {
+      "$ref": "#/$defs/ArtifactEnvelope"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "completeness": {
+      "$ref": "#/$defs/ExtractionCompleteness"
+    },
+    "requirements": {
+      "items": {
+        "$ref": "#/$defs/NormalizedObjectReference"
+      },
+      "title": "Requirements",
+      "type": "array"
+    },
+    "deadlines": {
+      "items": {
+        "$ref": "#/$defs/NormalizedObjectReference"
+      },
+      "title": "Deadlines",
+      "type": "array"
+    },
+    "entities": {
+      "items": {
+        "$ref": "#/$defs/NormalizedObjectReference"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "formalities": {
+      "items": {
+        "$ref": "#/$defs/NormalizedObjectReference"
+      },
+      "title": "Formalities",
+      "type": "array"
+    },
+    "scope": {
+      "items": {
+        "$ref": "#/$defs/NormalizedObjectReference"
+      },
+      "title": "Scope",
+      "type": "array"
+    },
+    "commercial_findings": {
+      "items": {
+        "$ref": "#/$defs/NormalizedObjectReference"
+      },
+      "title": "Commercial Findings",
+      "type": "array"
+    },
+    "security_findings": {
+      "items": {
+        "$ref": "#/$defs/NormalizedObjectReference"
+      },
+      "title": "Security Findings",
+      "type": "array"
+    },
+    "compliance_findings": {
+      "items": {
+        "$ref": "#/$defs/NormalizedObjectReference"
+      },
+      "title": "Compliance Findings",
+      "type": "array"
+    },
+    "relationships": {
+      "items": {
+        "$ref": "#/$defs/NormalizedRelationship"
+      },
+      "title": "Relationships",
+      "type": "array"
+    },
+    "unresolved_conflicts": {
+      "items": {
+        "$ref": "#/$defs/UnresolvedConflict"
+      },
+      "title": "Unresolved Conflicts",
+      "type": "array"
+    }
+  },
+  "required": [
+    "artifact",
+    "bid_id",
+    "completeness"
+  ],
+  "title": "NormalizedBidDataset",
+  "type": "object"
+}

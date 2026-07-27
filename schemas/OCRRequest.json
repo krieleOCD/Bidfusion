@@ -1,0 +1,292 @@
+{
+  "$defs": {
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "description": "Immutable reference to exact artifact content.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "ArtifactType": {
+      "description": "Stable artifact kinds represented by Foundation contracts.",
+      "enum": [
+        "raw_document",
+        "ocr_result",
+        "canonical_document",
+        "extraction_result",
+        "normalized_bid_dataset",
+        "compliance_matrix",
+        "working_package"
+      ],
+      "title": "ArtifactType",
+      "type": "string"
+    },
+    "SecurityClearedArtifact": {
+      "additionalProperties": false,
+      "description": "Only admissible raw-content input contract for Document Understanding.\n\nThis contract validates decision semantics and binds the decision to the\nexact artifact ID, bid ID and hash. Runtime API authorization and operational\nscanner isolation remain later enforcement responsibilities.",
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/ArtifactReference"
+        },
+        "document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "security_result": {
+          "$ref": "#/$defs/SecurityResult"
+        }
+      },
+      "required": [
+        "artifact",
+        "document_id",
+        "security_result"
+      ],
+      "title": "SecurityClearedArtifact",
+      "type": "object"
+    },
+    "SecurityFinding": {
+      "additionalProperties": false,
+      "description": "A single finding produced by one security check.",
+      "properties": {
+        "check": {
+          "description": "Producing check, e.g. \"mime_type\", \"magic_bytes\", \"prompt_injection\"",
+          "title": "Check",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "message": {
+          "description": "Human-readable description of the finding",
+          "title": "Message",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Details",
+          "type": "object"
+        }
+      },
+      "required": [
+        "check",
+        "severity",
+        "message"
+      ],
+      "title": "SecurityFinding",
+      "type": "object"
+    },
+    "SecurityManualReview": {
+      "additionalProperties": false,
+      "description": "Explicit human release or rejection of a MANUAL_REVIEW result.",
+      "properties": {
+        "review_id": {
+          "pattern": "^REV-\\d{6,}$",
+          "title": "Review Id",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "pattern": "^ACT-\\d{4,}$",
+          "title": "Reviewer Id",
+          "type": "string"
+        },
+        "disposition": {
+          "$ref": "#/$defs/SecurityReviewDisposition"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "title": "Decided At",
+          "type": "string"
+        },
+        "rationale": {
+          "minLength": 1,
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "review_id",
+        "reviewer_id",
+        "disposition",
+        "decided_at",
+        "rationale"
+      ],
+      "title": "SecurityManualReview",
+      "type": "object"
+    },
+    "SecurityResult": {
+      "additionalProperties": false,
+      "description": "Security decision bound to an exact immutable artifact and content hash.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "artifact": {
+          "$ref": "#/$defs/ArtifactReference"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/SecurityVerdict"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/SecurityFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "scanner": {
+          "description": "Name of the security gate component",
+          "title": "Scanner",
+          "type": "string"
+        },
+        "scanner_version": {
+          "minLength": 1,
+          "title": "Scanner Version",
+          "type": "string"
+        },
+        "policy_version": {
+          "minLength": 1,
+          "title": "Policy Version",
+          "type": "string"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "title": "Decided At",
+          "type": "string"
+        },
+        "manual_review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SecurityManualReview"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "bid_id",
+        "document_id",
+        "artifact",
+        "content_hash",
+        "verdict",
+        "scanner",
+        "scanner_version",
+        "policy_version",
+        "decided_at"
+      ],
+      "title": "SecurityResult",
+      "type": "object"
+    },
+    "SecurityReviewDisposition": {
+      "description": "Audited disposition of a pending MANUAL_REVIEW verdict.",
+      "enum": [
+        "RELEASED",
+        "REJECTED"
+      ],
+      "title": "SecurityReviewDisposition",
+      "type": "string"
+    },
+    "SecurityVerdict": {
+      "description": "Verdict of the security gate for a single document.\n\nMANUAL_REVIEW is pending until an audited release or rejection exists.\nBLOCK and QUARANTINE never enter the normal pipeline.",
+      "enum": [
+        "ALLOW",
+        "MANUAL_REVIEW",
+        "QUARANTINE",
+        "BLOCK"
+      ],
+      "title": "SecurityVerdict",
+      "type": "string"
+    },
+    "Severity": {
+      "description": "Generic severity scale used by findings and risks.",
+      "enum": [
+        "INFO",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Security-cleared content submitted through the owned OCR port.",
+  "properties": {
+    "source": {
+      "$ref": "#/$defs/SecurityClearedArtifact"
+    },
+    "language_hints": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Language Hints",
+      "type": "array"
+    }
+  },
+  "required": [
+    "source"
+  ],
+  "title": "OCRRequest",
+  "type": "object"
+}

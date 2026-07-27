@@ -1,0 +1,68 @@
+# ---------------------------------------------------------------------------
+# Secrets & environment — never commit these
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.pfx
+secrets/
+credentials*
+*.credentials
+*.token
+
+# ---------------------------------------------------------------------------
+# Customer data — real RFP material must NEVER enter this repository
+# ---------------------------------------------------------------------------
+data/
+customer*/
+*-customer-data/
+raw_packages/
+rfp_packages/
+packages_inbox/
+output/
+artifacts/
+extractions/
+
+# ---------------------------------------------------------------------------
+# Local databases, model caches, large binaries
+# ---------------------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+.cache/
+models/
+checkpoints/
+*.parquet
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+*.whl
+
+# Tooling caches & reports
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ---------------------------------------------------------------------------
+# OS / IDE local files
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.code-workspace

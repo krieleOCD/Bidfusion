@@ -1,0 +1,165 @@
+{
+  "$defs": {
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "description": "Immutable reference to exact artifact content.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "ArtifactType": {
+      "description": "Stable artifact kinds represented by Foundation contracts.",
+      "enum": [
+        "raw_document",
+        "ocr_result",
+        "canonical_document",
+        "extraction_result",
+        "normalized_bid_dataset",
+        "compliance_matrix",
+        "working_package"
+      ],
+      "title": "ArtifactType",
+      "type": "string"
+    },
+    "ProcessingStage": {
+      "description": "Current technical stage of a pipeline run.",
+      "enum": [
+        "RECEIVED",
+        "SECURITY_SCAN",
+        "INVENTORIED",
+        "PARSED",
+        "STRUCTURED",
+        "EXTRACTED",
+        "NORMALIZED",
+        "QA",
+        "HUMAN_REVIEW",
+        "WORKING_PACKAGE_READY"
+      ],
+      "title": "ProcessingStage",
+      "type": "string"
+    },
+    "ProcessingStatus": {
+      "description": "Processing status of a document or a pipeline step.",
+      "enum": [
+        "PENDING",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED",
+        "SKIPPED",
+        "REQUIRES_REVIEW"
+      ],
+      "title": "ProcessingStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Auditable status and produced artifacts for one technical run.",
+  "properties": {
+    "run_id": {
+      "pattern": "^RUN-\\d{8}-\\d{4,}$",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "stage": {
+      "$ref": "#/$defs/ProcessingStage"
+    },
+    "status": {
+      "$ref": "#/$defs/ProcessingStatus"
+    },
+    "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Completed At"
+    },
+    "artifacts": {
+      "items": {
+        "$ref": "#/$defs/ArtifactReference"
+      },
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "errors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Errors",
+      "type": "array"
+    }
+  },
+  "required": [
+    "run_id",
+    "bid_id",
+    "stage",
+    "status",
+    "started_at",
+    "updated_at"
+  ],
+  "title": "ProcessingRun",
+  "type": "object"
+}

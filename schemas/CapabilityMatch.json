@@ -1,0 +1,168 @@
+{
+  "$defs": {
+    "EvidenceReference": {
+      "additionalProperties": false,
+      "description": "Governance snapshot used to validate a capability claim.",
+      "properties": {
+        "source": {
+          "const": "governed_knowledge",
+          "default": "governed_knowledge",
+          "title": "Source",
+          "type": "string"
+        },
+        "knowledge_item_id": {
+          "pattern": "^KNW-\\d{6,}$",
+          "title": "Knowledge Item Id",
+          "type": "string"
+        },
+        "capability_id": {
+          "pattern": "^CAP-\\d{3,}$",
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "knowledge_version": {
+          "minimum": 1,
+          "title": "Knowledge Version",
+          "type": "integer"
+        },
+        "approval_status": {
+          "$ref": "#/$defs/KnowledgeApprovalStatus"
+        },
+        "valid_from": {
+          "format": "date-time",
+          "title": "Valid From",
+          "type": "string"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid Until"
+        },
+        "checked_at": {
+          "format": "date-time",
+          "title": "Checked At",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "knowledge_item_id",
+        "capability_id",
+        "knowledge_version",
+        "approval_status",
+        "valid_from",
+        "checked_at",
+        "evidence_ids"
+      ],
+      "title": "EvidenceReference",
+      "type": "object"
+    },
+    "KnowledgeApprovalStatus": {
+      "description": "Governance state of an enterprise knowledge record.",
+      "enum": [
+        "DRAFT",
+        "IN_REVIEW",
+        "APPROVED",
+        "REJECTED",
+        "RETIRED"
+      ],
+      "title": "KnowledgeApprovalStatus",
+      "type": "string"
+    },
+    "MatchStatus": {
+      "description": "Result of matching a requirement against the Golden Dataset.",
+      "enum": [
+        "SUPPORTED",
+        "PARTIALLY_SUPPORTED",
+        "NOT_SUPPORTED",
+        "UNKNOWN"
+      ],
+      "title": "MatchStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Evidence-backed match between one bid requirement and governed knowledge.",
+  "properties": {
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "requirement_id": {
+      "pattern": "^REQ-\\d{6}$",
+      "title": "Requirement Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/MatchStatus"
+    },
+    "capability_id": {
+      "anyOf": [
+        {
+          "pattern": "^CAP-\\d{3,}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Capability Id"
+    },
+    "confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "evaluated_at": {
+      "format": "date-time",
+      "title": "Evaluated At",
+      "type": "string"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/EvidenceReference"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Limitations",
+      "type": "array"
+    },
+    "requires_sme_review": {
+      "default": false,
+      "title": "Requires Sme Review",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "bid_id",
+    "requirement_id",
+    "status",
+    "confidence",
+    "evaluated_at"
+  ],
+  "title": "CapabilityMatch",
+  "type": "object"
+}

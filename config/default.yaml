@@ -1,0 +1,34 @@
+# Example local configuration for BidFusion (non-secret).
+#
+# This file documents the shape of the runtime configuration. It is an
+# example, not an active config: the foundation contains no executable
+# pipeline yet. Domain configuration carries only logical secret references;
+# a future adapter may resolve them from the environment or a secret store.
+
+environment: local
+
+storage:
+  # Local root for versioned intermediate pipeline artifacts (gitignored).
+  artifacts_root: ./data/artifacts
+
+security_gate:
+  # Security before intelligence: every document passes these checks first.
+  max_file_size_mb: 100
+  allowed_extensions: [pdf, docx, xlsx, csv, pptx, png, jpg, jpeg]
+  blocked_extensions: [exe, dll, bat, cmd, ps1, sh, js, vbs, scr, com, msi]
+  block_macros: true
+  block_embedded_objects: true
+  scan_archives: true
+
+llm_gateway:
+  # BidFusion is model-agnostic (ADR-0007). Agents declare capabilities,
+  # data policy and cost profile; the gateway routes. This is a logical
+  # secret reference, never a credential value.
+  endpoint_env_var: BIDFUSION_LLM_GATEWAY_URL
+  secret_ref: secret://env/BIDFUSION_LLM_GATEWAY_API_KEY
+  default_cost_profile: medium
+
+orchestration:
+  # Pipeline steps are designed to be idempotent; resume reuses existing
+  # intermediate artifacts instead of re-running expensive steps.
+  resume_enabled: true

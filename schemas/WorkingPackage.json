@@ -1,0 +1,913 @@
+{
+  "$defs": {
+    "ArtifactEnvelope": {
+      "additionalProperties": false,
+      "description": "First-class pipeline artifact metadata with transformation lineage.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "producer": {
+          "$ref": "#/$defs/ArtifactProducer"
+        },
+        "input_artifacts": {
+          "items": {
+            "$ref": "#/$defs/ArtifactReference"
+          },
+          "title": "Input Artifacts",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash",
+        "producer",
+        "created_at"
+      ],
+      "title": "ArtifactEnvelope",
+      "type": "object"
+    },
+    "ArtifactProducer": {
+      "additionalProperties": false,
+      "description": "Component and version that produced an artifact.",
+      "properties": {
+        "component": {
+          "minLength": 1,
+          "title": "Component",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "version"
+      ],
+      "title": "ArtifactProducer",
+      "type": "object"
+    },
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "description": "Immutable reference to exact artifact content.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "ArtifactType": {
+      "description": "Stable artifact kinds represented by Foundation contracts.",
+      "enum": [
+        "raw_document",
+        "ocr_result",
+        "canonical_document",
+        "extraction_result",
+        "normalized_bid_dataset",
+        "compliance_matrix",
+        "working_package"
+      ],
+      "title": "ArtifactType",
+      "type": "string"
+    },
+    "BoundingBox": {
+      "additionalProperties": false,
+      "description": "OCR or vision bounding box in the producer's declared coordinate space.",
+      "properties": {
+        "x": {
+          "minimum": 0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "minimum": 0,
+          "title": "Y",
+          "type": "number"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "number"
+        },
+        "coordinate_space": {
+          "default": "source",
+          "description": "Producer-defined space, e.g. \"pixels\", \"points\", or \"normalized\".",
+          "title": "Coordinate Space",
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "Deadline": {
+      "additionalProperties": false,
+      "description": "A deadline or milestone mentioned in the bid documents.",
+      "properties": {
+        "deadline_id": {
+          "minLength": 1,
+          "title": "Deadline Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DeadlineKind"
+        },
+        "due_at": {
+          "format": "date-time",
+          "title": "Due At",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceReference"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "extraction": {
+          "$ref": "#/$defs/ExtractionInfo"
+        }
+      },
+      "required": [
+        "deadline_id",
+        "bid_id",
+        "kind",
+        "due_at",
+        "source",
+        "confidence",
+        "extraction"
+      ],
+      "title": "Deadline",
+      "type": "object"
+    },
+    "DeadlineKind": {
+      "description": "Kinds of deadlines and milestones in a bid process.",
+      "enum": [
+        "SUBMISSION",
+        "QA",
+        "PRESENTATION",
+        "NEGOTIATION",
+        "CONTRACT_START",
+        "MILESTONE",
+        "OTHER"
+      ],
+      "title": "DeadlineKind",
+      "type": "string"
+    },
+    "EvidencedStatement": {
+      "additionalProperties": false,
+      "description": "Important statement linked to normalized objects and original evidence.",
+      "properties": {
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "normalized_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Normalized Object Ids",
+          "type": "array"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/SourceReference"
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "normalized_object_ids",
+        "sources"
+      ],
+      "title": "EvidencedStatement",
+      "type": "object"
+    },
+    "ExecutiveOverview": {
+      "additionalProperties": false,
+      "description": "Evidence-bearing executive summary of the bid opportunity.",
+      "properties": {
+        "customer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidencedStatement"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rfp_title": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidencedStatement"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "opportunity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidencedStatement"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scope_summary": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "Scope Summary",
+          "type": "array"
+        },
+        "objectives": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "Objectives",
+          "type": "array"
+        }
+      },
+      "title": "ExecutiveOverview",
+      "type": "object"
+    },
+    "ExtractionInfo": {
+      "additionalProperties": false,
+      "description": "How a source-derived fact was produced.",
+      "properties": {
+        "method": {
+          "description": "e.g. \"llm\", \"rule\", \"hybrid\", \"human\"",
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "producer": {
+          "minLength": 1,
+          "title": "Producer",
+          "type": "string"
+        },
+        "producer_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Producer Version",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Gateway-assigned model identifier; business modules do not select providers.",
+          "title": "Model"
+        },
+        "prompt_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt Version"
+        }
+      },
+      "required": [
+        "method",
+        "producer",
+        "producer_version"
+      ],
+      "title": "ExtractionInfo",
+      "type": "object"
+    },
+    "OpenQuestion": {
+      "additionalProperties": false,
+      "description": "Evidence-bearing open issue or potential bidder clarification.",
+      "properties": {
+        "question_id": {
+          "minLength": 1,
+          "title": "Question Id",
+          "type": "string"
+        },
+        "statement": {
+          "$ref": "#/$defs/EvidencedStatement"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "potential_clarification": {
+          "default": false,
+          "title": "Potential Clarification",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "question_id",
+        "statement",
+        "reason"
+      ],
+      "title": "OpenQuestion",
+      "type": "object"
+    },
+    "RequirementCategory": {
+      "description": "Business domain to which a requirement belongs.",
+      "enum": [
+        "TECHNICAL",
+        "SERVICE",
+        "SECURITY",
+        "COMPLIANCE",
+        "COMMERCIAL",
+        "CONTRACTUAL",
+        "SLA",
+        "SUBMISSION",
+        "OTHER"
+      ],
+      "title": "RequirementCategory",
+      "type": "string"
+    },
+    "RequirementModality": {
+      "description": "Strength of the obligation expressed by a requirement.",
+      "enum": [
+        "MUST",
+        "SHOULD",
+        "MAY",
+        "INFORMATIONAL",
+        "UNKNOWN"
+      ],
+      "title": "RequirementModality",
+      "type": "string"
+    },
+    "RequirementsSummary": {
+      "additionalProperties": false,
+      "description": "Validated counts of normalized requirements.",
+      "properties": {
+        "total": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Total",
+          "type": "integer"
+        },
+        "by_modality": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/RequirementModality"
+          },
+          "title": "By Modality",
+          "type": "object"
+        },
+        "by_category": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/RequirementCategory"
+          },
+          "title": "By Category",
+          "type": "object"
+        }
+      },
+      "title": "RequirementsSummary",
+      "type": "object"
+    },
+    "Risk": {
+      "additionalProperties": false,
+      "description": "Evidence-bearing risk identified for the bid.",
+      "properties": {
+        "risk_id": {
+          "minLength": 1,
+          "title": "Risk Id",
+          "type": "string"
+        },
+        "statement": {
+          "$ref": "#/$defs/EvidencedStatement"
+        },
+        "category": {
+          "minLength": 1,
+          "title": "Category",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity",
+          "default": "MEDIUM"
+        }
+      },
+      "required": [
+        "risk_id",
+        "statement",
+        "category"
+      ],
+      "title": "Risk",
+      "type": "object"
+    },
+    "Severity": {
+      "description": "Generic severity scale used by findings and risks.",
+      "enum": [
+        "INFO",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "SourceLocator": {
+      "additionalProperties": false,
+      "description": "Typed location within a source; at least one locator is required.",
+      "properties": {
+        "whole_document": {
+          "default": false,
+          "title": "Whole Document",
+          "type": "boolean"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "section_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Section Id"
+        },
+        "block_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Block Id"
+        },
+        "paragraph_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paragraph Id"
+        },
+        "table_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Id"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "column": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column"
+        },
+        "cell_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cell Id"
+        },
+        "text_span": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextSpan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "bounding_box": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "SourceLocator",
+      "type": "object"
+    },
+    "SourceReference": {
+      "additionalProperties": false,
+      "description": "Pointer to exact original content and, when available, its canonical block.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "document_id": {
+          "pattern": "^DOC-\\d{3,}$",
+          "title": "Document Id",
+          "type": "string"
+        },
+        "filename": {
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "document_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Document Hash",
+          "type": "string"
+        },
+        "locator": {
+          "$ref": "#/$defs/SourceLocator"
+        },
+        "canonical_artifact_id": {
+          "anyOf": [
+            {
+              "pattern": "^ART-\\d{8}-\\d{6,}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Canonical Artifact Id"
+        },
+        "quote": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote"
+        }
+      },
+      "required": [
+        "bid_id",
+        "document_id",
+        "filename",
+        "document_hash",
+        "locator"
+      ],
+      "title": "SourceReference",
+      "type": "object"
+    },
+    "SubmissionInstructions": {
+      "additionalProperties": false,
+      "description": "Evidence-bearing instructions extracted from the source package.",
+      "properties": {
+        "portal": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EvidencedStatement"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "upload_process": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "Upload Process",
+          "type": "array"
+        },
+        "required_accounts": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "Required Accounts",
+          "type": "array"
+        },
+        "formats": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "Formats",
+          "type": "array"
+        },
+        "naming_rules": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "Naming Rules",
+          "type": "array"
+        },
+        "signatures_required": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "Signatures Required",
+          "type": "array"
+        },
+        "file_size_limits": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "File Size Limits",
+          "type": "array"
+        },
+        "special_requirements": {
+          "items": {
+            "$ref": "#/$defs/EvidencedStatement"
+          },
+          "title": "Special Requirements",
+          "type": "array"
+        }
+      },
+      "title": "SubmissionInstructions",
+      "type": "object"
+    },
+    "TextSpan": {
+      "additionalProperties": false,
+      "description": "Half-open character range in canonical text.",
+      "properties": {
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "exclusiveMinimum": 0,
+          "title": "End",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "TextSpan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Human-facing package lineaged to one normalized dataset.",
+  "properties": {
+    "artifact": {
+      "$ref": "#/$defs/ArtifactEnvelope"
+    },
+    "source_dataset": {
+      "$ref": "#/$defs/ArtifactReference"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "executive_overview": {
+      "$ref": "#/$defs/ExecutiveOverview"
+    },
+    "timeline": {
+      "items": {
+        "$ref": "#/$defs/Deadline"
+      },
+      "title": "Timeline",
+      "type": "array"
+    },
+    "submission_instructions": {
+      "$ref": "#/$defs/SubmissionInstructions"
+    },
+    "requirements_summary": {
+      "$ref": "#/$defs/RequirementsSummary"
+    },
+    "critical_requirements": {
+      "items": {
+        "pattern": "^REQ-\\d{6}$",
+        "type": "string"
+      },
+      "title": "Critical Requirements",
+      "type": "array"
+    },
+    "risks": {
+      "items": {
+        "$ref": "#/$defs/Risk"
+      },
+      "title": "Risks",
+      "type": "array"
+    },
+    "open_questions": {
+      "items": {
+        "$ref": "#/$defs/OpenQuestion"
+      },
+      "title": "Open Questions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "artifact",
+    "source_dataset",
+    "bid_id",
+    "generated_at"
+  ],
+  "title": "WorkingPackage",
+  "type": "object"
+}

@@ -1,0 +1,104 @@
+{
+  "$defs": {
+    "ContextWindowRequirement": {
+      "description": "Coarse requested context capacity.",
+      "enum": [
+        "small",
+        "medium",
+        "large"
+      ],
+      "title": "ContextWindowRequirement",
+      "type": "string"
+    },
+    "CostPriority": {
+      "description": "Relative cost priority used by gateway routing policy.",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "CostPriority",
+      "type": "string"
+    },
+    "DataClassification": {
+      "description": "Data classification, drives handling and data-policy decisions.",
+      "enum": [
+        "PUBLIC",
+        "INTERNAL",
+        "CONFIDENTIAL",
+        "RESTRICTED"
+      ],
+      "title": "DataClassification",
+      "type": "string"
+    },
+    "ModelCapabilities": {
+      "additionalProperties": false,
+      "description": "Capabilities required by a business module.",
+      "properties": {
+        "vision": {
+          "default": false,
+          "title": "Vision",
+          "type": "boolean"
+        },
+        "structured_output": {
+          "default": false,
+          "title": "Structured Output",
+          "type": "boolean"
+        },
+        "reasoning": {
+          "$ref": "#/$defs/ReasoningRequirement",
+          "default": "medium"
+        },
+        "context_window": {
+          "$ref": "#/$defs/ContextWindowRequirement",
+          "default": "medium"
+        }
+      },
+      "title": "ModelCapabilities",
+      "type": "object"
+    },
+    "ModelDataPolicy": {
+      "additionalProperties": false,
+      "description": "Data handling needs declared to the gateway.",
+      "properties": {
+        "classification": {
+          "$ref": "#/$defs/DataClassification",
+          "default": "CONFIDENTIAL"
+        },
+        "local_processing_preferred": {
+          "default": true,
+          "title": "Local Processing Preferred",
+          "type": "boolean"
+        }
+      },
+      "title": "ModelDataPolicy",
+      "type": "object"
+    },
+    "ReasoningRequirement": {
+      "description": "Requested reasoning depth, not a model selection.",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "ReasoningRequirement",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "What a call requires; model and provider routing stay in the gateway.",
+  "properties": {
+    "capabilities": {
+      "$ref": "#/$defs/ModelCapabilities"
+    },
+    "data_policy": {
+      "$ref": "#/$defs/ModelDataPolicy"
+    },
+    "cost_priority": {
+      "$ref": "#/$defs/CostPriority",
+      "default": "medium"
+    }
+  },
+  "title": "ModelRequirements",
+  "type": "object"
+}

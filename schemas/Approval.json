@@ -1,0 +1,63 @@
+{
+  "$defs": {
+    "ApprovalDecision": {
+      "description": "Recorded business approval outcome.",
+      "enum": [
+        "APPROVED",
+        "REJECTED",
+        "CONDITIONAL"
+      ],
+      "title": "ApprovalDecision",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Audited business sign-off associated with a review.",
+  "properties": {
+    "review_id": {
+      "pattern": "^REV-\\d{6,}$",
+      "title": "Review Id",
+      "type": "string"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "approver_id": {
+      "pattern": "^ACT-\\d{4,}$",
+      "title": "Approver Id",
+      "type": "string"
+    },
+    "decision": {
+      "$ref": "#/$defs/ApprovalDecision"
+    },
+    "decided_at": {
+      "format": "date-time",
+      "title": "Decided At",
+      "type": "string"
+    },
+    "rationale": {
+      "minLength": 1,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "conditions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Conditions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "review_id",
+    "bid_id",
+    "approver_id",
+    "decision",
+    "decided_at",
+    "rationale"
+  ],
+  "title": "Approval",
+  "type": "object"
+}

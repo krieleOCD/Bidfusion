@@ -1,0 +1,55 @@
+{
+  "$defs": {
+    "SecretRef": {
+      "additionalProperties": false,
+      "description": "Logical pointer to a secret; never the secret value itself.",
+      "properties": {
+        "reference": {
+          "description": "Logical secret location, e.g. \"secret://env/LLM_API_KEY\".",
+          "minLength": 10,
+          "pattern": "^secret://[A-Za-z0-9][A-Za-z0-9._/-]*$",
+          "title": "Reference",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reference"
+      ],
+      "title": "SecretRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Non-secret adapter configuration safe for domain serialization.",
+  "properties": {
+    "endpoint": {
+      "format": "uri",
+      "minLength": 1,
+      "title": "Endpoint",
+      "type": "string"
+    },
+    "secret_ref": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SecretRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "timeout_seconds": {
+      "default": 30.0,
+      "exclusiveMinimum": 0,
+      "maximum": 300,
+      "title": "Timeout Seconds",
+      "type": "number"
+    }
+  },
+  "required": [
+    "endpoint"
+  ],
+  "title": "ProviderConfig",
+  "type": "object"
+}

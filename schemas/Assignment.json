@@ -1,0 +1,72 @@
+{
+  "$defs": {
+    "AssignmentSubject": {
+      "description": "Supported ownership targets at the Foundation boundary.",
+      "enum": [
+        "REQUIREMENT",
+        "COMPLIANCE_ITEM",
+        "SME_TASK",
+        "REVIEW",
+        "APPROVAL",
+        "KNOWLEDGE_ITEM"
+      ],
+      "title": "AssignmentSubject",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Auditable assignment of one actor to one responsibility.",
+  "properties": {
+    "bid_id": {
+      "anyOf": [
+        {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bid Id"
+    },
+    "actor_id": {
+      "pattern": "^ACT-\\d{4,}$",
+      "title": "Actor Id",
+      "type": "string"
+    },
+    "subject_type": {
+      "$ref": "#/$defs/AssignmentSubject"
+    },
+    "subject_id": {
+      "minLength": 1,
+      "title": "Subject Id",
+      "type": "string"
+    },
+    "responsibility": {
+      "minLength": 1,
+      "title": "Responsibility",
+      "type": "string"
+    },
+    "assigned_at": {
+      "format": "date-time",
+      "title": "Assigned At",
+      "type": "string"
+    },
+    "assigned_by": {
+      "pattern": "^ACT-\\d{4,}$",
+      "title": "Assigned By",
+      "type": "string"
+    }
+  },
+  "required": [
+    "actor_id",
+    "subject_type",
+    "subject_id",
+    "responsibility",
+    "assigned_at",
+    "assigned_by"
+  ],
+  "title": "Assignment",
+  "type": "object"
+}

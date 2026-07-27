@@ -1,0 +1,79 @@
+{
+  "$defs": {
+    "BidDecisionStatus": {
+      "description": "Qualification decision reserved without implementing a scoring engine.",
+      "enum": [
+        "PENDING",
+        "GO",
+        "NO_GO",
+        "CONDITIONAL"
+      ],
+      "title": "BidDecisionStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Auditable business qualification decision for a bid.",
+  "properties": {
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/BidDecisionStatus",
+      "default": "PENDING"
+    },
+    "decided_by": {
+      "anyOf": [
+        {
+          "pattern": "^ACT-\\d{4,}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Decided By"
+    },
+    "decided_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Decided At"
+    },
+    "rationale": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rationale"
+    },
+    "conditions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Conditions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "bid_id"
+  ],
+  "title": "BidDecision",
+  "type": "object"
+}

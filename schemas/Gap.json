@@ -1,0 +1,85 @@
+{
+  "$defs": {
+    "GapStatus": {
+      "description": "Lifecycle of an identified capability gap.",
+      "enum": [
+        "OPEN",
+        "ASSIGNED",
+        "RESOLVED",
+        "ACCEPTED"
+      ],
+      "title": "GapStatus",
+      "type": "string"
+    },
+    "Severity": {
+      "description": "Generic severity scale used by findings and risks.",
+      "enum": [
+        "INFO",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A requirement that is not or only partially covered.",
+  "properties": {
+    "gap_id": {
+      "minLength": 1,
+      "title": "Gap Id",
+      "type": "string"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "requirement_id": {
+      "pattern": "^REQ-\\d{6}$",
+      "title": "Requirement Id",
+      "type": "string"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "severity": {
+      "$ref": "#/$defs/Severity",
+      "default": "MEDIUM"
+    },
+    "recommended_action": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Recommended Action"
+    },
+    "status": {
+      "$ref": "#/$defs/GapStatus",
+      "default": "OPEN"
+    }
+  },
+  "required": [
+    "gap_id",
+    "bid_id",
+    "requirement_id"
+  ],
+  "title": "Gap",
+  "type": "object"
+}

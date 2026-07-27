@@ -1,0 +1,189 @@
+{
+  "$defs": {
+    "DataClassification": {
+      "description": "Data classification, drives handling and data-policy decisions.",
+      "enum": [
+        "PUBLIC",
+        "INTERNAL",
+        "CONFIDENTIAL",
+        "RESTRICTED"
+      ],
+      "title": "DataClassification",
+      "type": "string"
+    },
+    "KnowledgeApprovalStatus": {
+      "description": "Governance state of an enterprise knowledge record.",
+      "enum": [
+        "DRAFT",
+        "IN_REVIEW",
+        "APPROVED",
+        "REJECTED",
+        "RETIRED"
+      ],
+      "title": "KnowledgeApprovalStatus",
+      "type": "string"
+    },
+    "KnowledgeEvidence": {
+      "additionalProperties": false,
+      "description": "Evidence retained by knowledge governance.",
+      "properties": {
+        "evidence_id": {
+          "minLength": 1,
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/KnowledgeSource"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "source",
+        "description"
+      ],
+      "title": "KnowledgeEvidence",
+      "type": "object"
+    },
+    "KnowledgeGovernance": {
+      "additionalProperties": false,
+      "description": "Ownership, approval, version, validity, and review policy.",
+      "properties": {
+        "owner_id": {
+          "pattern": "^ACT-\\d{4,}$",
+          "title": "Owner Id",
+          "type": "string"
+        },
+        "approval_status": {
+          "$ref": "#/$defs/KnowledgeApprovalStatus"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid From"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid Until"
+        },
+        "review_cycle_days": {
+          "exclusiveMinimum": 0,
+          "title": "Review Cycle Days",
+          "type": "integer"
+        },
+        "classification": {
+          "$ref": "#/$defs/DataClassification"
+        },
+        "source": {
+          "$ref": "#/$defs/KnowledgeSource"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeEvidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "owner_id",
+        "approval_status",
+        "version",
+        "review_cycle_days",
+        "classification",
+        "source"
+      ],
+      "title": "KnowledgeGovernance",
+      "type": "object"
+    },
+    "KnowledgeSource": {
+      "additionalProperties": false,
+      "description": "Origin of a governed knowledge record.",
+      "properties": {
+        "source_type": {
+          "$ref": "#/$defs/KnowledgeSourceType"
+        },
+        "reference": {
+          "minLength": 1,
+          "title": "Reference",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_type",
+        "reference"
+      ],
+      "title": "KnowledgeSource",
+      "type": "object"
+    },
+    "KnowledgeSourceType": {
+      "description": "Minimal categories of sources for governed knowledge.",
+      "enum": [
+        "INTERNAL_DOCUMENT",
+        "POLICY",
+        "CERTIFICATION",
+        "REFERENCE",
+        "CASE_STUDY",
+        "OTHER"
+      ],
+      "title": "KnowledgeSourceType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Governed enterprise knowledge record; never mutated by bid matching.",
+  "properties": {
+    "knowledge_item_id": {
+      "pattern": "^KNW-\\d{6,}$",
+      "title": "Knowledge Item Id",
+      "type": "string"
+    },
+    "title": {
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "content": {
+      "minLength": 1,
+      "title": "Content",
+      "type": "string"
+    },
+    "governance": {
+      "$ref": "#/$defs/KnowledgeGovernance"
+    }
+  },
+  "required": [
+    "knowledge_item_id",
+    "title",
+    "content",
+    "governance"
+  ],
+  "title": "KnowledgeItem",
+  "type": "object"
+}

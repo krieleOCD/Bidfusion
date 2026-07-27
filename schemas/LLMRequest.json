@@ -1,0 +1,270 @@
+{
+  "$defs": {
+    "ArtifactReference": {
+      "additionalProperties": false,
+      "description": "Immutable reference to exact artifact content.",
+      "properties": {
+        "artifact_id": {
+          "pattern": "^ART-\\d{8}-\\d{6,}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^RUN-\\d{8}-\\d{4,}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/ArtifactType"
+        },
+        "schema_version": {
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "content_ref": {
+          "minLength": 1,
+          "title": "Content Ref",
+          "type": "string"
+        },
+        "content_hash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "bid_id",
+        "run_id",
+        "artifact_type",
+        "schema_version",
+        "content_ref",
+        "content_hash"
+      ],
+      "title": "ArtifactReference",
+      "type": "object"
+    },
+    "ArtifactType": {
+      "description": "Stable artifact kinds represented by Foundation contracts.",
+      "enum": [
+        "raw_document",
+        "ocr_result",
+        "canonical_document",
+        "extraction_result",
+        "normalized_bid_dataset",
+        "compliance_matrix",
+        "working_package"
+      ],
+      "title": "ArtifactType",
+      "type": "string"
+    },
+    "ContextWindowRequirement": {
+      "description": "Coarse requested context capacity.",
+      "enum": [
+        "small",
+        "medium",
+        "large"
+      ],
+      "title": "ContextWindowRequirement",
+      "type": "string"
+    },
+    "CostPriority": {
+      "description": "Relative cost priority used by gateway routing policy.",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "CostPriority",
+      "type": "string"
+    },
+    "DataClassification": {
+      "description": "Data classification, drives handling and data-policy decisions.",
+      "enum": [
+        "PUBLIC",
+        "INTERNAL",
+        "CONFIDENTIAL",
+        "RESTRICTED"
+      ],
+      "title": "DataClassification",
+      "type": "string"
+    },
+    "ExecutionScope": {
+      "additionalProperties": false,
+      "description": "Contract-level bid boundary for one external-capability call.",
+      "properties": {
+        "bid_id": {
+          "pattern": "^BID-\\d{4}-\\d{6}$",
+          "title": "Bid Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bid_id"
+      ],
+      "title": "ExecutionScope",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "ModelCapabilities": {
+      "additionalProperties": false,
+      "description": "Capabilities required by a business module.",
+      "properties": {
+        "vision": {
+          "default": false,
+          "title": "Vision",
+          "type": "boolean"
+        },
+        "structured_output": {
+          "default": false,
+          "title": "Structured Output",
+          "type": "boolean"
+        },
+        "reasoning": {
+          "$ref": "#/$defs/ReasoningRequirement",
+          "default": "medium"
+        },
+        "context_window": {
+          "$ref": "#/$defs/ContextWindowRequirement",
+          "default": "medium"
+        }
+      },
+      "title": "ModelCapabilities",
+      "type": "object"
+    },
+    "ModelDataPolicy": {
+      "additionalProperties": false,
+      "description": "Data handling needs declared to the gateway.",
+      "properties": {
+        "classification": {
+          "$ref": "#/$defs/DataClassification",
+          "default": "CONFIDENTIAL"
+        },
+        "local_processing_preferred": {
+          "default": true,
+          "title": "Local Processing Preferred",
+          "type": "boolean"
+        }
+      },
+      "title": "ModelDataPolicy",
+      "type": "object"
+    },
+    "ModelRequirements": {
+      "additionalProperties": false,
+      "description": "What a call requires; model and provider routing stay in the gateway.",
+      "properties": {
+        "capabilities": {
+          "$ref": "#/$defs/ModelCapabilities"
+        },
+        "data_policy": {
+          "$ref": "#/$defs/ModelDataPolicy"
+        },
+        "cost_priority": {
+          "$ref": "#/$defs/CostPriority",
+          "default": "medium"
+        }
+      },
+      "title": "ModelRequirements",
+      "type": "object"
+    },
+    "ReasoningRequirement": {
+      "description": "Requested reasoning depth, not a model selection.",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "ReasoningRequirement",
+      "type": "string"
+    },
+    "StructuredOutputSpec": {
+      "additionalProperties": false,
+      "description": "Named, provider-independent JSON Schema expected from an LLM call.",
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "json_schema": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Json Schema",
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "json_schema"
+      ],
+      "title": "StructuredOutputSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Owned request contract with capability requirements, never model selection.",
+  "properties": {
+    "request_id": {
+      "minLength": 1,
+      "title": "Request Id",
+      "type": "string"
+    },
+    "scope": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionScope"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "requirements": {
+      "$ref": "#/$defs/ModelRequirements"
+    },
+    "prompt": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt"
+    },
+    "input_artifacts": {
+      "items": {
+        "$ref": "#/$defs/ArtifactReference"
+      },
+      "title": "Input Artifacts",
+      "type": "array"
+    },
+    "output_spec": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/StructuredOutputSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "request_id"
+  ],
+  "title": "LLMRequest",
+  "type": "object"
+}

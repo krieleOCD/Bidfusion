@@ -1,0 +1,38 @@
+{
+  "$defs": {
+    "ActorType": {
+      "description": "Responsibility-bearing actor; this is not an IAM or RBAC model.",
+      "enum": [
+        "PERSON",
+        "TEAM",
+        "SYSTEM"
+      ],
+      "title": "ActorType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Minimal reusable responsibility holder.",
+  "properties": {
+    "actor_id": {
+      "pattern": "^ACT-\\d{4,}$",
+      "title": "Actor Id",
+      "type": "string"
+    },
+    "display_name": {
+      "minLength": 1,
+      "title": "Display Name",
+      "type": "string"
+    },
+    "actor_type": {
+      "$ref": "#/$defs/ActorType"
+    }
+  },
+  "required": [
+    "actor_id",
+    "display_name",
+    "actor_type"
+  ],
+  "title": "Actor",
+  "type": "object"
+}

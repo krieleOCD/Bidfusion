@@ -1,0 +1,2 @@
+Eval runners execute prompts/agents against datasets and compute metrics.
+No runners are implemented in the foundation phase.

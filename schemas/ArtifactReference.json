@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "ArtifactType": {
+      "description": "Stable artifact kinds represented by Foundation contracts.",
+      "enum": [
+        "raw_document",
+        "ocr_result",
+        "canonical_document",
+        "extraction_result",
+        "normalized_bid_dataset",
+        "compliance_matrix",
+        "working_package"
+      ],
+      "title": "ArtifactType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Immutable reference to exact artifact content.",
+  "properties": {
+    "artifact_id": {
+      "pattern": "^ART-\\d{8}-\\d{6,}$",
+      "title": "Artifact Id",
+      "type": "string"
+    },
+    "bid_id": {
+      "pattern": "^BID-\\d{4}-\\d{6}$",
+      "title": "Bid Id",
+      "type": "string"
+    },
+    "run_id": {
+      "pattern": "^RUN-\\d{8}-\\d{4,}$",
+      "title": "Run Id",
+      "type": "string"
+    },
+    "artifact_type": {
+      "$ref": "#/$defs/ArtifactType"
+    },
+    "schema_version": {
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "content_ref": {
+      "minLength": 1,
+      "title": "Content Ref",
+      "type": "string"
+    },
+    "content_hash": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Content Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifact_id",
+    "bid_id",
+    "run_id",
+    "artifact_type",
+    "schema_version",
+    "content_ref",
+    "content_hash"
+  ],
+  "title": "ArtifactReference",
+  "type": "object"
+}
