@@ -125,3 +125,29 @@ data/artifacts/
 ```
 
 This is a convention, not an implemented guarantee or storage decision.
+
+## MVP artifact persistence and hash semantics
+
+The local walking-skeleton pipeline seals self-referential artifacts
+(canonical documents, extraction results, the normalized dataset, and the
+working package) under the versioned convention
+`bidfusion-artifact-payload:1` (`src/bidfusion/shared/payloads.py`):
+
+- The **canonical payload file** at `ArtifactEnvelope.content_ref`
+  (`….payload.json`) is the authoritative representation.
+  `content_hash` is the SHA-256 of exactly those bytes — the Foundation
+  meaning of the envelope hash.
+- The hashed projection contains `hash_convention`, `artifact_type`,
+  `schema_version`, and a `domain` discriminator (for example
+  `extraction/requirement`), so empty payloads of different artifact kinds
+  never share a hash space. The payload itself is derived automatically
+  from the validated model (every non-envelope field); there is no manually
+  maintained field list that a new model field could silently miss.
+- A full envelope-plus-payload `….audit.json` file is written as a derived
+  convenience view only. It must never be processed independently as a
+  valid artifact; on any deviation the payload file governs.
+- `integrity-manifest.json` in the run directory records whole-file
+  SHA-256 digests of every file the run wrote (payload files, audit files,
+  security results, inventory, Markdown, run summary).
+  `verify_run_integrity()` re-checks them and reports missing, modified,
+  and unlisted files.

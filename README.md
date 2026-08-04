@@ -181,11 +181,11 @@ Gateway. No OCR engine or storage backend is implemented.
 | ------------------------ | ---------------------------------------- |
 | Foundation 1.2 Contracts | 🟢 Implemented and tested               |
 | Independent 1.2 Review   | 🟢 Review records available             |
-| Security Gate            | 🟡 Deterministic preflight implemented; full gate pending |
+| Security Gate            | 🟡 Deterministic preflight + versioned MVP package gate; production gate pending |
 | Direct LLM test route     | 🟡 Anthropic adapter; synthetic/public opt-in only |
-| Document Understanding   | ⚪ Planned                                |
-| Business Extraction      | ⚪ Planned                                |
-| Bid Working Package      | ⚪ Planned                                |
+| Document Understanding   | 🟡 MVP slice: text-based PDF, XLSX, TXT/CSV — no OCR, no layout |
+| Business Extraction      | 🟡 Rule-based requirements/deadlines/formalities slice |
+| Bid Working Package      | 🟡 MVP builder with JSON and Markdown output |
 | Governed Knowledge       | 🟢 Contract only                         |
 | Compliance Matrix        | 🟢 Contract only                         |
 | Capability Matching      | ⚪ Planned                                |
@@ -214,6 +214,33 @@ uv run python scripts/check_anthropic_connection.py
 See
 [docs/development/local-setup.md](docs/development/local-setup.md) for its
 strict public-data policy and local `.env` settings.
+
+## Run the local MVP pipeline (walking skeleton)
+
+```bash
+uv run bidfusion-run \
+  --input fixtures/synthetic/rfp-minimal \
+  --output ~/bidfusion-demo-results \
+  --process
+```
+
+The pipeline registers the package, runs the deterministic preflight, and
+applies the versioned MVP package gate policy
+(`bidfusion-mvp-local-gate:0.1.0`): one `BLOCK` blocks the whole package,
+any error, unknown outcome, or pending manual review keeps the whole
+package in review, and downstream processing — text-based PDF/XLSX/TXT
+parsing, rule-based extraction, normalization — runs only when every
+document is explicitly `ALLOW` **and** the operator passed `--process`.
+The versioned quality gate (`bidfusion-mvp-quality-gate:0.1.0`) then
+decides whether a run yields the Working Package (`ACCEPTABLE`), an
+explicitly incomplete `review-package` (`REVIEW_REQUIRED`), or neither
+(`FAILED`). Input and output directories are always explicit; the
+repository `inbox/` and `results/` are rejected, outputs must live
+outside any repository checkout, and full processing outside
+`fixtures/synthetic/` requires `--authorized-non-production-test` (an
+authorized, non-production test — never a production release). See
+[`apps/README.md`](apps/README.md) for options, output confidentiality,
+and exit codes.
 
 ## Roadmap
 

@@ -1,0 +1,3 @@
+Additional synthetic notes for the BidFusion walking skeleton.
+REQ-T1: The supplier MUST name a single point of contact.
+Late submissions must be submitted in writing with a justification.

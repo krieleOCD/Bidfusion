@@ -190,7 +190,14 @@ def test_ports_depend_only_on_bidfusion_owned_contracts() -> None:
         assert getattr(annotation, "__module__", "") in {"bidfusion.schemas.artifact", "builtins"}
 
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-    assert project["project"]["dependencies"] == ["pydantic>=2.7,<3"]
+    # Exact allowlist of approved runtime dependencies. pypdf and openpyxl
+    # were an explicit MVP decision for text-based PDF and XLSX parsing;
+    # any further dependency must update this pin deliberately.
+    assert project["project"]["dependencies"] == [
+        "openpyxl>=3.1,<4",
+        "pydantic>=2.7,<3",
+        "pypdf>=5,<7",
+    ]
 
 
 def test_fakes_satisfy_ports_without_network_or_credentials() -> None:
@@ -340,7 +347,15 @@ def test_malformed_or_secret_bearing_provider_config_is_rejected(
         ProviderConfig.model_validate(invalid)
 
 
+@pytest.mark.static_policy
 def test_repository_secret_boundaries_are_explicit() -> None:
+    """Separately authorized static policy check.
+
+    This test deliberately reads the **tracked templates** ``.gitignore``
+    and ``.env.example`` (never ``.env``) to pin the repository secret
+    boundaries. It is marked ``static_policy`` so walking-skeleton test
+    runs can exclude it via ``-m 'not static_policy'``.
+    """
     gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8")
     env_example = (ROOT / ".env.example").read_text(encoding="utf-8")
 
