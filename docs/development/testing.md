@@ -10,12 +10,14 @@
 | `tests/security/` | Security gate tests, isolation and data-safety tests |
 | `tests/regression/` | Pinned known-good artifacts; changes must be deliberate |
 
-Only `tests/unit/` has executable tests in the foundation phase. They pin
-strict schemas and typed IDs; security verdict, review, and hash-binding
-semantics; artifact lineage; canonical and claim-level provenance;
-requirement modality/category; normalized fan-in; cross-bid rejection;
-governed knowledge evidence; processing/business separation; compliance;
-and distinct AI validation versus business approval.
+`tests/unit/` pins the Foundation contracts. `tests/security/` exercises the
+deterministic preflight slice with synthetic in-memory documents. Together
+they cover strict schemas and typed IDs; security assessment, verdict,
+review, and hash-binding semantics; artifact lineage; canonical and
+claim-level provenance; requirement modality/category; normalized fan-in;
+cross-bid rejection; governed knowledge evidence; processing/business
+separation; compliance; and distinct AI validation versus business
+approval.
 
 ## Running tests
 
@@ -37,6 +39,10 @@ documents are never used in tests** — see
 - Tests are fully typed; mypy strict covers `tests/`.
 - LLM calls are always mocked or replaced by fixtures in unit and
   integration tests — tests never hit a real model.
+- The temporary Anthropic adapter has an injectable transport and is fully
+  exercised offline. The separate
+  `scripts/check_anthropic_connection.py` command is an explicit, synthetic
+  operator check; it is never collected by `pytest`.
 - When a bug is fixed, the failing case becomes a test.
 - LLM-component quality is measured by evals, not only by tests — see
   [evals.md](./evals.md).

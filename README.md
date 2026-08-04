@@ -161,23 +161,28 @@ Each principle is pinned down in an [Architecture Decision Record](docs/adr/READ
 
 ## Project Status
 
-**Current phase: BidFusion Foundation 1.2 — minimal contract hardening
-implemented; final independent gate review pending.**
+**Current phase: Phase 2 — controlled component migration against the
+Foundation 1.2 baseline.**
 
 This repository contains the target architecture, contracts and
 engineering foundation. The domains below are **not implemented** unless
-explicitly stated otherwise — no false claims here.
+explicitly stated otherwise. The first controlled migration slice now
+implements deterministic Security Gate preflight assessments; it does not
+yet implement complete gate policy or orchestration.
 
 Foundation 1.2 preserves the provider-independent LLM, OCR, and
-artifact-store ports plus deterministic test fakes. It contains no provider
-SDK, provider adapter, OCR engine, storage backend, secret manager, or real
-external integration.
+artifact-store ports plus deterministic test fakes. Phase 2 now includes a
+small, temporary direct Anthropic adapter for explicit synthetic/public
+connectivity tests. It uses no provider SDK, is not connected to the inbox
+or Security Gate flow, and is intended to be replaced by the internal LLM
+Gateway. No OCR engine or storage backend is implemented.
 
 | Domain                   | Status                                   |
 | ------------------------ | ---------------------------------------- |
 | Foundation 1.2 Contracts | 🟢 Implemented and tested               |
-| Independent 1.2 Review   | 🟡 Final gate required before migration |
-| Security Gate            | ⚪ Existing component — migration pending |
+| Independent 1.2 Review   | 🟢 Review records available             |
+| Security Gate            | 🟡 Deterministic preflight implemented; full gate pending |
+| Direct LLM test route     | 🟡 Anthropic adapter; synthetic/public opt-in only |
 | Document Understanding   | ⚪ Planned                                |
 | Business Extraction      | ⚪ Planned                                |
 | Bid Working Package      | ⚪ Planned                                |
@@ -185,6 +190,30 @@ external integration.
 | Compliance Matrix        | 🟢 Contract only                         |
 | Capability Matching      | ⚪ Planned                                |
 | Response Generation      | ⚪ Future                                 |
+
+## Run the deterministic Security Preflight
+
+```bash
+cp /path/to/synthetic-or-approved-rfp.pdf inbox/
+uv run bidfusion-preflight
+```
+
+The local runner scans every document below `inbox/` and writes assessments
+and `latest-summary.json` below `results/`. Those working contents are
+Git-ignored. This currently runs deterministic preflight only, not OCR,
+LLM analysis, final gate policy, or the downstream BidFusion pipeline. See
+[`apps/README.md`](apps/README.md) for options and exit-code semantics.
+
+The separate direct-provider connectivity check sends one fixed synthetic
+request and never reads inbox content:
+
+```bash
+uv run python scripts/check_anthropic_connection.py
+```
+
+See
+[docs/development/local-setup.md](docs/development/local-setup.md) for its
+strict public-data policy and local `.env` settings.
 
 ## Roadmap
 
@@ -204,9 +233,9 @@ external integration.
 8. **Phase 7 — Governed Knowledge Matching** — integrate capability matching.
 9. **Phase 8 — Bid Intelligence & Response** — further automation.
 
-The immediate next step is: **Run one final fresh independent Codex gate
-review. If no P0/P1 findings remain, freeze the Foundation and begin
-controlled component migration.**
+The first controlled migration slice is the deterministic Security Gate
+preflight. Remaining Security Gate policy, orchestration, external scanner,
+and content-security work stays separately inventoried.
 
 ## Repository Map
 

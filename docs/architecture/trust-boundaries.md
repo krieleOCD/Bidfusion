@@ -74,6 +74,11 @@ flowchart LR
 - External capability failures cross the domain boundary only through the
   small normalized taxonomy; the domain exception retains no provider
   message or SDK payload.
+- The temporary direct Anthropic adapter accepts only explicit `PUBLIC`
+  prompt-only requests with external processing allowed. It blocks local
+  processing preference, non-public classifications, artifact inputs, and
+  vision before resolving a secret or opening a connection. Its credential
+  can be sent only to the allowlisted HTTPS Messages endpoint.
 
 These are data-contract guarantees. They do not authorize access, verify
 stored bytes, or create a security sandbox.
@@ -91,12 +96,12 @@ initialization or `model_validate()`.
   write-once artifact semantics;
 - authorization validates the actor represented by a review record;
 - per-bid access control covers prompts, caches, retrieval, and logs;
-- the LLM Gateway applies classification, deployment allowlists, and
-  egress policy;
-- concrete adapters translate provider SDK types into owned contracts and
-  reduce failures to normalized codes; and
-- secret resolution happens inside an adapter/runtime boundary, never in
-  domain code or serialized domain artifacts.
+- the internal LLM Gateway applies complete classification, deployment
+  allowlists, and egress policy;
+- additional concrete adapters translate provider or gateway types into
+  owned contracts and reduce failures to normalized codes; and
+- production secret resolution and rotation happen inside an
+  adapter/runtime boundary, never in domain code or serialized artifacts.
 
 ## Operationally enforced later
 

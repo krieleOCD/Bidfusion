@@ -206,9 +206,11 @@ authentication failed, invalid response, or policy blocked.
 a bounded non-sensitive timeout. It has no API-key, token, password, or
 secret-value field.
 
-Foundation 1.2 includes contract-only, deterministic test fakes. It does
-not include a provider adapter, OCR engine, storage backend, plugin system,
-secret manager, retry policy, or any real external integration.
+Foundation 1.2 includes contract-only, deterministic test fakes. Phase 2
+adds one temporary direct Anthropic adapter, using the standard library and
+an environment `SecretRef` resolver, for explicit synthetic/public tests.
+It does not add a provider SDK, OCR engine, storage backend, plugin system,
+retry policy, or production secret manager.
 
 ### LLM Gateway (`llm_gateway/`) — ADR-0007
 
@@ -232,9 +234,12 @@ match its `bid_id`. Prompt-only non-bid requests may remain unscoped.
 This is contract isolation; runtime authorization, access control, prompt
 isolation, and cache isolation remain future enforcement.
 
-The future gateway adapter decides model, provider, deployment, fallback
-and routing. No provider logic or provider SDK type belongs in business
-agents.
+The temporary direct Anthropic adapter selects its model through local
+infrastructure configuration and enforces a deliberately narrow public-data
+egress policy. It is not wired to a business agent, artifact input, inbox,
+or Security Gate. The future internal gateway adapter will decide model,
+provider, deployment, fallback, and routing without changing the domain
+port. No provider logic or provider SDK type belongs in business agents.
 
 ### OCR (`document_understanding/ocr/`)
 

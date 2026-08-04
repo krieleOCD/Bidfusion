@@ -2,5 +2,20 @@
 
 "Security before intelligence": no document reaches parsers, OCR,
 vision models, extraction agents, or LLMs before it has passed the
-security gate. Verdicts: ALLOW / MANUAL_REVIEW / QUARANTINE / BLOCK.
-BLOCK and QUARANTINE stop the normal pipeline for that document."""
+security gate. Deterministic preflight produces observations, not a
+clearance; final policy remains a separate gate responsibility.
+"""
+
+from bidfusion.security.preflight import (
+    ArtifactContentMismatchError,
+    DeterministicPreflightScanner,
+    PreflightConfig,
+    PreflightInputError,
+)
+
+__all__ = [
+    "ArtifactContentMismatchError",
+    "DeterministicPreflightScanner",
+    "PreflightConfig",
+    "PreflightInputError",
+]

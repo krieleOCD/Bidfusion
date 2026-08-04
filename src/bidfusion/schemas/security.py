@@ -30,6 +30,94 @@ class SecurityFinding(BidfusionModel):
     details: FrozenMapping[str, str] = Field(default_factory=FrozenDict)
 
 
+class SecurityCheckStatus(StrEnum):
+    """Outcome of one security mechanism, before gate policy is applied."""
+
+    PASS = "PASS"
+    FAIL = "FAIL"
+    ERROR = "ERROR"
+    UNKNOWN = "UNKNOWN"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+
+
+class SecurityCheckResult(BidfusionModel):
+    """One deterministic or provider-backed security check outcome."""
+
+    check: str = Field(min_length=1)
+    status: SecurityCheckStatus
+    message: str = Field(min_length=1)
+    severity: Severity | None = None
+    details: FrozenMapping[str, str] = Field(default_factory=FrozenDict)
+
+    @model_validator(mode="after")
+    def _status_and_severity_are_coherent(self) -> SecurityCheckResult:
+        if self.status is SecurityCheckStatus.FAIL and self.severity is None:
+            msg = "failed security checks require a severity"
+            raise ValueError(msg)
+        if (
+            self.status in (SecurityCheckStatus.PASS, SecurityCheckStatus.NOT_APPLICABLE)
+            and self.severity is not None
+        ):
+            msg = "passing and non-applicable checks cannot carry a severity"
+            raise ValueError(msg)
+        return self
+
+
+class PreflightAssessment(BidfusionModel):
+    """Deterministic observations bound to exact raw-artifact bytes.
+
+    An assessment is deliberately not a gate decision. Only gate policy may
+    turn all required security assessments into a ``SecurityResult``.
+    """
+
+    bid_id: BidId
+    document_id: DocumentId
+    artifact: ArtifactReference
+    content_hash: Sha256Digest
+    scanner: str = Field(min_length=1)
+    scanner_version: str = Field(min_length=1)
+    assessed_at: datetime
+    checks: tuple[SecurityCheckResult, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _assessment_is_bound_and_complete(self) -> PreflightAssessment:
+        if self.artifact.artifact_type is not ArtifactType.RAW_DOCUMENT:
+            msg = "preflight assessments must bind a raw_document artifact"
+            raise ValueError(msg)
+        if self.artifact.bid_id != self.bid_id:
+            msg = "preflight assessment and artifact must belong to the same bid"
+            raise ValueError(msg)
+        if self.artifact.content_hash != self.content_hash:
+            msg = "preflight assessment hash must match the artifact content hash"
+            raise ValueError(msg)
+        check_names = [check.check for check in self.checks]
+        if len(check_names) != len(set(check_names)):
+            msg = "preflight assessment cannot contain duplicate check names"
+            raise ValueError(msg)
+        return self
+
+    @property
+    def completed_successfully(self) -> bool:
+        """Whether every check completed without a failure or uncertainty."""
+        return all(
+            check.status in (SecurityCheckStatus.PASS, SecurityCheckStatus.NOT_APPLICABLE)
+            for check in self.checks
+        )
+
+    @property
+    def requires_gate_attention(self) -> bool:
+        """Whether policy must handle a failure, error, or unknown outcome."""
+        return any(
+            check.status
+            in (
+                SecurityCheckStatus.FAIL,
+                SecurityCheckStatus.ERROR,
+                SecurityCheckStatus.UNKNOWN,
+            )
+            for check in self.checks
+        )
+
+
 class SecurityReviewDisposition(StrEnum):
     """Audited disposition of a pending MANUAL_REVIEW verdict."""
 

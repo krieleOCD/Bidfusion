@@ -26,16 +26,24 @@ release.
 - Test and example data only comes from `fixtures/synthetic/` (generated)
   or `fixtures/safe/` (verifiably sanitized/public). Checklist:
   [fixtures/README.md](fixtures/README.md).
-- **Secrets** (API keys, tokens, gateway credentials) may be resolved by a
-  future adapter from `.env` (gitignored) or a secret store — never from a
-  domain model. `.env.example` contains placeholders and logical
-  `secret://` references only; no credential values.
+- **Secrets** (API keys, tokens, gateway credentials) are resolved only at
+  an adapter boundary from `.env` (gitignored), the process environment, or
+  a future secret store — never from a domain model. `.env.example` contains
+  empty placeholders and logical `secret://` references only; no credential
+  values.
 - Domain configuration uses `SecretRef`. `ProviderConfig` deliberately has
   no API-key, token, password, or secret-value field. Resolved values must
   never appear in logs, exceptions, representations, or serialized domain
   artifacts.
 - `.gitignore` blocks common secret and customer-data paths; it is a
   safety net, not the rule itself.
+- `inbox/` and `results/` are local test-harness directories whose contents
+  are ignored by Git. Access, retention, and secure deletion of files placed
+  there remain the operator's responsibility.
+- The temporary direct Anthropic route accepts only synthetic/public prompt
+  requests with explicit external-processing intent. It must not receive
+  customer RFP content without a separately approved provider/data-egress
+  decision. The inbox preflight runner never invokes this route.
 
 ## Architecture-level security
 
@@ -55,12 +63,17 @@ release.
 - **External capability boundary** — LLM, OCR, and artifact storage use
   BidFusion-owned ports and models. Provider failures are normalized and
   provider SDK objects cannot enter domain contracts (ADR-0011).
+- **Temporary Anthropic egress boundary** — the direct test adapter
+  allowlists the Anthropic Messages endpoint and blocks non-`PUBLIC` data,
+  local-processing preference, artifacts, and vision before secret lookup
+  or network access.
 
 ### Runtime-enforced later
 
 - parser/OCR/vision/extraction/LLM APIs accept only the typed clearance;
 - storage verifies artifact hashes and enforces per-bid access;
-- the LLM Gateway applies data classification and egress policy; and
+- the internal LLM Gateway applies complete data classification, deployment
+  allowlists, routing, and egress policy; and
 - logs exclude customer content and resolved secrets.
 
 ### Operationally enforced later

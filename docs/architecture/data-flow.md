@@ -1,13 +1,18 @@
 # Data Flow and Artifact Lineage
 
-Foundation 1.2 defines typed transformation boundaries. It does not
-implement the pipeline or an artifact storage backend.
+Foundation 1.2 defines typed transformation boundaries. The first Phase 2
+slice implements deterministic preflight assessment, but not complete gate
+policy, pipeline orchestration, or an artifact storage backend.
 
 ## Target flow
 
 ```text
 Raw Artifact
-    ↓ SecurityResult bound to exact hash
+    ↓ PreflightAssessment bound to exact hash
+Security assessments
+    ↓ Gate policy
+SecurityResult bound to exact hash
+    ↓ ALLOW or audited manual release
 SecurityClearedArtifact
     ↓
 Document Inventory
@@ -28,6 +33,11 @@ Compliance Matrix / later Bid Intelligence
 `MANUAL_REVIEW` pauses at the security boundary. An audited release may
 create the same typed handoff as `ALLOW`; rejection, `BLOCK`, and
 `QUARANTINE` cannot.
+
+`PreflightAssessment` contains observations only. Even when every
+deterministic check reports `PASS` or `NOT_APPLICABLE`, it cannot construct
+`SecurityClearedArtifact` and does not imply `ALLOW`. Gate policy combines
+all required assessments into the final `SecurityResult`.
 
 ## Artifact contract
 

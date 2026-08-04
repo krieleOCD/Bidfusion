@@ -34,9 +34,15 @@ provider, deployment, fallback and routing and enforce the data policy at
 the boundary (see
 [../architecture/trust-boundaries.md](../architecture/trust-boundaries.md)).
 No provider logic in business agents. Concrete adapters and secret
-resolution are later work under
+resolution are infrastructure work under
 [ADR-0011](./0011-external-capabilities-via-ports-and-adapters.md). No LLM
 framework dependency is adopted without a dedicated ADR.
+
+Phase 2 uses a temporary direct Anthropic adapter solely for explicit
+synthetic/public connectivity tests before the internal gateway is
+available. Provider and model configuration remain inside that adapter; it
+does not change `LLMRequest`, business consumers, or the long-term gateway
+decision.
 
 ## Consequences
 
@@ -45,5 +51,5 @@ framework dependency is adopted without a dedicated ADR.
 - Data-policy enforcement is intended to have one runtime choke point.
 - Agents must express their needs as capabilities and policies — a small
   design tax per agent.
-- Domain code depends only on the owned port and contracts; a future
-  adapter may depend on the gateway client.
+- Domain code depends only on the owned port and contracts; an adapter may
+  depend on provider or gateway transport details.

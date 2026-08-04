@@ -26,6 +26,12 @@ output/
 artifacts/
 extractions/
 
+# Local preflight test harness — contents can contain confidential documents
+inbox/*
+!inbox/.gitkeep
+results/*
+!results/.gitkeep
+
 # ---------------------------------------------------------------------------
 # Local databases, model caches, large binaries
 # ---------------------------------------------------------------------------

@@ -156,6 +156,9 @@ from bidfusion.schemas.quality import (
     ReviewDecision,
 )
 from bidfusion.schemas.security import (
+    PreflightAssessment,
+    SecurityCheckResult,
+    SecurityCheckStatus,
     SecurityClearedArtifact,
     SecurityFinding,
     SecurityManualReview,
@@ -279,6 +282,7 @@ __all__ = [
     "ProcessingRun",
     "ProcessingStage",
     "ProcessingStatus",
+    "PreflightAssessment",
     "ProviderConfig",
     "QualityCategory",
     "QualityFinding",
@@ -299,6 +303,8 @@ __all__ = [
     "ScopeKind",
     "Section",
     "SecurityClearedArtifact",
+    "SecurityCheckResult",
+    "SecurityCheckStatus",
     "SecurityFinding",
     "SecurityExtractionResult",
     "SecurityFindingKind",

@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "SecurityCheckStatus": {
+      "description": "Outcome of one security mechanism, before gate policy is applied.",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "ERROR",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ],
+      "title": "SecurityCheckStatus",
+      "type": "string"
+    },
+    "Severity": {
+      "description": "Generic severity scale used by findings and risks.",
+      "enum": [
+        "INFO",
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One deterministic or provider-backed security check outcome.",
+  "properties": {
+    "check": {
+      "minLength": 1,
+      "title": "Check",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/SecurityCheckStatus"
+    },
+    "message": {
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    },
+    "severity": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Severity"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "details": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Details",
+      "type": "object"
+    }
+  },
+  "required": [
+    "check",
+    "status",
+    "message"
+  ],
+  "title": "SecurityCheckResult",
+  "type": "object"
+}

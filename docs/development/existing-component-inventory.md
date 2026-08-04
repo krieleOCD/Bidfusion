@@ -45,7 +45,7 @@ product repository as part of inventory.
 
 | Existing Component | Target Module | Migration Decision | Required Changes | Required Tests |
 | ------------------ | ------------- | ------------------ | ---------------- | -------------- |
-| `security/preflight.py` deterministic file checks and SHA-256 calculation | `src/bidfusion/security/` | `REFACTOR` | Retain useful pure checks, but accept BidFusion-owned artifact identity instead of an unbound path; produce `SecurityResult` with exact `bid_id`, `document_id`, artifact/hash, scanner version, policy version, decision time, and Foundation verdicts; treat unknown types, corrupt inputs, and scanner failures as non-allowing outcomes; keep clearance construction separate. | Unit tests for size/type allowlists, extension versus magic-byte mismatch, corrupt files, macros, PDF JavaScript, embedded objects, encryption, and deterministic hashes; adversarial tests proving errors never yield `ALLOW`; contract tests for exact bid/document/artifact/hash binding and prevention of clearance after `BLOCK`, `QUARANTINE`, or pending/rejected review. |
+| `security/preflight.py` deterministic file checks and SHA-256 calculation | `src/bidfusion/security/` | `REFACTOR` | Retain useful pure checks, but accept BidFusion-owned artifact identity and exact bytes instead of an unbound path; produce a hash-bound `PreflightAssessment`, not a final gate decision; represent unknown types, corrupt inputs, and scanner failures explicitly; keep policy and clearance construction separate. | Unit tests for size/type allowlists, extension versus magic-byte mismatch, corrupt files, macros, PDF JavaScript, embedded objects, encryption, and deterministic hashes; adversarial tests proving errors and unknown results never become `ALLOW`; contract tests for exact bid/document/artifact/hash binding and the separation between assessment and clearance. |
 | `agent/tools/injection_worker.py`, `agent/tools/techsec_worker.py`, and Mistral moderation used as security analysis | `src/bidfusion/security/` through `LLMPort` | `REFACTOR` | Isolate security-scanner prompts from downstream business intelligence; replace direct SDK calls and provider model names with owned requests and normalized failures; bind findings to the exact artifact and policy; on timeout, parse error, or worker failure return a non-allowing result. | Fake-port tests for normalized success and every failure class; prompt-injection and encoded-payload regressions; tests proving partial worker failure cannot produce clearance; evidence and hash-binding tests. |
 | `security/preflight.py::extract_text_with_mistral` and local extraction fallbacks | `src/bidfusion/document_understanding/ocr/` plus an `OCRPort` adapter | `SPLIT` | Remove OCR from the deterministic preflight unit; perform any scanner-required extraction inside the isolated gate, while normal downstream OCR accepts only `SecurityClearedArtifact`; move provider translation behind an adapter without selecting a new provider architecture. | Port conformance and normalized-failure tests; tests proving normal OCR rejects uncleared input; extraction fallback and content-hash continuity tests. |
 | `agent/tools/pii_worker.py`, `legal_worker.py`, `ethics_worker.py`, and `rfp_analyzer.py` | `src/bidfusion/extraction/`, `src/bidfusion/quality/`, and `src/bidfusion/bid_intelligence/` according to responsibility | `SPLIT` | Do not carry business analysis through the Security Gate. Inventory each worker separately before migration, make it atomic, consume canonical documents rather than raw text, and emit the focused typed extraction or intelligence contract with provenance. | Per-agent contract, provenance, bid-isolation, empty-result, failure, and evaluation tests; tests proving no worker accepts raw or merely scanned content. |
@@ -53,8 +53,15 @@ product repository as part of inventory.
 | `models/schemas.py` security and analysis models | Existing contracts in `src/bidfusion/schemas/` | `REPLACE` | Use the frozen Foundation schemas. Map `PASS` to `ALLOW`, map `REVIEW` only to pending `MANUAL_REVIEW`, and map `BLOCK` to a non-allowing policy outcome; never infer an audited manual release. Do not migrate mutable duplicate contracts. | Schema-validation and serialization tests; explicit verdict-mapping tests; tests proving `REVIEW` alone cannot construct `SecurityClearedArtifact`. |
 | `app.py`, `main.py`, `static/`, demo scripts, generated reports, and evaluation outputs | None in the first migration slice | `DEPRECATE` | Keep outside the product repository as reference material. Reconsider a product-facing adapter only after the gate contract and runtime module pass their required tests. | No migration tests; later UI/API work requires separate acceptance and boundary tests. |
 
-## Next controlled action
+## Implemented controlled slice
 
-Prepare the first implementation plan only for the deterministic preflight
-row. Its source functions must be reviewed individually before any code is
-moved. The Foundation remains unchanged.
+The deterministic preflight row has been integrated as a provider-free
+rewrite in `src/bidfusion/security/preflight.py`. It accepts exact bytes plus
+an owned raw `ArtifactReference`, verifies the SHA-256 binding, and emits a
+typed `PreflightAssessment` with explicit `PASS`, `FAIL`, `ERROR`, `UNKNOWN`,
+and `NOT_APPLICABLE` check states. It does not emit `SecurityResult`,
+`ALLOW`, or `SecurityClearedArtifact`; final gate policy remains separate.
+
+The Mistral integrations, content-security workers, business analysis,
+legacy orchestration, UI, and generated evaluation assets remain outside
+the product repository and retain their inventory decisions above.

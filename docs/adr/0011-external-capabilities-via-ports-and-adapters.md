@@ -38,9 +38,15 @@ as a successful provider response.
 **LATER**, separate implementation work may add concrete adapters, an
 enterprise LLM Gateway client, OCR engines, object/local artifact stores,
 secret resolution, retries, telemetry, and operational controls. Those
-adapters will translate provider requests, responses, and failures at the
-boundary. No adapter, provider SDK, registry, factory, plugin framework,
-storage backend, or secrets manager is selected by this decision.
+adapters translate provider requests, responses, and failures at the
+boundary. This decision does not select a provider SDK, registry, factory,
+plugin framework, storage backend, or production secrets manager.
+
+Phase 2 implements the first narrow instance: a temporary direct Anthropic
+adapter for explicit synthetic/public connectivity tests, with environment
+secret resolution, an allowlisted endpoint, bounded response reads, and
+normalized failures. It is not a provider choice for business code and is
+intended to be replaced by the internal LLM Gateway adapter.
 
 ## Consequences
 
@@ -50,5 +56,5 @@ storage backend, or secrets manager is selected by this decision.
 - Credential values stay outside domain models and serialized artifacts.
 - Each future adapter must translate to owned contracts and normalize
   errors without passing provider messages across the port.
-- Runtime secret resolution, redaction, persistence controls, retries, and
-  real integration testing remain explicit later work.
+- Production secret management, telemetry/redaction, persistence controls,
+  retries, and governed integration testing remain explicit later work.

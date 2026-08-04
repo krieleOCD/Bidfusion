@@ -30,6 +30,8 @@ EXPORTED_MODELS: list[type[BaseModel]] = [
     schemas.ProcessingRun,
     schemas.Document,
     schemas.DocumentInventoryEntry,
+    schemas.SecurityCheckResult,
+    schemas.PreflightAssessment,
     schemas.SecurityResult,
     schemas.SecurityClearedArtifact,
     schemas.SourceReference,
