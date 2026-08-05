@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import view_toggle, downloads, statement_list %}
+{% block title %}Review package · {{ run.key }} — BidFusion{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="ocd-overline">Review package</p>
+  <h1>Review package — {{ package.bid_id }}.</h1>
+</div>
+
+<div class="banner banner--warning">
+  {{ icon('alert') }}
+  <div>
+    <p>{{ package.notice }} — MANUAL REVIEW REQUIRED.</p>
+    <p>This run did not pass the quality gate. The content below is partial and
+       must not be used as a final bid working package.</p>
+  </div>
+</div>
+
+<div class="actions">
+  {{ view_toggle('show_review_package', run.key, view_mode) }}
+</div>
+
+<dl class="kv-list">
+  <dt>Quality gate</dt>
+  <dd>{{ package.gate_id }}</dd>
+  <dt>Run</dt>
+  <dd>{{ package.run_id }}</dd>
+  <dt>Generated</dt>
+  <dd>{{ package.generated_at }}</dd>
+</dl>
+
+{% if view_mode == 'structured' %}
+<section aria-labelledby="reasons-heading" class="card">
+  <h2 id="reasons-heading">Review reasons</h2>
+  <ul>
+    {% for reason in package.reasons %}
+    <li>{{ reason }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section aria-labelledby="actions-heading" class="card card--accent">
+  <h2 id="actions-heading">Required manual actions</h2>
+  <ul>
+    {% for action in package.manual_actions %}
+    <li>{{ action }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section aria-labelledby="warnings-heading" class="card">
+  <h2 id="warnings-heading">Parser warnings</h2>
+  {% if package.warnings %}
+  <ul>
+    {% for warning in package.warnings %}
+    <li>{{ warning }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No parser warnings were recorded.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="affected-heading" class="card">
+  <h2 id="affected-heading">Affected documents and sources</h2>
+  {% if package.affected %}
+  <ul>
+    {% for label in package.affected %}
+    <li><span class="source-chip">{{ icon('file') }} {{ label }}</span></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No affected documents or sources were recorded.</p>
+  {% endif %}
+</section>
+
+{% for label, rows in package.detected %}
+<section class="card">
+  <h2>{{ label }}</h2>
+  {% if rows %}
+  {{ statement_list(rows) }}
+  {% else %}
+  <p>None detected.</p>
+  {% endif %}
+</section>
+{% endfor %}
+
+<section aria-labelledby="conflicts-heading" class="card">
+  <h2 id="conflicts-heading">Unresolved conflicts</h2>
+  {% if package.unresolved_conflicts %}
+  <ul>
+    {% for conflict in package.unresolved_conflicts %}
+    <li>{{ conflict }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No unresolved conflicts were recorded.</p>
+  {% endif %}
+</section>
+{% else %}
+<section aria-label="Raw artifact view">
+  <pre class="artifact-pre">{{ raw_text }}</pre>
+</section>
+{% endif %}
+
+{{ downloads(run.key, package.downloads) }}
+
+<p><a href="{{ url_for('show_run', run_key=run.key) }}">Back to run {{ run.key }}</a></p>
+{% endblock %}

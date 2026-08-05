@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}{{ view.key }} · {{ view.package_name }} — BidFusion{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="ocd-overline">{{ 'Full analysis' if view.requested_processing else 'Security review' }}</p>
+  <h1>{{ view.package_name }} — {{ view.key }}.</h1>
+  <p class="lede">
+    Every status on this page is read from the versioned results of the local
+    pipeline run. The interface adds nothing of its own.
+  </p>
+</div>
+
+{% if view.is_blocked %}
+<div class="banner banner--danger">
+  {{ icon('octagon-x') }}
+  <div>
+    <p>Package blocked by the security gate.</p>
+    <p>No document of this package was parsed or processed downstream.</p>
+  </div>
+</div>
+{% elif view.is_security_review %}
+<div class="banner banner--warning">
+  {{ icon('alert') }}
+  <div>
+    <p>Manual security review required.</p>
+    <p>The package gate recorded at least one pending decision; processing is not permitted.
+       This interface cannot release a manual review.</p>
+  </div>
+</div>
+{% elif view.is_failed %}
+<div class="banner banner--danger">
+  {{ icon('x') }}
+  <div>
+    <p>Run failed.</p>
+    <p>The quality gate recorded FAILED. No working package and no review package
+       were produced for this run.</p>
+  </div>
+</div>
+{% endif %}
+
+<section aria-labelledby="gate-heading" class="card card--accent">
+  <h2 id="gate-heading">Security gate</h2>
+  <p>
+    <span class="status-badge status-badge--{{ view.gate.decision.tone }}">
+      {{ icon(view.gate.decision.icon) }} {{ view.gate.decision.label }}
+    </span>
+  </p>
+  <dl class="kv-list">
+    <dt>Policy</dt>
+    <dd>{{ view.gate.policy_id }}</dd>
+    <dt>Run directory</dt>
+    <dd><code class="path-code">{{ view.run_directory }}</code></dd>
+  </dl>
+
+  {% if view.gate.reasons %}
+  <h3>Findings</h3>
+  <ul>
+    {% for reason in view.gate.reasons %}
+    <li>{{ reason }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <h3>Documents</h3>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">File</th>
+          <th scope="col">Security verdict</th>
+          <th scope="col">Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for document in view.gate.documents %}
+        <tr>
+          <td><span class="file-name">{{ document.filename }}</span></td>
+          <td>
+            <span class="status-badge status-badge--{{ document.verdict.tone }}">
+              {{ icon(document.verdict.icon) }} {{ document.verdict.label }}
+            </span>
+          </td>
+          <td>{{ document.detail or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if view.gate.rejected %}
+  <h3>Rejected at intake</h3>
+  <ul>
+    {% for entry in view.gate.rejected %}
+    <li>{{ entry }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <p class="package-option__meta">
+    {{ icon('info') }} Deterministic preflight results are development-time checks.
+    A PASS here is not a production security clearance.
+  </p>
+</section>
+
+{% if view.stages %}
+<section aria-labelledby="processing-heading" class="card">
+  <h2 id="processing-heading">Processing</h2>
+  <p class="package-option__meta">
+    Recorded stage outcomes of this run — no synthetic progress is shown.
+  </p>
+  <ol class="stage-list">
+    {% for stage in view.stages %}
+    <li>
+      <span class="stage-name">{{ stage.label }}</span>
+      <span class="status-badge status-badge--{{ stage.outcome.tone }}">
+        {{ icon(stage.outcome.icon) }} {{ stage.outcome.label }}
+      </span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+{% if view.quality %}
+<section aria-labelledby="quality-heading" class="card card--accent">
+  <h2 id="quality-heading">Quality gate</h2>
+  <p>
+    <span class="status-badge status-badge--{{ view.quality.status.tone }}">
+      {{ icon(view.quality.status.icon) }} {{ view.quality.status.label }}
+    </span>
+  </p>
+  <dl class="kv-list">
+    <dt>Gate</dt>
+    <dd>{{ view.quality.gate_id }}</dd>
+  </dl>
+  {% if view.quality.signals %}
+  <h3>Signals</h3>
+  <ul>
+    {% for signal in view.quality.signals %}
+    <li>{{ signal }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if view.is_completed %}
+<section aria-labelledby="wp-panel-heading" class="card card--accent">
+  <h2 id="wp-panel-heading">Working package</h2>
+  <p>
+    The quality gate recorded ACCEPTABLE; the complete working package with
+    per-statement provenance is available.
+  </p>
+  <p class="actions">
+    <a class="btn btn--primary" href="{{ url_for('show_working_package', run_key=view.key) }}">
+      Open working package {{ icon('arrow-right') }}
+    </a>
+  </p>
+</section>
+{% endif %}
+
+{% if view.is_quality_review %}
+<section aria-labelledby="rp-panel-heading" class="card">
+  <h2 id="rp-panel-heading">Review package</h2>
+  <div class="banner banner--warning">
+    {{ icon('alert') }}
+    <div>
+      <p>NOT A COMPLETE BID WORKING PACKAGE.</p>
+      <p>The quality gate requires manual review. Only the explicitly marked
+         review package is available for this run.</p>
+    </div>
+  </div>
+  <p class="actions">
+    <a class="btn btn--secondary" href="{{ url_for('show_review_package', run_key=view.key) }}">
+      Open review package {{ icon('arrow-right') }}
+    </a>
+  </p>
+</section>
+{% endif %}
+
+{% if view.offer_full_analysis %}
+<section aria-labelledby="full-analysis-heading" class="card">
+  <h2 id="full-analysis-heading">Full analysis</h2>
+  <p>
+    The package gate is CLEARED. Running the full analysis starts a
+    <strong>new full run of the same synthetic package</strong> — intake,
+    preflight, and package gate run again, followed by parsing, extraction,
+    normalization, the quality gate, and package generation.
+  </p>
+  <form action="{{ url_for('process_run', run_key=view.key) }}" method="post">
+    <button class="btn btn--primary" type="submit">
+      Run full analysis {{ icon('arrow-right') }}
+    </button>
+  </form>
+</section>
+{% endif %}
+
+<p><a href="{{ url_for('index') }}">Back to package selection</a></p>
+{% endblock %}

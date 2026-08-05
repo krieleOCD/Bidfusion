@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import view_toggle, downloads, statement_list %}
+{% block title %}Working package · {{ run.key }} — BidFusion{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="ocd-overline">Working package</p>
+  <h1>Working package — {{ package.bid_id }}.</h1>
+  <p class="lede">
+    Generated from run {{ run.key }} ({{ run.package_name }}) with an ACCEPTABLE
+    quality gate. Every statement below carries its documented source.
+  </p>
+</div>
+
+<div class="actions">
+  {{ view_toggle('show_working_package', run.key, view_mode) }}
+</div>
+
+<dl class="kv-list">
+  <dt>Run</dt>
+  <dd>{{ package.run_id }}</dd>
+  <dt>Generated</dt>
+  <dd>{{ package.generated_at }}</dd>
+  <dt>Completeness</dt>
+  <dd>{{ package.completeness }}</dd>
+</dl>
+
+{% if view_mode == 'structured' %}
+<section aria-labelledby="exec-heading" class="card card--accent">
+  <h2 id="exec-heading">Executive overview</h2>
+  {% if package.executive %}
+  <ul>
+    {% for label, row in package.executive %}
+    <li>
+      <strong>{{ label }}:</strong> {{ row.text }}
+      {% for source in row.sources %}
+      <span class="source-chip">{{ icon('file') }} {{ source }}</span>
+      {% endfor %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No executive overview statements were extracted by the rule-based MVP pipeline.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="timeline-heading" class="card">
+  <h2 id="timeline-heading">Deadlines / timeline</h2>
+  {% if package.timeline %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Due (UTC)</th>
+          <th scope="col">Kind</th>
+          <th scope="col">Description</th>
+          <th scope="col">Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in package.timeline %}
+        <tr>
+          <td>{{ icon('clock') }} {{ row.due }}</td>
+          <td>{{ row.kind }}</td>
+          <td>{{ row.description }}</td>
+          <td><span class="source-chip">{{ icon('file') }} {{ row.source }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No deadlines were extracted.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="requirements-heading" class="card">
+  <h2 id="requirements-heading">Requirements</h2>
+  <p>
+    {{ package.total_requirements }} normalized requirement(s);
+    {{ package.mandatory_count }} mandatory (MUST).
+    {% if package.by_modality %}
+    By modality:
+    {% for modality, count in package.by_modality %}{{ modality }} {{ count }}{{ ", " if not loop.last else "." }}{% endfor %}
+    {% endif %}
+    {% if package.by_category %}
+    By category:
+    {% for category, count in package.by_category %}{{ category }} {{ count }}{{ ", " if not loop.last else "." }}{% endfor %}
+    {% endif %}
+  </p>
+
+  <h3>Mandatory requirements (MUST)</h3>
+  {% if package.mandatory %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Modality</th>
+          <th scope="col">Category</th>
+          <th scope="col">Requirement</th>
+          <th scope="col">Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in package.mandatory %}
+        <tr>
+          <td>{{ row.requirement_id }}</td>
+          <td><span class="status-badge status-badge--warning">{{ icon('alert') }} {{ row.modality }}</span></td>
+          <td>{{ row.category }}</td>
+          <td>{{ row.text }}</td>
+          <td><span class="source-chip">{{ icon('file') }} {{ row.source }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No mandatory requirements were extracted.</p>
+  {% endif %}
+
+  <h3>Optional and other requirements</h3>
+  {% if package.other %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Modality</th>
+          <th scope="col">Category</th>
+          <th scope="col">Requirement</th>
+          <th scope="col">Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in package.other %}
+        <tr>
+          <td>{{ row.requirement_id }}</td>
+          <td><span class="status-badge status-badge--neutral">{{ icon('info') }} {{ row.modality }}</span></td>
+          <td>{{ row.category }}</td>
+          <td>{{ row.text }}</td>
+          <td><span class="source-chip">{{ icon('file') }} {{ row.source }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No further requirements were extracted.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="submission-heading" class="card">
+  <h2 id="submission-heading">Formalities / Submission instructions</h2>
+  {% if package.submissions %}
+  {% for label, rows in package.submissions %}
+  <h3>{{ label }}</h3>
+  {{ statement_list(rows) }}
+  {% endfor %}
+  {% else %}
+  <p>No submission formalities were extracted.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="questions-heading" class="card">
+  <h2 id="questions-heading">Open questions</h2>
+  {% if package.open_questions %}
+  <ul>
+    {% for question in package.open_questions %}
+    <li>
+      <strong>{{ question.question_id }}</strong> ({{ question.reason }}):
+      {{ question.statement.text }}
+      {% for source in question.statement.sources %}
+      <span class="source-chip">{{ icon('file') }} {{ source }}</span>
+      {% endfor %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No open questions were raised.</p>
+  {% endif %}
+</section>
+{% else %}
+<section aria-label="Raw artifact view">
+  <pre class="artifact-pre">{{ raw_text }}</pre>
+</section>
+{% endif %}
+
+{{ downloads(run.key, package.downloads) }}
+
+<p><a href="{{ url_for('show_run', run_key=run.key) }}">Back to run {{ run.key }}</a></p>
+{% endblock %}

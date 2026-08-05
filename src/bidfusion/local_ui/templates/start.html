@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <p class="ocd-overline">New analysis</p>
+  <h1>Select a synthetic RFP package.</h1>
+  <p class="lede">
+    Choose one of the repository's trusted synthetic fixture packages and start
+    the deterministic security checks. Free file uploads and arbitrary paths are
+    not accepted in this MVP.
+  </p>
+</div>
+
+<form action="/runs" method="post">
+  <fieldset class="package-fieldset">
+    <legend class="visually-hidden">Synthetic RFP package</legend>
+    <div class="package-grid">
+      {% for package in packages %}
+      <label class="package-option card">
+        <input type="radio" name="package" value="{{ package.name }}"
+               {% if loop.first %}checked{% endif %}>
+        <span class="package-option__head">{{ icon('file') }} {{ package.name }}</span>
+        <span class="package-option__meta">
+          {{ package.document_count }} document{{ '' if package.document_count == 1 else 's' }}
+        </span>
+        <ul class="file-list">
+          {% for file in package.files %}
+          <li>
+            <span class="file-name">{{ file.name }}</span>
+            <span class="type-tag">{{ file.file_type }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  <div class="actions">
+    <button class="btn btn--primary" type="submit">Run security checks {{ icon('arrow-right') }}</button>
+  </div>
+</form>
+
+{% if runs %}
+<section aria-labelledby="runs-heading">
+  <h2 id="runs-heading">Runs this session</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Run</th>
+          <th scope="col">Package</th>
+          <th scope="col">Mode</th>
+          <th scope="col">Outcome</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for run in runs %}
+        <tr>
+          <td><a href="{{ url_for('show_run', run_key=run.key) }}">{{ run.key }}</a></td>
+          <td>{{ run.package_name }}</td>
+          <td>{{ 'Full analysis' if run.requested_processing else 'Security checks' }}</td>
+          <td>{{ run.summary.outcome }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

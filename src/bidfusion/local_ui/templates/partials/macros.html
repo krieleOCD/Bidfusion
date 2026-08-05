@@ -1,0 +1,35 @@
+{% macro view_toggle(endpoint, run_key, view_mode) %}
+<nav class="view-toggle" aria-label="View format">
+  {% for mode, label in [('structured', 'Structured'), ('json', 'JSON'), ('md', 'Markdown')] %}
+  {% if mode == view_mode %}
+  <span aria-current="page">{{ label }}</span>
+  {% else %}
+  <a href="{{ url_for(endpoint, run_key=run_key, view=mode) }}">{{ label }}</a>
+  {% endif %}
+  {% endfor %}
+</nav>
+{% endmacro %}
+
+{% macro downloads(run_key, links) %}
+<div class="actions" role="group" aria-label="Downloads">
+  {% for link in links %}
+  <a class="btn btn--secondary"
+     href="{{ url_for('download_artifact', run_key=run_key, artifact_name=link.name) }}">
+    {{ icon('download') }} {{ link.label }}
+  </a>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro statement_list(rows) %}
+<ul>
+  {% for row in rows %}
+  <li>
+    {{ row.text }}
+    {% for source in row.sources %}
+    <span class="source-chip">{{ icon('file') }} {{ source }}</span>
+    {% endfor %}
+  </li>
+  {% endfor %}
+</ul>
+{% endmacro %}

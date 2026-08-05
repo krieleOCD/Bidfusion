@@ -192,8 +192,11 @@ def test_ports_depend_only_on_bidfusion_owned_contracts() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     # Exact allowlist of approved runtime dependencies. pypdf and openpyxl
     # were an explicit MVP decision for text-based PDF and XLSX parsing;
+    # flask was an explicit MVP decision for the local synthetic
+    # demonstration UI (server-rendered presentation layer only);
     # any further dependency must update this pin deliberately.
     assert project["project"]["dependencies"] == [
+        "flask>=3.1,<4",
         "openpyxl>=3.1,<4",
         "pydantic>=2.7,<3",
         "pypdf>=5,<7",

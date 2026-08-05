@@ -1,0 +1,408 @@
+/* BidFusion local UI components — built strictly from the Orange
+   Cyberdefense design tokens (see tokens.css): flat surfaces, square
+   corners, orange as the single accent on black/white, status colors
+   always paired with an icon and text. */
+
+/* ---- Layout ---- */
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+main.container {
+  padding-block: var(--space-6) var(--space-8);
+  display: grid;
+  gap: var(--space-6);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-4);
+  top: -100px;
+  z-index: 10;
+  background: var(--ocd-black);
+  color: var(--ocd-white);
+  padding: var(--space-2) var(--space-4);
+  font-weight: var(--font-weight-bold);
+}
+.skip-link:focus-visible {
+  top: var(--space-2);
+  color: var(--ocd-white);
+  outline-color: var(--color-focus-inverse);
+}
+
+/* ---- App header: black field with the brand's orange rule ---- */
+.app-header {
+  background: var(--color-bg-inverse);
+  color: var(--color-text-inverse);
+  border-bottom: 4px solid var(--ocd-orange);
+}
+
+.app-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+}
+
+.wordmark {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-heading);
+  color: var(--color-text-inverse);
+}
+.wordmark:hover,
+.wordmark:active {
+  color: var(--color-text-inverse);
+  text-decoration: none;
+}
+.wordmark:focus-visible { outline-color: var(--color-focus-inverse); }
+.wordmark__period { color: var(--ocd-orange); }
+
+.app-header__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.env-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-overline);
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-none);
+}
+.env-badge--scope {
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-border-inverse);
+}
+.env-badge--warning {
+  color: var(--ocd-black);
+  background: var(--color-warning);
+}
+
+/* ---- Page heads ---- */
+.page-head { display: grid; gap: var(--space-2); }
+.page-head h1 {
+  font-size: var(--font-size-h1);
+  letter-spacing: var(--letter-spacing-heading);
+}
+.page-head .lede {
+  color: var(--color-text-secondary);
+  max-width: 70ch;
+}
+
+section { display: grid; gap: var(--space-4); }
+section h2 { font-size: var(--font-size-h2); }
+section h3 { font-size: var(--font-size-h4); }
+
+/* ---- Buttons (square by brand) ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-inline);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-bold);
+  padding: var(--padding-control) var(--space-5);
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--transition-control);
+}
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.btn--primary:hover { background: var(--color-primary-hover); }
+.btn--primary:active { background: var(--color-primary-active); }
+.btn--secondary {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--ocd-black);
+}
+.btn--secondary:hover { background: var(--ocd-black); color: var(--ocd-white); }
+
+.actions { display: flex; gap: var(--space-3); align-items: center; }
+
+/* ---- Cards ---- */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: var(--padding-card);
+}
+.card--accent { border-top: 4px solid var(--ocd-orange); }
+
+/* ---- Package selection ---- */
+.package-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-4);
+}
+
+.package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.package-option {
+  display: grid;
+  gap: var(--space-2);
+  cursor: pointer;
+  align-content: start;
+}
+.package-option:has(input:checked) {
+  border-color: var(--ocd-orange);
+  outline: 2px solid var(--ocd-orange);
+  outline-offset: 0;
+}
+.package-option:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.package-option__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-bold);
+}
+
+.package-option__meta {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-sm);
+}
+
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+  font-size: var(--font-size-body-sm);
+}
+.file-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  border-top: 1px solid var(--color-divider);
+  padding-top: var(--space-1);
+}
+.file-name { word-break: break-all; }
+
+/* ---- Chips (the only rounded control, by brand) ---- */
+.type-tag,
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-overline);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-chip);
+  padding: 1px var(--space-2);
+  white-space: nowrap;
+}
+.source-chip { text-transform: none; letter-spacing: 0; }
+
+/* ---- Status badges: square, uppercase, always icon + text ---- */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-overline);
+  text-transform: uppercase;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-none);
+  border: 1px solid transparent;
+}
+.status-badge--success {
+  background: var(--color-success-bg);
+  color: var(--color-success-deep);
+  border-color: var(--color-success-deep);
+}
+.status-badge--info {
+  background: var(--color-info-bg);
+  color: var(--color-info-deep);
+  border-color: var(--color-info-deep);
+}
+.status-badge--warning {
+  background: var(--color-warning-bg);
+  color: var(--ocd-black);
+  border-color: var(--color-warning-deep);
+}
+.status-badge--danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-deep);
+  border-color: var(--color-danger-deep);
+}
+.status-badge--neutral {
+  background: var(--color-surface-alt);
+  color: var(--grey-700);
+  border-color: var(--color-border-strong);
+}
+
+/* ---- Banners: hard color fields, never color alone ---- */
+.banner {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-none);
+  font-weight: var(--font-weight-bold);
+}
+.banner--warning {
+  background: var(--color-warning);
+  color: var(--ocd-black);
+}
+.banner--danger {
+  background: var(--color-danger);
+  color: var(--ocd-white);
+}
+.banner--info {
+  background: var(--color-info-bg);
+  color: var(--color-info-deep);
+}
+.banner .icon { flex-shrink: 0; margin-top: 2px; }
+
+/* ---- Tables ---- */
+.table-wrap { overflow-x: auto; }
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-body-sm);
+}
+.data-table th {
+  text-align: left;
+  font-size: var(--font-size-caption);
+  letter-spacing: var(--letter-spacing-overline);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid var(--ocd-black);
+  padding: var(--space-2) var(--space-3);
+}
+.data-table td {
+  border-bottom: 1px solid var(--color-divider);
+  padding: var(--space-2) var(--space-3);
+  vertical-align: top;
+}
+
+/* ---- Definition rows ---- */
+.kv-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-5);
+  font-size: var(--font-size-body-sm);
+}
+.kv-list dt {
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: var(--font-size-caption);
+  letter-spacing: var(--letter-spacing-overline);
+  color: var(--color-text-secondary);
+}
+.kv-list dd { margin: 0; word-break: break-all; }
+
+/* ---- Stage list ---- */
+.stage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+.stage-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+  padding: var(--space-2) 0;
+}
+.stage-list .stage-name { font-weight: var(--font-weight-bold); }
+
+/* ---- Icons ---- */
+.icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* ---- Preformatted artifact views (escaped JSON / Markdown) ---- */
+.artifact-pre {
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  padding: var(--space-4);
+  overflow-x: auto;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-snug);
+  white-space: pre;
+  margin: 0;
+}
+
+/* ---- Path display: deliberately plain, never a link ---- */
+.path-code {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-body-sm);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  padding: 1px var(--space-2);
+  word-break: break-all;
+}
+
+/* ---- View toggle (server-side links) ---- */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--ocd-black);
+}
+.view-toggle a,
+.view-toggle span[aria-current] {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-body-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+.view-toggle span[aria-current] {
+  background: var(--ocd-black);
+  color: var(--ocd-white);
+}
+.view-toggle a:hover { text-decoration: none; background: var(--color-surface-alt); }
+
+/* ---- Footer ---- */
+.app-footer {
+  padding-block: var(--space-5);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body-sm);
+  border-top: 1px solid var(--color-divider);
+}

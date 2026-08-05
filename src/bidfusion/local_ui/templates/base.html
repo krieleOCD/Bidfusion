@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}BidFusion — Local Synthetic MVP{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='ui.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="app-header">
+    <div class="container app-header__inner">
+      <a class="wordmark" href="{{ url_for('index') }}">BidFusion<span class="wordmark__period" aria-hidden="true">.</span></a>
+      <div class="app-header__badges">
+        <span class="env-badge env-badge--scope">{{ icon('shield') }} Local Synthetic MVP</span>
+        <span class="env-badge env-badge--warning">{{ icon('alert') }} Not approved for production customer data</span>
+      </div>
+    </div>
+  </header>
+  <main id="main" class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="app-footer container">
+    <p>BidFusion walking skeleton — local, synthetic data only. This interface makes no network calls and renders only the versioned artifacts of the local pipeline.</p>
+  </footer>
+</body>
+</html>

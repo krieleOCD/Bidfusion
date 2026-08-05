@@ -114,3 +114,53 @@ findings (security-only or fully completed with `ACCEPTABLE` quality).
 Exit code `2` means the package was blocked, requires review (security
 or quality), or failed; details are in
 `<output>/<bid>/<run>/run-summary.json`.
+
+## Local demonstration UI (synthetic MVP)
+
+The third runnable application is a local, server-rendered web UI over
+the walking-skeleton pipeline — a thin presentation layer with no
+security-, parsing-, extraction-, or quality logic of its own:
+
+```bash
+uv run bidfusion-ui            # serves on http://127.0.0.1:8765
+uv run bidfusion-ui --port 9000
+```
+
+Scope and behavior:
+
+- The server binds to `127.0.0.1` only and makes no outbound network,
+  API, or LLM calls; all assets (CSS, icons) are local. Every response
+  carries a strict `Content-Security-Policy` that forbids scripts and
+  remote resources.
+- Only the repository's own `fixtures/synthetic/` packages are offered.
+  Free paths, uploads, and manipulated package names are rejected.
+- "Run security checks" executes a security-only pipeline run. For a
+  `CLEARED` package gate, "Run full analysis" starts a **new complete
+  run of the same synthetic package** with downstream processing
+  enabled — the pipeline stays one-shot; nothing is resumed, simulated,
+  or bypassed, and the UI cannot release a manual review.
+- Every rendered status comes from the versioned run artifacts
+  (`run-summary.json`, gate and quality records). `ACCEPTABLE` shows
+  the working package, `REVIEW_REQUIRED` only the clearly marked review
+  package, `BLOCKED`/`FAILED` no downstream content at all. JSON and
+  Markdown artifact views are rendered as escaped preformatted text.
+- Downloads are limited to a static allowlist (`working-package.json`/
+  `.md`, `review-package.json`/`.md`, `run-summary.json`,
+  `quality-gate.json`, `package-gate.json`) and re-verify the run's
+  integrity manifest before serving; canonical and extraction payloads
+  are not downloadable through the UI.
+
+Outputs and cleanup: each UI-started run writes below a fresh private
+temporary directory `bidfusion-ui-*` (0700 directories, 0600 files,
+atomic writes, integrity manifest) under the system temporary directory
+— outside every repository checkout. The directories are kept after the
+process exits; remove them manually when they are no longer needed:
+
+```bash
+rm -rf "${TMPDIR:-/tmp}"/bidfusion-ui-*
+```
+
+Note: a quality-gate `FAILED` outcome is not reachable with the shipped
+synthetic fixtures; it is exercised in the test suite via an injected
+extractor failure. This UI is a local demonstration for synthetic data
+only and is **not approved for production customer data**.

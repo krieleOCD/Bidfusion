@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ status_code }} — BidFusion{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="ocd-overline">Error {{ status_code }}</p>
+  <h1>{{ title }}</h1>
+  <p class="lede">{{ message }}</p>
+</div>
+<p class="actions">
+  <a class="btn btn--secondary" href="{{ url_for('index') }}">Back to package selection</a>
+</p>
+{% endblock %}

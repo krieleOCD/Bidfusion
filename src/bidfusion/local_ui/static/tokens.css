@@ -1,0 +1,231 @@
+/* Design tokens — transcribed from the "Orange Cyberdefense Design System"
+   (claude.ai/design project e63a01b4-58cd-4e4f-8ba1-befaa963d7a4).
+   Values are copied verbatim from tokens/{colors,typography,spacing,
+   radius,shadows,motion}.css and the base element defaults.
+
+   Two deliberate, security-driven deviations (both flagged as
+   substitutions in the design system itself):
+   - No remote webfont: the Arimo Google-Fonts import is omitted; the
+     platform Helvetica Neue / Helvetica / Arial stack is used instead.
+   - No icon CDN: UI glyphs are local inline SVGs in the same
+     2px-stroke geometric style (see icons.py). */
+
+:root {
+  /* ---- Brand core ---- */
+  --ocd-orange: #ff7900;
+  --ocd-orange-amber: #ffb400;
+  --ocd-black: #000000;
+  --ocd-white: #ffffff;
+
+  /* ---- Secondary palette (base) ---- */
+  --ocd-blue: #4bb4e6;
+  --ocd-green: #50be87;
+  --ocd-purple: #a885d8;
+  --ocd-pink: #ffb4e6;
+  --ocd-yellow: #ffd200;
+
+  /* ---- Secondary — deep tints ---- */
+  --ocd-blue-deep: #085ebd;
+  --ocd-green-deep: #0a6e31;
+  --ocd-purple-deep: #492191;
+  --ocd-pink-deep: #ff8ad4;
+
+  /* ---- Secondary — light tints ---- */
+  --ocd-blue-light: #b5e8f7;
+  --ocd-green-light: #b8ebd6;
+  --ocd-purple-light: #d9c2f0;
+  --ocd-pink-light: #ffe8f7;
+  --ocd-yellow-light: #fff6b6;
+
+  /* ---- Neutral ramp ---- */
+  --grey-900: #000000;
+  --grey-850: #141414;
+  --grey-800: #1f1f1f;
+  --grey-700: #333333;
+  --grey-600: #595959;
+  --grey-500: #8f8f8f;
+  --grey-400: #cccccc;
+  --grey-300: #d6d6d6;
+  --grey-200: #eeeeee;
+  --grey-100: #f6f6f6;
+  --grey-050: #fafafa;
+
+  /* ---- Interaction states for the primary orange ---- */
+  --ocd-orange-hover: #f16e00;
+  --ocd-orange-active: #cc6000;
+
+  /* ---- Semantic aliases ---- */
+  --color-bg: var(--ocd-white);
+  --color-bg-inverse: var(--ocd-black);
+  --color-surface: var(--ocd-white);
+  --color-surface-alt: var(--grey-100);
+  --color-surface-inverse: var(--grey-850);
+  --color-overlay: rgba(0, 0, 0, 0.6);
+
+  --color-text: var(--ocd-black);
+  --color-text-secondary: var(--grey-600);
+  --color-text-muted: var(--grey-500);
+  --color-text-inverse: var(--ocd-white);
+  --color-text-inverse-secondary: rgba(255, 255, 255, 0.72);
+  --color-text-accent: var(--ocd-orange);
+  --color-text-on-primary: var(--ocd-white);
+
+  --color-border: var(--grey-300);
+  --color-border-strong: var(--grey-500);
+  --color-border-inverse: rgba(255, 255, 255, 0.24);
+  --color-divider: var(--grey-200);
+
+  --color-primary: var(--ocd-orange);
+  --color-primary-hover: var(--ocd-orange-hover);
+  --color-primary-active: var(--ocd-orange-active);
+  --color-on-primary: var(--ocd-white);
+
+  --color-focus: var(--ocd-black);
+  --color-focus-inverse: var(--ocd-white);
+
+  --color-success: var(--ocd-green);
+  --color-success-deep: var(--ocd-green-deep);
+  --color-success-bg: var(--ocd-green-light);
+  --color-info: var(--ocd-blue);
+  --color-info-deep: var(--ocd-blue-deep);
+  --color-info-bg: var(--ocd-blue-light);
+  --color-warning: var(--ocd-yellow);
+  --color-warning-deep: var(--ocd-orange-amber);
+  --color-warning-bg: var(--ocd-yellow-light);
+  --color-danger: #cd3c14;
+  --color-danger-deep: #a5300f;
+  --color-danger-bg: #fbe4de;
+
+  /* ---- Typography ---- */
+  --font-family-base: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+  --font-family-display: var(--font-family-base);
+  --font-family-mono: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --font-size-display-2xl: 72px;
+  --font-size-display-xl: 56px;
+  --font-size-display-lg: 44px;
+  --font-size-h1: 36px;
+  --font-size-h2: 28px;
+  --font-size-h3: 22px;
+  --font-size-h4: 18px;
+  --font-size-body-lg: 18px;
+  --font-size-body: 16px;
+  --font-size-body-sm: 14px;
+  --font-size-caption: 12px;
+  --font-size-overline: 12px;
+
+  --line-height-display: 1.02;
+  --line-height-heading: 1.1;
+  --line-height-snug: 1.3;
+  --line-height-body: 1.5;
+  --line-height-relaxed: 1.65;
+
+  --letter-spacing-display: -0.02em;
+  --letter-spacing-heading: -0.01em;
+  --letter-spacing-body: 0;
+  --letter-spacing-overline: 0.08em;
+
+  /* ---- Spacing (4px base grid) ---- */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  --gap-inline: var(--space-2);
+  --gap-stack: var(--space-4);
+  --padding-control: var(--space-3);
+  --padding-card: var(--space-5);
+  --section-gap: var(--space-9);
+  --container-max: 1200px;
+  --container-pad: var(--space-5);
+
+  /* ---- Radius (square by brand; pills only for chips) ---- */
+  --radius-none: 0;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+  --radius-control: var(--radius-none);
+  --radius-card: var(--radius-none);
+  --radius-chip: var(--radius-pill);
+
+  /* ---- Shadows (flat brand; reserved for overlays) ---- */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.16);
+  --shadow-overlay: 0 24px 64px rgba(0, 0, 0, 0.28);
+  --shadow-focus: 0 0 0 3px rgba(0, 0, 0, 0.9);
+  --shadow-focus-primary: 0 0 0 3px rgba(255, 121, 0, 0.45);
+
+  /* ---- Motion ---- */
+  --duration-instant: 80ms;
+  --duration-fast: 150ms;
+  --duration-base: 240ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --transition-control: color var(--duration-fast) var(--ease-standard),
+                        background-color var(--duration-fast) var(--ease-standard),
+                        border-color var(--duration-fast) var(--ease-standard),
+                        box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+/* ---- Base element defaults (from the design system's base.css) ---- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-heading);
+  color: var(--color-text);
+}
+
+p { margin: 0; }
+
+a {
+  color: var(--ocd-orange);
+  text-decoration: none;
+}
+a:hover { color: var(--ocd-orange-hover); text-decoration: underline; }
+a:active { color: var(--ocd-orange-active); }
+
+.ocd-overline {
+  font-size: var(--font-size-overline);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-overline);
+  text-transform: uppercase;
+  color: var(--ocd-orange);
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

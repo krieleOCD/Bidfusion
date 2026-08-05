@@ -12,6 +12,7 @@ license = { text = "Proprietary" }
 authors = [{ name = "BidFusion Team" }]
 keywords = ["rfp", "bid-management", "document-intelligence", "llm"]
 dependencies = [
+    "flask>=3.1,<4",
     "openpyxl>=3.1,<4",
     "pydantic>=2.7,<3",
     "pypdf>=5,<7",
@@ -20,6 +21,7 @@ dependencies = [
 [project.scripts]
 bidfusion-preflight = "bidfusion.security.local_runner:cli"
 bidfusion-run = "bidfusion.orchestration.local_pipeline:cli"
+bidfusion-ui = "bidfusion.local_ui.app:cli"
 
 [project.optional-dependencies]
 dev = [
