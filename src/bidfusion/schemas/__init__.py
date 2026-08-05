@@ -7,6 +7,15 @@ from bidfusion.schemas.artifact import (
     ArtifactType,
 )
 from bidfusion.schemas.bid import Bid, BidBusinessState
+from bidfusion.schemas.bidrun import (
+    TERMINAL_BIDRUN_STATES,
+    AuthorizationRecord,
+    AuthorizationType,
+    BidRun,
+    BidRunReasonCode,
+    BidRunState,
+    BidRunTransition,
+)
 from bidfusion.schemas.business import (
     Actor,
     ActorType,
@@ -188,11 +197,17 @@ __all__ = [
     "ArtifactType",
     "Assignment",
     "AssignmentSubject",
+    "AuthorizationRecord",
+    "AuthorizationType",
     "Bid",
     "BidBusinessState",
     "BidDecision",
     "BidDecisionStatus",
     "BidId",
+    "BidRun",
+    "BidRunReasonCode",
+    "BidRunState",
+    "BidRunTransition",
     "BoundingBox",
     "BusinessReview",
     "BusinessReviewStatus",
@@ -320,6 +335,7 @@ __all__ = [
     "SourceReference",
     "StructuredOutputSpec",
     "SubmissionInstructions",
+    "TERMINAL_BIDRUN_STATES",
     "Table",
     "TableCell",
     "TableRow",
