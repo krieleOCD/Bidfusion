@@ -18,6 +18,7 @@ from bidfusion.document_understanding.canonical import (
     build_canonical_document,
 )
 from bidfusion.document_understanding.parsers import (
+    DocxTextParser,
     PdfTextParser,
     PlainTextParser,
     XlsxTableParser,
@@ -241,8 +242,9 @@ def test_xlsx_parser_fails_closed_on_corrupt_workbooks() -> None:
 
 def test_registry_supports_exactly_the_mvp_types() -> None:
     assert isinstance(parser_for("pdf"), PdfTextParser)
+    assert isinstance(parser_for("docx"), DocxTextParser)
     assert isinstance(parser_for("xlsx"), XlsxTableParser)
     assert isinstance(parser_for("txt"), PlainTextParser)
     assert isinstance(parser_for("csv"), PlainTextParser)
-    assert parser_for("docx") is None
+    assert parser_for("pptx") is None
     assert parser_for("png") is None
