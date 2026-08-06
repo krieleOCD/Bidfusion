@@ -38,6 +38,23 @@
 </div>
 {% endif %}
 
+<section aria-labelledby="metrics-heading" class="card">
+  <h2 id="metrics-heading">What this run recorded</h2>
+  <p class="module-card__text">
+    Every number below is a count of something the run wrote down. No stage that did not
+    run contributes a figure, and nothing here is estimated.
+  </p>
+  <dl class="metric-grid">
+    {% for metric in view.metrics %}
+    <div class="metric metric--{{ metric.tone }}">
+      <dt class="metric__label">{{ metric.label }}</dt>
+      <dd class="metric__value">{{ metric.value }}</dd>
+      <dd class="metric__note">{{ metric.note }}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+</section>
+
 <section aria-labelledby="gate-heading" class="card card--accent">
   <h2 id="gate-heading">Security gate</h2>
   <p>

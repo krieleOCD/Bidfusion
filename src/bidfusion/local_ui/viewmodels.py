@@ -100,6 +100,16 @@ class QualityView:
 
 
 @dataclass(frozen=True, slots=True)
+class MetricTile:
+    """One counted fact about a run, taken from what the run recorded."""
+
+    label: str
+    value: str
+    tone: str
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
 class RunView:
     """Display projection of one recorded pipeline run."""
 
@@ -109,6 +119,7 @@ class RunView:
     outcome: str
     run_directory: str
     gate: GateView
+    metrics: tuple[MetricTile, ...]
     stages: tuple[StageRow, ...]
     quality: QualityView | None
     offer_full_analysis: bool
@@ -271,6 +282,7 @@ def build_run_view(record: RunRecord) -> RunView:
         outcome=summary.outcome,
         run_directory=str(summary.run_directory),
         gate=gate,
+        metrics=_run_metrics(documents, gate.rejected, quality),
         stages=stages,
         quality=quality,
         offer_full_analysis=(
@@ -284,6 +296,64 @@ def build_run_view(record: RunRecord) -> RunView:
         is_quality_review=summary.outcome == "review-required" and summary.quality is not None,
         is_failed=summary.outcome == "failed",
     )
+
+
+def _run_metrics(
+    documents: tuple[DocumentRow, ...],
+    rejected: tuple[str, ...],
+    quality: QualityView | None,
+) -> tuple[MetricTile, ...]:
+    """Counted facts about one run — every number is one the run recorded.
+
+    Nothing here is estimated, projected, or filled in when a stage did
+    not run: a count only appears once the run actually produced it.
+    """
+    verdicts = [row.verdict.label for row in documents]
+    cleared = verdicts.count("ALLOW")
+    manual = verdicts.count("MANUAL_REVIEW")
+    blocked = verdicts.count("BLOCK") + verdicts.count("QUARANTINE")
+    tiles = [
+        MetricTile(
+            label="Documents inventoried",
+            value=str(len(documents)),
+            tone="neutral",
+            note="Registered at intake",
+        ),
+        MetricTile(
+            label="Security verdict: allow",
+            value=str(cleared),
+            tone="success" if cleared else "neutral",
+            note="Passed the deterministic preflight",
+        ),
+        MetricTile(
+            label="Manual review",
+            value=str(manual),
+            tone="warning" if manual else "neutral",
+            note="Pending a human security decision",
+        ),
+        MetricTile(
+            label="Blocked",
+            value=str(blocked),
+            tone="danger" if blocked else "neutral",
+            note="Never reached a parser",
+        ),
+        MetricTile(
+            label="Rejected at intake",
+            value=str(len(rejected)),
+            tone="warning" if rejected else "neutral",
+            note="Refused before assessment",
+        ),
+    ]
+    if quality is not None:
+        tiles.append(
+            MetricTile(
+                label="Quality signals",
+                value=str(len(quality.signals)),
+                tone="warning" if quality.signals else "success",
+                note="Raised by the quality gate",
+            )
+        )
+    return tuple(tiles)
 
 
 _COMMON_DOWNLOADS = (

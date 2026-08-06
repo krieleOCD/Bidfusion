@@ -1,0 +1,80 @@
+{% extends "preview/_preview_base.html" %}
+{% from "partials/product_macros.html" import status_chip, bullet_list %}
+{% block headline %}What to say, and what we can actually back up.{% endblock %}
+{% block module %}
+
+<section aria-labelledby="takeaway-heading" class="card card--accent">
+  <h2 id="takeaway-heading">Evaluator takeaway</h2>
+  <p class="lede">{{ section.evaluator_takeaway }}</p>
+  <dl class="kv-list">
+    <dt>Approval state</dt>
+    <dd>{{ section.approval_state }}</dd>
+    <dt>Themes without a proof point</dt>
+    <dd>{{ section.unproven_theme_count }} of {{ section.themes|length }}</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="hotbuttons-heading">
+  <div class="group-head">
+    <h2 id="hotbuttons-heading">Customer hot buttons</h2>
+    <p>What the customer has shown they care about, and how we know.</p>
+  </div>
+  <div class="module-grid">
+    {% for button in section.hot_buttons %}
+    <article class="module-card">
+      <h3 class="module-card__title">{{ button.title }}</h3>
+      <p class="module-card__badges">{{ status_chip(button.classification) }}</p>
+      <p class="module-card__text">{{ button.detail }}</p>
+      <p class="module-card__phase">{{ icon('file') }} {{ button.origin }}</p>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section aria-labelledby="themes-heading">
+  <div class="group-head">
+    <h2 id="themes-heading">Win themes</h2>
+    <p>
+      Every theme shows what backs it. A theme with no proof point is shown as an
+      evidence gap rather than quietly written into the response.
+    </p>
+  </div>
+  <div class="theme-list">
+    {% for theme in section.themes %}
+    <article class="theme{% if not theme.proof_point %} theme--unproven{% endif %}">
+      <h3 class="theme__title">{{ theme.title }}</h3>
+      <p class="module-card__badges">{{ status_chip(theme.classification) }}</p>
+      <p class="theme__statement">{{ theme.statement }}</p>
+      {% if theme.proof_point %}
+      <p class="theme__proof">{{ icon('check') }} Proof: {{ theme.proof_point }}</p>
+      {% endif %}
+      {% if theme.evidence_gap %}
+      <p class="theme__gap">{{ icon('alert') }} Evidence gap: {{ theme.evidence_gap }}</p>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="split split--even">
+  <section aria-labelledby="differentiators-heading" class="card">
+    <h2 id="differentiators-heading">Differentiators</h2>
+    {{ bullet_list(section.differentiators) }}
+  </section>
+
+  <section aria-labelledby="risks-heading" class="card">
+    <h2 id="risks-heading">Risks to the strategy</h2>
+    {{ bullet_list(section.risks) }}
+  </section>
+</div>
+
+<section aria-labelledby="classification-heading" class="card">
+  <h2 id="classification-heading">Why every statement carries a label</h2>
+  <p class="lede">
+    A win theme is an argument, and an argument is only as good as what stands behind it.
+    Marking each statement as evidence-backed, inferred, assumed, or demonstration
+    content is what stops an assumption from quietly becoming a claim in a proposal that
+    a customer later holds us to.
+  </p>
+</section>
+{% endblock %}

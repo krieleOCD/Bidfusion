@@ -1,0 +1,497 @@
+{
+  "schema_version": "1.0.0",
+  "key": "high-risk-opportunity",
+  "title": "High-risk opportunity",
+  "summary": "A large energy-sector tender with an exclusion criterion that cannot currently be met, an estate that has not been sized, and a penalty schedule that has not been reviewed. The assessment tends towards no-go.",
+  "synthetic_notice": "Küstenwerk Energie AG is an invented company. Every requirement, risk, figure, and stakeholder role on this page was written for demonstration and describes no real organization, opportunity, or person.",
+  "opportunity": {
+    "customer": "Küstenwerk Energie AG (invented)",
+    "sector": "Energy and utilities",
+    "region": "Germany and one neighbouring country",
+    "scope": "Security monitoring and incident response across a critical-infrastructure estate, including operational technology at generation sites. Estate size is described only as \"in the region of\" several thousand endpoints.",
+    "volume_band": "High seven figures over the initial term",
+    "timeline": [
+      {
+        "label": "Clarification deadline",
+        "date": "Week 2",
+        "note": "The only opportunity to ask about the residency criterion and the missing sizing.",
+        "is_critical": true
+      },
+      {
+        "label": "Proposal deadline",
+        "date": "Week 6",
+        "note": "Short window for a tender of this size.",
+        "is_critical": true
+      },
+      {
+        "label": "Award",
+        "date": "Week 14",
+        "note": "Indicative.",
+        "is_critical": false
+      },
+      {
+        "label": "Service start",
+        "date": "Month 5",
+        "note": "Fixed by a regulatory milestone. No slippage indicated.",
+        "is_critical": true
+      }
+    ]
+  },
+  "customer_intelligence": {
+    "relationship_strength": 1,
+    "relationship_summary": "No prior contact of any kind. First encounter with this organization is the tender itself, in a sector with heavy regulatory scrutiny.",
+    "sources": [
+      {
+        "key": "crm",
+        "name": "CRM",
+        "kind": "Opportunity and account system of record",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Direct API", "Governed connector platform"],
+        "expected_data": [
+          "Whether the account has ever been approached",
+          "Territory and ownership"
+        ],
+        "governance": ["Field-level access decision"]
+      },
+      {
+        "key": "bid-archive",
+        "name": "Bid archive",
+        "kind": "Document store of prior proposals and agreements",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Direct API", "Governed connector platform"],
+        "expected_data": [
+          "Comparable critical-infrastructure bids and their outcomes",
+          "Recorded loss reviews in this sector"
+        ],
+        "governance": ["Permission model for restricted bid material"]
+      },
+      {
+        "key": "knowledge-base",
+        "name": "Service knowledge base",
+        "kind": "Governed capability and evidence catalog",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-D",
+        "integration_options": ["Direct API"],
+        "expected_data": [
+          "Whether operational technology monitoring is in scope of any service",
+          "Regulatory accreditations held"
+        ],
+        "governance": ["Catalog ownership and review cadence"]
+      }
+    ],
+    "insights": [
+      {
+        "text": "The tender names a residency and clearance requirement that the offered platform does not currently satisfy. This is an exclusion criterion, not a scoring item.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "text": "The estate is described qualitatively. Without a count of endpoints and sites, any price is a guess that the penalty schedule will later hold us to.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "text": "Six weeks to respond on a critical-infrastructure scope, with no relationship and no prior work in the sector.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      }
+    ],
+    "stakeholders": [
+      {
+        "role": "Chief Information Security Officer",
+        "interest": "Regulatory compliance above all else",
+        "influence": 5,
+        "engagement": 1
+      },
+      {
+        "role": "Operational technology lead",
+        "interest": "No interference with generation systems",
+        "influence": 4,
+        "engagement": 1
+      },
+      {
+        "role": "Procurement lead",
+        "interest": "A formally clean, challenge-proof award",
+        "influence": 5,
+        "engagement": 1
+      }
+    ],
+    "account_timeline": [
+      {
+        "period": "Before this tender",
+        "summary": "No recorded contact with this organization.",
+        "classification": "DEMO"
+      },
+      {
+        "period": "This quarter",
+        "summary": "Tender published. Discovered through the public notice rather than through the account.",
+        "classification": "DEMO"
+      }
+    ]
+  },
+  "compliance": {
+    "open_clarifications": [
+      "Whether the residency and clearance requirement admits any alternative arrangement",
+      "The actual number of endpoints, sites, and operational technology zones in scope",
+      "Whether the penalty cap applies per incident or per period"
+    ],
+    "items": [
+      {
+        "reference": "EX-01",
+        "requirement": "All processing and all operating personnel remain within the stated jurisdiction, with personnel clearance to a named level.",
+        "state": "NOT_COMPLIANT",
+        "is_exclusion_criterion": true,
+        "evidence": "The offered platform's support model does not meet this today",
+        "owner": "Delivery architecture",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "EX-02",
+        "requirement": "Demonstrated experience with critical-infrastructure operators in the same sector.",
+        "state": "EVIDENCE_REQUIRED",
+        "is_exclusion_criterion": true,
+        "evidence": "No approved reference in this sector has been identified",
+        "owner": "Bid management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-01",
+        "requirement": "Monitoring of operational technology networks at generation sites.",
+        "state": "NOT_COMPLIANT",
+        "is_exclusion_criterion": false,
+        "evidence": "Outside the standard portfolio; would require a partner",
+        "owner": "Portfolio management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-02",
+        "requirement": "Service credits applying from the first minute of a missed response target, uncapped.",
+        "state": "CLARIFICATION_REQUIRED",
+        "is_exclusion_criterion": false,
+        "evidence": "Not reviewed by legal. An uncapped exposure would be unusual to accept.",
+        "owner": "Legal",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-03",
+        "requirement": "Price per endpoint against an estate that the tender does not quantify.",
+        "state": "UNKNOWN",
+        "is_exclusion_criterion": false,
+        "evidence": "No sizing given. Cannot be priced without a clarification answer.",
+        "owner": "Commercial",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-04",
+        "requirement": "Round-the-clock monitoring with defined incident severities.",
+        "state": "COMPLIANT",
+        "is_exclusion_criterion": false,
+        "evidence": "Standard service definition",
+        "owner": "Service management",
+        "origin": "Demonstration scenario"
+      }
+    ]
+  },
+  "capability_fit": {
+    "catalog_note": "Two of the five requirements below fall outside anything the organization offers today. A partner arrangement would need to be agreed before a proposal could stand behind them.",
+    "items": [
+      {
+        "requirement": "Round-the-clock monitoring with defined severities",
+        "capability": "Managed detection and response",
+        "coverage": "CONFIRMED",
+        "evidence": "Service definition",
+        "validity": "Current",
+        "owner": "Service management"
+      },
+      {
+        "requirement": "Processing and personnel confined to the stated jurisdiction with clearance",
+        "capability": "Sovereign operating model",
+        "coverage": "GAP",
+        "evidence": "No such operating model exists today",
+        "validity": "Unconfirmed",
+        "owner": "Delivery architecture"
+      },
+      {
+        "requirement": "Operational technology monitoring at generation sites",
+        "capability": "Industrial network monitoring",
+        "coverage": "GAP",
+        "evidence": "Not in the portfolio; partner required",
+        "validity": "Unconfirmed",
+        "owner": "Portfolio management"
+      },
+      {
+        "requirement": "Sector-specific regulatory reporting",
+        "capability": "Regulatory reporting support",
+        "coverage": "EVIDENCE_REQUIRED",
+        "evidence": "Comparable reporting exists in other sectors; this framework is untested",
+        "validity": "Unconfirmed",
+        "owner": "Compliance"
+      },
+      {
+        "requirement": "Incident response retainer with on-site attendance",
+        "capability": "Incident response retainer",
+        "coverage": "PARTIAL",
+        "evidence": "Retainer exists; on-site attendance times at these locations are unconfirmed",
+        "validity": "Needs confirmation",
+        "owner": "Incident response"
+      }
+    ]
+  },
+  "qualification": {
+    "system_assessment": "NO_GO",
+    "assessment_rationale": "An exclusion criterion is not met and no route to meeting it has been identified. Two further requirements fall outside the portfolio, and the estate cannot be priced from what the tender states. This is an assessment of the evidence available, not a decision.",
+    "decision_owner": "Bid board",
+    "approval_state": "Not submitted for decision",
+    "factors": [
+      {
+        "name": "Exclusion criteria",
+        "verdict": "WEAK",
+        "note": "Residency and clearance requirement is not met. Sector reference is not evidenced.",
+        "owner": "Compliance",
+        "is_must_pass": true
+      },
+      {
+        "name": "Capability coverage",
+        "verdict": "WEAK",
+        "note": "Two gaps, both on the critical path, both needing a partner.",
+        "owner": "Portfolio management",
+        "is_must_pass": true
+      },
+      {
+        "name": "Commercial fit",
+        "verdict": "UNKNOWN",
+        "note": "The estate is not quantified. Any price would be exposed to an uncapped penalty schedule.",
+        "owner": "Commercial",
+        "is_must_pass": true
+      },
+      {
+        "name": "Legal and contractual",
+        "verdict": "WEAK",
+        "note": "Uncapped service credits have not been reviewed and would be unusual to accept.",
+        "owner": "Legal",
+        "is_must_pass": true
+      },
+      {
+        "name": "Relationship",
+        "verdict": "WEAK",
+        "note": "No contact of any kind before the tender.",
+        "owner": "Account management",
+        "is_must_pass": false
+      },
+      {
+        "name": "Delivery capacity",
+        "verdict": "ADEQUATE",
+        "note": "Capacity exists for the parts that are in scope.",
+        "owner": "Delivery management",
+        "is_must_pass": false
+      }
+    ],
+    "conditions": [
+      {
+        "text": "Establish whether the residency and clearance requirement admits any alternative. If it does not, the tender is not addressable.",
+        "owner": "Delivery architecture",
+        "due": "Before the clarification deadline"
+      },
+      {
+        "text": "Obtain endpoint, site, and zone counts through a clarification question.",
+        "owner": "Bid management",
+        "due": "Before the clarification deadline"
+      },
+      {
+        "text": "Legal position on uncapped service credits.",
+        "owner": "Legal",
+        "due": "Before any decision to bid"
+      }
+    ],
+    "evidence_gaps": [
+      "No approved reference in this sector",
+      "No partner agreed for operational technology monitoring",
+      "No sizing on which to base a price"
+    ]
+  },
+  "competitive_intelligence": {
+    "collection_note": "In a regulated sector the field is usually narrow and known in advance. Signals would still carry a collection date, because a competitor's accreditation status changes and a stale claim is worse than none.",
+    "intended_sources": [
+      "Approved public sources under a recorded collection policy",
+      "Public award notices",
+      "Prior bid archive and recorded loss reviews"
+    ],
+    "competitors": [
+      {
+        "key": "gamma-it-services",
+        "name": "Gamma IT Services (invented)",
+        "positioning": "Holds the accreditation the tender demands and has delivered in this sector before. The incumbent for an adjacent contract.",
+        "threat_band": "HIGH",
+        "threat_level": 5,
+        "claims": [
+          "Already accredited for the required clearance level",
+          "Existing presence at two of the sites"
+        ],
+        "signals": [
+          {
+            "text": "Named in a public award notice for a comparable operator.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          },
+          {
+            "text": "Holds the personnel clearance the tender sets as an exclusion criterion.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          }
+        ],
+        "comparison": [
+          {
+            "dimension": "Regulatory accreditation",
+            "own_level": 1,
+            "competitor_level": 5,
+            "takeaway": "They meet the exclusion criterion. We do not. Nothing else matters until that changes."
+          },
+          {
+            "dimension": "Sector experience",
+            "own_level": 2,
+            "competitor_level": 5,
+            "takeaway": "They have delivered in this sector. We have not."
+          },
+          {
+            "dimension": "Security specialization",
+            "own_level": 5,
+            "competitor_level": 3,
+            "takeaway": "Our advantage, on a criterion the tender barely weights."
+          }
+        ]
+      },
+      {
+        "key": "delta-managed",
+        "name": "Delta Managed Services (invented)",
+        "positioning": "Operational technology specialist. Narrow, deep, and already present at generation sites in the sector.",
+        "threat_band": "MEDIUM",
+        "threat_level": 3,
+        "claims": ["Operational technology monitoring as a core service"],
+        "signals": [
+          {
+            "text": "Positions operational technology monitoring as their primary offer.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          }
+        ],
+        "comparison": [
+          {
+            "dimension": "Operational technology",
+            "own_level": 1,
+            "competitor_level": 5,
+            "takeaway": "A gap for us and their core business. A partnership question, not a competition question."
+          },
+          {
+            "dimension": "Enterprise monitoring scale",
+            "own_level": 5,
+            "competitor_level": 2,
+            "takeaway": "The reverse holds on the enterprise side."
+          }
+        ]
+      }
+    ],
+    "battle_cards": []
+  },
+  "win_strategy": {
+    "approval_state": "Not started. Strategy work should not begin before the qualification decision.",
+    "evaluator_takeaway": "There is no defensible takeaway while an exclusion criterion is unmet. Any theme written now would be an argument for a bid that cannot be submitted.",
+    "hot_buttons": [
+      {
+        "title": "Regulatory compliance before anything else",
+        "detail": "In this sector a formally clean award matters more to the evaluator than any service advantage.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "title": "No interference with generation",
+        "detail": "Operational technology stakeholders will veto anything that touches production systems without a proven method.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "title": "Certainty of delivery by the regulatory milestone",
+        "detail": "The service start date is fixed by regulation and will not move.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      }
+    ],
+    "themes": [
+      {
+        "title": "No theme can be written yet",
+        "statement": "With an exclusion criterion unmet and two portfolio gaps open, a win theme would be an assertion about capability the organization does not have.",
+        "classification": "DEMO",
+        "proof_point": null,
+        "evidence_gap": "Exclusion criterion unmet; no sector reference; no operational technology partner"
+      }
+    ],
+    "differentiators": [
+      "Enterprise monitoring depth, on a criterion this tender weights lightly"
+    ],
+    "risks": [
+      "An unmet exclusion criterion makes the bid formally inadmissible",
+      "Uncapped service credits against an estate that has not been sized",
+      "A competitor already holds the required accreditation and the sector experience"
+    ]
+  },
+  "review_approval": {
+    "submission_readiness": "Not ready, and unlikely to become ready. Review is on hold pending the qualification decision.",
+    "blocking_items": [
+      "Exclusion criterion EX-01 unmet",
+      "Estate not sized",
+      "Penalty schedule not reviewed"
+    ],
+    "items": [
+      {
+        "reference": "EX-01",
+        "kind": "Exclusion criterion",
+        "proposed": "Processing and operating personnel confined to the stated jurisdiction, with clearance to a named level.",
+        "origin": "Demonstration scenario",
+        "state": "AWAITING_REVIEW",
+        "reviewer_role": "Compliance"
+      },
+      {
+        "reference": "M-02",
+        "kind": "Contract term",
+        "proposed": "Service credits from the first minute of a missed target, without a cap.",
+        "origin": "Demonstration scenario",
+        "state": "CLARIFICATION_REQUESTED",
+        "reviewer_role": "Legal"
+      },
+      {
+        "reference": "M-03",
+        "kind": "Commercial",
+        "proposed": "Per-endpoint pricing against an estate the tender does not quantify.",
+        "origin": "Demonstration scenario",
+        "state": "CLARIFICATION_REQUESTED",
+        "reviewer_role": "Commercial"
+      },
+      {
+        "reference": "M-01",
+        "kind": "Requirement",
+        "proposed": "Monitoring of operational technology networks at generation sites.",
+        "origin": "Demonstration scenario",
+        "state": "REJECTED",
+        "reviewer_role": "Portfolio management"
+      }
+    ],
+    "history": [
+      {
+        "reference": "M-01",
+        "outcome": "Rejected as out of scope",
+        "reviewer_role": "Portfolio management",
+        "note": "Correctly extracted. No service covers it and no partner is agreed."
+      },
+      {
+        "reference": "EX-01",
+        "outcome": "Escalated",
+        "reviewer_role": "Compliance",
+        "note": "Raised to the bid board as a potential stop condition rather than reviewed line by line."
+      }
+    ]
+  }
+}

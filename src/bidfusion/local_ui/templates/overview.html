@@ -1,0 +1,114 @@
+{% extends "product_base.html" %}
+{% from "partials/product_macros.html" import module_card, status_chip %}
+{% block title %}Overview — BidFusion{% endblock %}
+{% block hero %}
+<div class="hero">
+  <div class="container hero__inner">
+    <p class="ocd-overline">BidFusion — internal product preview</p>
+    <h1>From an RFP package to a bid decision you can defend.</h1>
+    <p class="lede">
+      BidFusion turns a tender package into evidence-backed requirements, deadlines,
+      and formalities — then carries that evidence through qualification, compliance,
+      strategy, and the response itself. This build implements the first part of that
+      path for real. The rest is shown as it is meant to work, marked as such, so it
+      can be argued with before it is built.
+    </p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+
+<section aria-labelledby="today-heading" class="card card--accent">
+  <h2 id="today-heading">Where the product stands today</h2>
+  <p class="lede">
+    Intake, security gating, analysis of the repository's own fixture packages, and the
+    resulting working and review packages are implemented and run for real. Everything
+    from customer intelligence onwards is a preview: the information model is designed,
+    the connectors and the reasoning behind them are not built.
+  </p>
+  <dl class="kv-list">
+    <dt>Real today</dt>
+    <dd>
+      Authorized upload into quarantine, deterministic security gating, rule-based
+      extraction over synthetic fixtures, working and review packages with per-statement
+      provenance.
+    </dd>
+    <dt>Not real yet</dt>
+    <dd>
+      Every external system. No CRM, no document archive, no communication data, no web
+      research, no model call, and no autonomous agent runs anywhere in this build.
+    </dd>
+    <dt>Scope</dt>
+    <dd>
+      Level 1A — authorized non-production test data only. Production customer data is a
+      separate decision and is not permitted here.
+    </dd>
+  </dl>
+</section>
+
+{% for group in groups %}
+<section aria-labelledby="group-{{ group.key }}-heading">
+  <div class="group-head">
+    <h2 id="group-{{ group.key }}-heading">{{ group.title }} ({{ group.modules|length }})</h2>
+    <p>{{ group.summary }}</p>
+  </div>
+  <div class="module-grid">
+    {% for module in group.modules %}
+    {{ module_card(module) }}
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+<section aria-labelledby="reading-heading" class="card">
+  <h2 id="reading-heading">How to read a status on any page</h2>
+  <p class="lede">
+    Every page states two things about itself before it shows anything: how far the
+    feature is built, and where its data comes from. The two are independent — a feature
+    can be fully built and still render demonstration data.
+  </p>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">Feature statuses and what each one means</caption>
+      <thead>
+        <tr>
+          <th scope="col">Status</th>
+          <th scope="col">What it means</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for status, meaning in status_legend %}
+        <tr>
+          <td>{{ status_chip(status) }}</td>
+          <td>{{ meaning }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">Data modes and what each one means</caption>
+      <thead>
+        <tr>
+          <th scope="col">Data mode</th>
+          <th scope="col">What it means</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mode, meaning in data_mode_legend %}
+        <tr>
+          <td>{{ status_chip(mode) }}</td>
+          <td>{{ meaning }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="actions">
+    <a class="btn btn--secondary" href="{{ url_for('architecture_roadmap') }}">
+      {{ icon('map') }} Open the full roadmap
+    </a>
+  </p>
+</section>
+{% endblock %}

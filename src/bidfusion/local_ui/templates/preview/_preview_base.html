@@ -1,0 +1,157 @@
+{# Shared frame for every module preview page: the module's own status,
+   the demonstration scenario it is showing, and the opportunity that
+   scenario describes. Pages fill the `module` block with their own
+   sections and nothing else. #}
+{% extends "product_base.html" %}
+{% from "partials/product_macros.html" import status_chip, preview_notice %}
+{% block title %}{{ page.detail.status.title }} — BidFusion{% endblock %}
+
+{% block hero %}
+<div class="hero">
+  <div class="container hero__inner">
+    <p class="ocd-overline">{{ page.detail.status.title }}</p>
+    <h1>{% block headline %}{{ page.detail.status.short_description }}{% endblock %}</h1>
+    <p class="module-card__badges">
+      {{ status_chip(page.detail.status.status) }}
+      {{ status_chip(page.detail.status.data_mode) }}
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+{{ preview_notice(page.detail.status) }}
+
+<section aria-labelledby="scenario-heading" class="card card--accent">
+  <h2 id="scenario-heading">Demonstration scenario</h2>
+  <nav class="scenario-switch" aria-label="Demonstration scenario">
+    {% for choice in page.header.choices %}
+    {% if choice.is_active %}
+    <span class="scenario-switch__option scenario-switch__option--active" aria-current="true">
+      {{ choice.title }}
+    </span>
+    {% else %}
+    <a class="scenario-switch__option"
+       href="{{ url_for(request.endpoint, scenario=choice.key) }}">{{ choice.title }}</a>
+    {% endif %}
+    {% endfor %}
+  </nav>
+
+  <div class="banner banner--warning">
+    {{ icon('alert') }}
+    <div>
+      <p>Invented data.</p>
+      <p>{{ page.header.notice }}</p>
+    </div>
+  </div>
+
+  <p class="lede">{{ page.header.summary }}</p>
+
+  <dl class="kv-list">
+    <dt>Customer</dt>
+    <dd>{{ page.header.customer }}</dd>
+    <dt>Sector</dt>
+    <dd>{{ page.header.sector }}</dd>
+    <dt>Region</dt>
+    <dd>{{ page.header.region }}</dd>
+    <dt>Scope</dt>
+    <dd>{{ page.header.scope }}</dd>
+    <dt>Volume</dt>
+    <dd>{{ page.header.volume_band }}</dd>
+  </dl>
+
+  <h3>Timeline</h3>
+  <ol class="timeline">
+    {% for entry in page.header.timeline %}
+    <li class="timeline__item{% if entry.is_critical %} timeline__item--critical{% endif %}">
+      <span class="timeline__date">{{ entry.date }}</span>
+      <span class="timeline__label">
+        {{ entry.label }}
+        {% if entry.is_critical %}
+        <span class="status-badge status-badge--warning status-badge--tiny">
+          {{ icon('alert') }} Critical
+        </span>
+        {% endif %}
+      </span>
+      <span class="timeline__note">{{ entry.note }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+{% block module %}{% endblock %}
+
+<section aria-labelledby="sources-record-heading" class="card">
+  <h2 id="sources-record-heading">Where this module's data comes from</h2>
+  <div class="fact-columns">
+    <div class="fact-block{% if not page.detail.current_sources %} fact-block--empty{% endif %}">
+      <h3>Connected today</h3>
+      {% if page.detail.current_sources %}
+      <ul>
+        {% for entry in page.detail.current_sources %}
+        <li>{{ entry }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No source is connected.</p>
+      {% endif %}
+    </div>
+    <div class="fact-block{% if not page.detail.future_sources %} fact-block--empty{% endif %}">
+      <h3>Intended sources</h3>
+      {% if page.detail.future_sources %}
+      <ul>
+        {% for entry in page.detail.future_sources %}
+        <li>{{ entry }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No further sources are intended.</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="record-heading" class="card">
+  <h2 id="record-heading">What has to be true before this is real</h2>
+  <div class="fact-columns">
+    <div class="fact-block">
+      <h3>Open dependencies</h3>
+      {% if page.detail.dependencies %}
+      <ul>
+        {% for entry in page.detail.dependencies %}
+        <li>{{ entry }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No open dependencies.</p>
+      {% endif %}
+    </div>
+    <div class="fact-block">
+      <h3>Not possible today</h3>
+      <ul>
+        {% for entry in page.detail.limitations %}
+        <li>{{ entry }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="fact-block">
+      <h3>Acceptance criteria</h3>
+      <ul>
+        {% for entry in page.detail.acceptance_criteria %}
+        <li>{{ entry }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <p class="actions">
+    <a class="btn btn--secondary"
+       href="{{ url_for('feature_detail', feature_key=page.detail.status.key) }}">
+      {{ icon('file') }} Full feature record
+    </a>
+    <a class="btn btn--secondary" href="{{ url_for('architecture_roadmap') }}">
+      {{ icon('map') }} Roadmap
+    </a>
+  </p>
+</section>
+{% endblock %}

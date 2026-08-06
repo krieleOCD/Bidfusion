@@ -11,7 +11,8 @@ from __future__ import annotations
 
 import argparse
 import tempfile
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
@@ -29,7 +30,16 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from bidfusion.bidrun.quarantine import QuarantineError, UploadedFileInput
-from bidfusion.local_ui import artifacts, service, upload_service, upload_viewmodels
+from bidfusion.local_ui import (
+    artifacts,
+    feature_registry,
+    preview_service,
+    product_shell,
+    scenario_registry,
+    service,
+    upload_service,
+    upload_viewmodels,
+)
 from bidfusion.local_ui.icons import icon
 from bidfusion.local_ui.registry import RunRecord, RunRegistry
 from bidfusion.local_ui.upload_registry import UploadRegistry
@@ -92,6 +102,16 @@ def create_app(
         response.headers.update(_SECURITY_HEADERS)
         return response
 
+    @app.context_processor
+    def _shell_context() -> dict[str, product_shell.ShellContext]:
+        """Give every template the shared navigation and status context.
+
+        Built from the endpoint alone, so error pages and pages that were
+        written before the product shell existed still render complete
+        navigation instead of losing it exactly when something went wrong.
+        """
+        return {"shell": product_shell.build_shell_context(request.endpoint)}
+
     @app.errorhandler(service.PipelineExecutionError)
     def _pipeline_error(failure: service.PipelineExecutionError) -> tuple[str, int]:
         return (
@@ -114,6 +134,18 @@ def create_app(
                 message=str(failure),
             ),
             400,
+        )
+
+    @app.errorhandler(scenario_registry.ScenarioError)
+    def _scenario_error(failure: scenario_registry.ScenarioError) -> tuple[str, int]:
+        return (
+            render_template(
+                "error.html",
+                status_code=500,
+                title="Preview data not available.",
+                message=str(failure),
+            ),
+            500,
         )
 
     @app.errorhandler(QuarantineError)
@@ -141,8 +173,40 @@ def create_app(
             status_code,
         )
 
+    @app.get("/overview")
+    def overview() -> str:
+        return render_template(
+            "overview.html",
+            groups=product_shell.module_groups(),
+            status_legend=product_shell.status_legend(),
+            data_mode_legend=product_shell.data_mode_legend(),
+        )
+
+    @app.get("/architecture-roadmap")
+    def architecture_roadmap() -> str:
+        features = feature_registry.all_features()
+        return render_template(
+            "architecture_roadmap.html",
+            phases=product_shell.phase_views(feature_registry.all_phases(), features),
+            details=tuple(product_shell.feature_detail_view(item) for item in features),
+        )
+
+    @app.get("/features/<feature_key>")
+    def feature_detail(feature_key: str) -> str:
+        item = feature_registry.feature(feature_key)
+        if item is None:
+            abort(404)
+        return render_template(
+            "feature_detail.html",
+            detail=product_shell.feature_detail_view(item),
+        )
+
+    _register_preview_pages(app)
+
     @app.get("/")
+    @app.get("/rfp-intelligence")
     def index() -> str:
+        upload_next = feature_registry.feature("upload_security_review")
         return render_template(
             "start.html",
             packages=service.list_packages(),
@@ -150,6 +214,10 @@ def create_app(
             uploads=_upload_registry(app).all(),
             upload_policy=upload_viewmodels.upload_policy_view(),
             authorization_statement=upload_service.AUTHORIZATION_STATEMENT,
+            upload_next_phase=upload_next.target_phase
+            if upload_next is not None
+            else "a later phase",
+            lifecycle=product_shell.capability_rows(product_shell.RFP_LIFECYCLE_FEATURES),
         )
 
     @app.post("/uploads")
@@ -280,6 +348,89 @@ def create_app(
         )
 
     return app
+
+
+@dataclass(frozen=True, slots=True)
+class _PreviewPage:
+    """One module page whose content is not driven by a pipeline run."""
+
+    rule: str
+    endpoint: str
+    feature_key: str
+    template: str
+
+
+#: The module pages of the product shell. Rule, endpoint, feature key,
+#: and template are fixed here; none of them is ever derived from a
+#: request, so a request can only reach the template its own entry names.
+_PREVIEW_PAGES: tuple[_PreviewPage, ...] = (
+    _PreviewPage(
+        "/customer-intelligence",
+        "customer_intelligence",
+        "customer_intelligence",
+        "preview/customer_intelligence.html",
+    ),
+    _PreviewPage("/qualification", "qualification", "qualification", "preview/qualification.html"),
+    _PreviewPage("/compliance", "compliance", "compliance", "preview/compliance.html"),
+    _PreviewPage(
+        "/capability-fit", "capability_fit", "capability_fit", "preview/capability_fit.html"
+    ),
+    _PreviewPage(
+        "/competitive-intelligence",
+        "competitive_intelligence",
+        "competitive_intelligence",
+        "preview/competitive_intelligence.html",
+    ),
+    _PreviewPage("/win-strategy", "win_strategy", "win_strategy", "preview/win_strategy.html"),
+    _PreviewPage(
+        "/proposal-factory",
+        "proposal_factory",
+        "proposal_factory",
+        "preview/proposal_factory.html",
+    ),
+    _PreviewPage(
+        "/review-approval", "review_approval", "review_approval", "preview/review_approval.html"
+    ),
+)
+
+
+def _register_preview_pages(app: Flask) -> None:
+    """Register every module page from the static table above."""
+    for page in _PREVIEW_PAGES:
+        app.add_url_rule(
+            page.rule,
+            endpoint=page.endpoint,
+            view_func=_preview_view(page),
+            methods=["GET"],
+        )
+
+
+def _preview_view(page: _PreviewPage) -> Callable[[], str]:
+    """A view that renders one fixed module page and nothing else.
+
+    The scenario and the focused competitor come from the query string
+    and are the only request-derived values on these pages. Both are
+    resolved against a fixed set before use — neither can select a
+    template, reach a path, or change what the page claims about itself.
+    """
+
+    def view() -> str:
+        item = feature_registry.feature(page.feature_key)
+        if item is None:  # pragma: no cover - the registry validates this at import
+            abort(404)
+        scenario_key = preview_service.resolve_scenario_key(request.args.get("scenario"))
+        if scenario_key is None:
+            abort(404)
+        context, scenario = preview_service.load_page(item, scenario_key)
+        return render_template(
+            page.template,
+            page=context,
+            section=preview_service.section_for(
+                page.feature_key, scenario, request.args.get("focus")
+            ),
+        )
+
+    return view
 
 
 def _require_record(app: Flask, run_key: str) -> RunRecord:

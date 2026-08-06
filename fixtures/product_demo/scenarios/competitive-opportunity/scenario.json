@@ -1,0 +1,668 @@
+{
+  "schema_version": "1.0.0",
+  "key": "competitive-opportunity",
+  "title": "Competitive opportunity",
+  "summary": "A renewal in a crowded field. The incumbent is defending, three others are circling, and the deciding factor is a documented failure the customer has not forgotten.",
+  "synthetic_notice": "Talbrücke Logistik SE and every competitor named here are invented. All signals, claims, threat bands, and stakeholder roles were written for demonstration and describe no real organization, opportunity, or person.",
+  "opportunity": {
+    "customer": "Talbrücke Logistik SE (invented)",
+    "sector": "Transport and logistics",
+    "region": "Germany, Austria, and Switzerland",
+    "scope": "Renewal of a managed security service across a distributed logistics estate: nine hubs, roughly 2,600 users, and a fleet telematics platform. The current provider has held the contract for four years.",
+    "volume_band": "Mid seven figures over the initial term",
+    "timeline": [
+      {
+        "label": "Market dialogue",
+        "date": "Week 1",
+        "note": "Open session. All invited bidders attend and see each other.",
+        "is_critical": false
+      },
+      {
+        "label": "Proposal deadline",
+        "date": "Week 9",
+        "note": "Firm.",
+        "is_critical": true
+      },
+      {
+        "label": "Bidder presentations",
+        "date": "Week 13",
+        "note": "Scored. Named delivery leads must attend.",
+        "is_critical": true
+      },
+      {
+        "label": "Contract end of incumbent",
+        "date": "Month 7",
+        "note": "The incumbent's contract ends whether or not a successor is ready.",
+        "is_critical": true
+      }
+    ]
+  },
+  "customer_intelligence": {
+    "relationship_strength": 4,
+    "relationship_summary": "A known account. Vulnerability management has been delivered to one division for two years, giving both a track record and a foot in the door for the wider estate.",
+    "sources": [
+      {
+        "key": "crm",
+        "name": "CRM",
+        "kind": "Opportunity and account system of record",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Direct API", "Governed connector platform"],
+        "expected_data": [
+          "Existing contract value and renewal dates",
+          "Account ownership and contact history",
+          "Recorded opportunities in the same group"
+        ],
+        "governance": ["Field-level access decision"]
+      },
+      {
+        "key": "bid-archive",
+        "name": "Bid archive",
+        "kind": "Document store of prior proposals and agreements",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Direct API", "Governed connector platform"],
+        "expected_data": [
+          "The proposal that won the divisional contract",
+          "Agreements and confidentiality status",
+          "Recorded loss reviews against the same competitors"
+        ],
+        "governance": ["Permission model for restricted bid material"]
+      },
+      {
+        "key": "collaboration",
+        "name": "Collaboration workspace",
+        "kind": "Meeting and channel records",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Governed connector platform"],
+        "expected_data": [
+          "Service review summaries from the existing engagement",
+          "Escalations raised by the customer"
+        ],
+        "governance": [
+          "Works council and privacy review",
+          "Scoping to bid-related records only"
+        ]
+      },
+      {
+        "key": "service-records",
+        "name": "Service delivery records",
+        "kind": "Ticketing and service reporting for the existing engagement",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Direct API"],
+        "expected_data": [
+          "Service level attainment on the divisional contract",
+          "Incidents handled and their outcomes"
+        ],
+        "governance": ["Customer consent to reuse their own service data in a bid"]
+      }
+    ],
+    "insights": [
+      {
+        "text": "The incumbent missed a detection during a ransomware attempt eighteen months ago. The customer raised it formally and has referenced it in the tender's evaluation criteria.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "text": "The divisional engagement has met its service levels every quarter. That record is the single strongest asset in this bid, if the customer permits it to be cited.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "text": "The telematics platform is treated as operational rather than IT, and no provider has clear responsibility for it. Whoever addresses it credibly picks up an unweighted advantage.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "text": "Procurement has run an open market dialogue, so every bidder knows who else is in the room. Expect aggressive pricing from the two smaller bidders.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      }
+    ],
+    "stakeholders": [
+      {
+        "role": "Chief Information Officer",
+        "interest": "Not repeating the missed detection",
+        "influence": 5,
+        "engagement": 4
+      },
+      {
+        "role": "Divisional IT manager",
+        "interest": "Continuity of the service they already have",
+        "influence": 3,
+        "engagement": 5
+      },
+      {
+        "role": "Procurement lead",
+        "interest": "Demonstrable competition and a defensible price",
+        "influence": 4,
+        "engagement": 3
+      },
+      {
+        "role": "Fleet operations lead",
+        "interest": "Telematics availability, not security posture",
+        "influence": 2,
+        "engagement": 2
+      }
+    ],
+    "account_timeline": [
+      {
+        "period": "Four years ago",
+        "summary": "Incumbent won the group-wide contract. We did not bid.",
+        "classification": "DEMO"
+      },
+      {
+        "period": "Two years ago",
+        "summary": "Won vulnerability management for one division. Service levels met every quarter since.",
+        "classification": "DEMO"
+      },
+      {
+        "period": "Eighteen months ago",
+        "summary": "Ransomware attempt. Incumbent's detection failed; the customer escalated formally.",
+        "classification": "DEMO"
+      },
+      {
+        "period": "This quarter",
+        "summary": "Renewal tender published with detection effectiveness weighted heavily.",
+        "classification": "DEMO"
+      }
+    ]
+  },
+  "compliance": {
+    "open_clarifications": [
+      "Whether the divisional service record may be cited as a reference",
+      "Whether the telematics platform is in scope or merely mentioned"
+    ],
+    "items": [
+      {
+        "reference": "EX-01",
+        "requirement": "Round-the-clock coverage across all three countries in the local language.",
+        "state": "COMPLIANT",
+        "is_exclusion_criterion": true,
+        "evidence": "Existing coverage model spans all three",
+        "owner": "Service management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-01",
+        "requirement": "Demonstrated detection effectiveness, evidenced by measured outcomes rather than described process.",
+        "state": "EVIDENCE_REQUIRED",
+        "is_exclusion_criterion": false,
+        "evidence": "Divisional service record would evidence it, subject to customer consent",
+        "owner": "Bid management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-02",
+        "requirement": "Transition completed before the incumbent's contract ends.",
+        "state": "COMPLIANT",
+        "is_exclusion_criterion": false,
+        "evidence": "Transition method exists and the window is workable",
+        "owner": "Delivery management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-03",
+        "requirement": "Security monitoring of the fleet telematics platform.",
+        "state": "CLARIFICATION_REQUIRED",
+        "is_exclusion_criterion": false,
+        "evidence": "Mentioned in the scope narrative but absent from the requirement list",
+        "owner": "Bid management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-04",
+        "requirement": "Named delivery lead present at the bidder presentation.",
+        "state": "PARTIALLY_COMPLIANT",
+        "is_exclusion_criterion": false,
+        "evidence": "Role identified, individual not yet confirmed available",
+        "owner": "Delivery management",
+        "origin": "Demonstration scenario"
+      }
+    ]
+  },
+  "capability_fit": {
+    "catalog_note": "Coverage is strong across the requirement list. The open question is evidence rather than capability: what may actually be cited in the proposal.",
+    "items": [
+      {
+        "requirement": "Round-the-clock monitoring across three countries",
+        "capability": "Managed detection and response",
+        "coverage": "CONFIRMED",
+        "evidence": "Existing coverage model and the divisional engagement",
+        "validity": "Current",
+        "owner": "Service management"
+      },
+      {
+        "requirement": "Demonstrated detection effectiveness",
+        "capability": "Detection engineering and threat research",
+        "coverage": "EVIDENCE_REQUIRED",
+        "evidence": "Measured outcomes exist; consent to cite them does not",
+        "validity": "Pending customer consent",
+        "owner": "Bid management"
+      },
+      {
+        "requirement": "Vulnerability management across nine hubs",
+        "capability": "Managed vulnerability management",
+        "coverage": "CONFIRMED",
+        "evidence": "Already delivered to one division of this customer",
+        "validity": "Current",
+        "owner": "Service management"
+      },
+      {
+        "requirement": "Telematics platform monitoring",
+        "capability": "Platform and application monitoring",
+        "coverage": "PARTIAL",
+        "evidence": "Comparable platforms covered; this one has not been assessed",
+        "validity": "Needs confirmation",
+        "owner": "Delivery architecture"
+      },
+      {
+        "requirement": "Transition from an incumbent under time pressure",
+        "capability": "Service transition",
+        "coverage": "CONFIRMED",
+        "evidence": "Transition method with comparable engagements",
+        "validity": "Current",
+        "owner": "Delivery management"
+      }
+    ]
+  },
+  "qualification": {
+    "system_assessment": "GO_WITH_CONDITIONS",
+    "assessment_rationale": "Strong capability coverage, an existing service record with this customer, and an incumbent with a documented failure against the criterion the tender weights most. The conditions are about permission to use evidence, not about whether the evidence exists.",
+    "decision_owner": "Bid board",
+    "approval_state": "Not submitted for decision",
+    "factors": [
+      {
+        "name": "Exclusion criteria",
+        "verdict": "STRONG",
+        "note": "Coverage requirement is met across all three countries.",
+        "owner": "Compliance",
+        "is_must_pass": true
+      },
+      {
+        "name": "Capability coverage",
+        "verdict": "STRONG",
+        "note": "Every requirement is covered. One is partial and not on the critical path.",
+        "owner": "Portfolio management",
+        "is_must_pass": true
+      },
+      {
+        "name": "Relationship",
+        "verdict": "ADEQUATE",
+        "note": "Two years of delivered service to one division, with an advocate in the divisional IT manager.",
+        "owner": "Account management",
+        "is_must_pass": false
+      },
+      {
+        "name": "Competitive position",
+        "verdict": "ADEQUATE",
+        "note": "Four bidders. The incumbent is defending a documented failure; two others will compete on price.",
+        "owner": "Bid management",
+        "is_must_pass": false
+      },
+      {
+        "name": "Commercial fit",
+        "verdict": "ADEQUATE",
+        "note": "Volume band fits. Margin will be under pressure from the smaller bidders.",
+        "owner": "Commercial",
+        "is_must_pass": false
+      },
+      {
+        "name": "Delivery capacity",
+        "verdict": "STRONG",
+        "note": "Capacity confirmed for the transition window.",
+        "owner": "Delivery management",
+        "is_must_pass": true
+      }
+    ],
+    "conditions": [
+      {
+        "text": "Obtain customer consent to cite the divisional service record as evidence of detection effectiveness.",
+        "owner": "Account management",
+        "due": "Before the proposal deadline"
+      },
+      {
+        "text": "Clarify whether the telematics platform is in scope.",
+        "owner": "Bid management",
+        "due": "During the clarification window"
+      },
+      {
+        "text": "Confirm the named delivery lead is available for the presentation date.",
+        "owner": "Delivery management",
+        "due": "Before the presentation"
+      }
+    ],
+    "evidence_gaps": [
+      "Consent to cite the divisional service record is not yet given",
+      "Telematics platform has not been technically assessed"
+    ]
+  },
+  "competitive_intelligence": {
+    "collection_note": "Four bidders were visible to each other at the market dialogue, so the field is known rather than inferred. Every signal below would still carry the date it was collected, because a competitor's position at week one is not their position at week nine. Nothing here was collected: it is written demonstration content.",
+    "intended_sources": [
+      "Approved public sources under a recorded collection policy",
+      "Public award notices",
+      "Prior bid archive and recorded loss reviews",
+      "Analyst input reviewed by product marketing"
+    ],
+    "competitors": [
+      {
+        "key": "alpha-systems",
+        "name": "Alpha Systems (invented)",
+        "positioning": "The incumbent. Four years in place, broad IT relationship, and a detection failure on record that the tender's evaluation criteria appear written around.",
+        "threat_band": "HIGH",
+        "threat_level": 5,
+        "claims": [
+          "Continuity: no transition risk",
+          "Deepest knowledge of the estate",
+          "Investment in a new detection platform since the incident"
+        ],
+        "signals": [
+          {
+            "text": "Announced a platform modernization programme shortly after the tender was published.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          },
+          {
+            "text": "Recruiting detection engineers in the customer's region.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          },
+          {
+            "text": "Holds the wider IT outsourcing contract, which is not up for renewal.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          }
+        ],
+        "comparison": [
+          {
+            "dimension": "Detection effectiveness",
+            "own_level": 5,
+            "competitor_level": 2,
+            "takeaway": "Their documented failure is the whole bid. Say it through the customer's own criterion, never as an attack."
+          },
+          {
+            "dimension": "Estate knowledge",
+            "own_level": 2,
+            "competitor_level": 5,
+            "takeaway": "Four years of context we do not have. Counter with transition method, not with claims of understanding."
+          },
+          {
+            "dimension": "Transition risk",
+            "own_level": 3,
+            "competitor_level": 5,
+            "takeaway": "Staying put is always the lower-risk option on paper."
+          },
+          {
+            "dimension": "Security specialization",
+            "own_level": 5,
+            "competitor_level": 3,
+            "takeaway": "Security is our whole business and one of their service lines."
+          }
+        ]
+      },
+      {
+        "key": "beta-secure",
+        "name": "Beta Secure (invented)",
+        "positioning": "Regional specialist with comparable depth and a much smaller delivery footprint. Expected to compete hard on price.",
+        "threat_band": "MEDIUM",
+        "threat_level": 3,
+        "claims": ["Specialist focus at a lower rate"],
+        "signals": [
+          {
+            "text": "Attended the market dialogue and asked about minimum team size.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          },
+          {
+            "text": "Won a smaller comparable contract in the same sector.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          }
+        ],
+        "comparison": [
+          {
+            "dimension": "Security specialization",
+            "own_level": 5,
+            "competitor_level": 4,
+            "takeaway": "Comparable. Differentiate on scale and evidence, not on depth."
+          },
+          {
+            "dimension": "Multi-country coverage",
+            "own_level": 5,
+            "competitor_level": 2,
+            "takeaway": "Three countries around the clock stretches them."
+          },
+          {
+            "dimension": "Price position",
+            "own_level": 3,
+            "competitor_level": 5,
+            "takeaway": "They will undercut. Do not follow."
+          }
+        ]
+      },
+      {
+        "key": "gamma-it-services",
+        "name": "Gamma IT Services (invented)",
+        "positioning": "Large generalist with a strong logistics-sector story and an existing relationship elsewhere in the group.",
+        "threat_band": "MEDIUM",
+        "threat_level": 3,
+        "claims": ["Sector understanding", "One supplier across IT and security"],
+        "signals": [
+          {
+            "text": "Published a logistics-sector security campaign.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          },
+          {
+            "text": "Holds a contract with a sister company in the same group.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          }
+        ],
+        "comparison": [
+          {
+            "dimension": "Sector story",
+            "own_level": 3,
+            "competitor_level": 5,
+            "takeaway": "Their sector narrative is better packaged than ours."
+          },
+          {
+            "dimension": "Detection effectiveness",
+            "own_level": 5,
+            "competitor_level": 3,
+            "takeaway": "Generalist detection against a specialist practice."
+          }
+        ]
+      },
+      {
+        "key": "delta-managed",
+        "name": "Delta Managed Services (invented)",
+        "positioning": "Small operational-technology specialist. Unlikely to win the whole scope but credible on the telematics platform.",
+        "threat_band": "LOW",
+        "threat_level": 2,
+        "claims": ["Telematics and operational technology expertise"],
+        "signals": [
+          {
+            "text": "Asked the only telematics question at the market dialogue.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          }
+        ],
+        "comparison": [
+          {
+            "dimension": "Telematics platform",
+            "own_level": 3,
+            "competitor_level": 5,
+            "takeaway": "A partner conversation rather than a competitive one."
+          },
+          {
+            "dimension": "Enterprise monitoring scale",
+            "own_level": 5,
+            "competitor_level": 1,
+            "takeaway": "They cannot carry nine hubs and 2,600 users."
+          }
+        ]
+      }
+    ],
+    "battle_cards": [
+      {
+        "competitor_key": "alpha-systems",
+        "our_position": "Detection effectiveness measured and evidenced, on the criterion the customer weighted most heavily after their own incident.",
+        "their_weakness": "A missed detection on record, and a platform modernization announced only once the tender was published.",
+        "proof_points": [
+          "Two years of met service levels in the same customer's division",
+          "Published threat research feeding the detection content",
+          "Measured detection outcomes, subject to consent to cite them"
+        ],
+        "approval_state": "Demonstration content. Not reviewed, not approved for use."
+      },
+      {
+        "competitor_key": "beta-secure",
+        "our_position": "The same specialist depth, delivered across three countries around the clock without stretching a small team.",
+        "their_weakness": "Coverage across three countries at the required hours is a capacity question for them, not a pricing one.",
+        "proof_points": [
+          "Existing three-country coverage model",
+          "Delivery capacity confirmed for the transition window"
+        ],
+        "approval_state": "Demonstration content. Not reviewed, not approved for use."
+      }
+    ]
+  },
+  "win_strategy": {
+    "approval_state": "Draft. Two themes depend on a consent that has not been given.",
+    "evaluator_takeaway": "The provider who can show measured detection outcomes, in the customer's own estate, against the criterion their own incident produced.",
+    "hot_buttons": [
+      {
+        "title": "Not repeating the missed detection",
+        "detail": "The evaluation criteria weight detection effectiveness heavily, which reads as a direct response to the incident eighteen months ago.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "title": "A transition that finishes before the incumbent leaves",
+        "detail": "The incumbent's contract ends on a fixed date. A gap in coverage is the customer's worst outcome.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "title": "Somebody owning the telematics platform",
+        "detail": "Mentioned in the scope narrative, absent from the requirement list, and currently nobody's responsibility.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      }
+    ],
+    "themes": [
+      {
+        "title": "Measured, not described",
+        "statement": "Detection effectiveness shown as outcomes in this customer's own estate, rather than as a description of process.",
+        "classification": "DEMO",
+        "proof_point": "Two years of met service levels in the customer's division",
+        "evidence_gap": "Consent to cite the divisional record has not been given"
+      },
+      {
+        "title": "Handover without a gap",
+        "statement": "A staged transition with checkpoints that completes before the incumbent's contract ends, not on the day it does.",
+        "classification": "DEMO",
+        "proof_point": "Transition method with comparable engagements",
+        "evidence_gap": null
+      },
+      {
+        "title": "Nothing left unowned",
+        "statement": "The telematics platform brought inside a single security scope instead of falling between IT and operations.",
+        "classification": "DEMO",
+        "proof_point": null,
+        "evidence_gap": "The platform has not been technically assessed"
+      }
+    ],
+    "differentiators": [
+      "An existing, measurable service record inside this customer",
+      "Security as the whole business rather than a service line",
+      "Coverage across all three countries at the required hours"
+    ],
+    "risks": [
+      "The incumbent's estate knowledge and the low apparent risk of staying put",
+      "Two bidders expected to compete on price alone",
+      "The strongest proof point cannot be used without customer consent"
+    ]
+  },
+  "review_approval": {
+    "submission_readiness": "Not ready. One evidence consent and one scope clarification are outstanding, and two items are still awaiting a reviewer.",
+    "blocking_items": [
+      "Consent to cite the divisional service record",
+      "Telematics platform scope unclear"
+    ],
+    "items": [
+      {
+        "reference": "M-01",
+        "kind": "Requirement",
+        "proposed": "Detection effectiveness evidenced by measured outcomes rather than described process.",
+        "origin": "Demonstration scenario",
+        "state": "AWAITING_REVIEW",
+        "reviewer_role": "Bid management"
+      },
+      {
+        "reference": "M-03",
+        "kind": "Scope",
+        "proposed": "Security monitoring of the fleet telematics platform.",
+        "origin": "Demonstration scenario",
+        "state": "CLARIFICATION_REQUESTED",
+        "reviewer_role": "Bid management"
+      },
+      {
+        "reference": "M-02",
+        "kind": "Requirement",
+        "proposed": "Transition completed before the incumbent's contract ends.",
+        "origin": "Demonstration scenario",
+        "state": "ACCEPTED",
+        "reviewer_role": "Delivery management"
+      },
+      {
+        "reference": "EX-01",
+        "kind": "Exclusion criterion",
+        "proposed": "Round-the-clock coverage in the local language across all three countries.",
+        "origin": "Demonstration scenario",
+        "state": "ACCEPTED",
+        "reviewer_role": "Compliance"
+      },
+      {
+        "reference": "M-04",
+        "kind": "Formality",
+        "proposed": "Named delivery lead present at the bidder presentation.",
+        "origin": "Demonstration scenario",
+        "state": "AWAITING_REVIEW",
+        "reviewer_role": "Delivery management"
+      }
+    ],
+    "history": [
+      {
+        "reference": "EX-01",
+        "outcome": "Accepted as extracted",
+        "reviewer_role": "Compliance",
+        "note": "Coverage model confirmed against all three countries."
+      },
+      {
+        "reference": "M-02",
+        "outcome": "Accepted as extracted",
+        "reviewer_role": "Delivery management",
+        "note": "Transition window checked against the incumbent's end date."
+      },
+      {
+        "reference": "M-03",
+        "outcome": "Clarification raised",
+        "reviewer_role": "Bid management",
+        "note": "Named in the scope narrative but missing from the requirement list."
+      }
+    ]
+  }
+}

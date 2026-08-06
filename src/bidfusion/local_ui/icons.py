@@ -36,6 +36,24 @@ _ICON_PATHS: dict[str, str] = {
     ),
     "arrow-right": '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
     "minus": '<path d="M5 12h14"/>',
+    "unlink": (
+        '<path d="m8.5 8.5-2 2a4.95 4.95 0 0 0 7 7l2-2"/>'
+        '<path d="m15.5 15.5 2-2a4.95 4.95 0 0 0-7-7l-2 2"/><path d="m2 2 20 20"/>'
+    ),
+    "target": (
+        '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/>'
+        '<circle cx="12" cy="12" r="2"/>'
+    ),
+    "layers": ('<path d="m12 2 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>'),
+    "users": (
+        '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>'
+        '<path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
+    ),
+    "list": (
+        '<path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/>'
+        '<path d="M3 12h.01"/><path d="M3 18h.01"/>'
+    ),
+    "map": ('<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15"/><path d="M15 6v15"/>'),
     "octagon-x": (
         '<path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86z"/>'
         '<path d="m15 9-6 6"/><path d="m9 9 6 6"/>'

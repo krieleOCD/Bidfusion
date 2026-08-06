@@ -1,0 +1,78 @@
+{% macro status_chip(status) %}
+<span class="status-badge status-badge--{{ status.tone }}">
+  {{ icon(status.icon) }} {{ status.label }}
+</span>
+{% endmacro %}
+
+{% macro module_card(module) %}
+<article class="module-card module-card--{{ module.status.label|lower|replace(' ', '_') }}">
+  <h3 class="module-card__title">
+    {% if module.has_page %}
+    <a href="{{ url_for(module.endpoint) }}">{{ module.title }}</a>
+    {% else %}
+    {{ module.title }}
+    {% endif %}
+  </h3>
+  <p class="module-card__badges">
+    {{ status_chip(module.status) }}
+    {{ status_chip(module.data_mode) }}
+  </p>
+  <p class="module-card__text">{{ module.short_description }}</p>
+  <p class="module-card__phase">
+    Phase {{ module.phase_id }} — {{ module.phase_title }} ·
+    <a href="{{ url_for('feature_detail', feature_key=module.key) }}">Feature record</a>
+  </p>
+</article>
+{% endmacro %}
+
+{% macro fact_block(title, entries, empty_text) %}
+<div class="fact-block{% if not entries %} fact-block--empty{% endif %}">
+  <h3>{{ title }}</h3>
+  {% if entries %}
+  <ul>
+    {% for entry in entries %}
+    <li>{{ entry }}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>{{ empty_text }}</p>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro meter(value, tone) %}
+<span class="meter" role="img" aria-label="{{ value.label }}">
+  {% for step in range(1, value.steps + 1) %}
+  <span class="meter__step{% if step <= value.level %} meter__step--on meter__step--{{ tone }}{% endif %}"></span>
+  {% endfor %}
+  <span class="meter__label">{{ value.level }}/{{ value.steps }}</span>
+</span>
+{% endmacro %}
+
+{% macro classified(row) %}
+<li class="classified">
+  <p class="classified__text">{{ row.text }}</p>
+  <p class="classified__meta">
+    {{ status_chip(row.classification) }}
+    <span class="classified__origin">{{ row.origin }}</span>
+  </p>
+</li>
+{% endmacro %}
+
+{% macro bullet_list(entries) %}
+<ul class="plain-list">
+  {% for entry in entries %}
+  <li>{{ entry }}</li>
+  {% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro preview_notice(state) %}
+<div class="banner banner--{{ state.notice_tone }}">
+  {{ icon(state.status.icon) }}
+  <div>
+    <p>{{ state.status.label }} · {{ state.data_mode.label }}</p>
+    <p>{{ state.review_note }}</p>
+  </div>
+</div>
+{% endmacro %}

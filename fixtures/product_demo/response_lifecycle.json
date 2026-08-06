@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "grounding_rule": "Every drafted sentence must point at the reviewed requirement it answers and the approved content it draws on. A section with no such anchor is not written; it is raised as a gap for a human to close.",
+  "export_note": "An export is a package a person assembled and approved. Nothing leaves BidFusion because a stage finished.",
+  "stages": [
+    {
+      "key": "customer-context",
+      "name": "Customer context",
+      "purpose": "Assemble what the organization already knows about this account before anyone writes a word: prior bids, agreements in place, and recorded history.",
+      "inputs": ["Approved internal sources", "Prior bid archive"],
+      "human_step": "A bid manager confirms the context is the right account and the right opportunity before it informs anything downstream.",
+      "target_phase": "L2-B"
+    },
+    {
+      "key": "win-strategy",
+      "name": "Win strategy",
+      "purpose": "Turn evaluation criteria, customer priorities, and the competitive picture into themes a reviewer can agree or disagree with.",
+      "inputs": ["Extracted evaluation criteria", "Competitive picture", "Capability fit"],
+      "human_step": "A capture lead approves each theme, or sends it back with the proof point it is missing.",
+      "target_phase": "L2-E"
+    },
+    {
+      "key": "response-blueprint",
+      "name": "Response blueprint",
+      "purpose": "Lay out the response against the reviewed requirements, so every mandatory item has a place before drafting starts.",
+      "inputs": ["Reviewed working package", "Submission formalities"],
+      "human_step": "A bid manager confirms the structure matches what the tender actually asked for.",
+      "target_phase": "L2-F"
+    },
+    {
+      "key": "response-draft",
+      "name": "Response draft",
+      "purpose": "Draft sections that cite the requirement they answer and the approved content they reuse.",
+      "inputs": ["Response blueprint", "Approved content store"],
+      "human_step": "Every drafted section is written for review. None of it is customer-facing until an author has taken ownership of it.",
+      "target_phase": "L2-F"
+    },
+    {
+      "key": "quality-review",
+      "name": "Quality review",
+      "purpose": "Check coverage against the requirement list and surface what is thin, missing, or unsupported.",
+      "inputs": ["Response draft", "Reviewed working package"],
+      "human_step": "A reviewer decides what a finding means. A score never gates a submission on its own.",
+      "target_phase": "L2-F"
+    },
+    {
+      "key": "approval",
+      "name": "Approval",
+      "purpose": "Record who approved what, on which version, and on what basis.",
+      "inputs": ["Reviewed response", "Qualification decision"],
+      "human_step": "Approval is the human act. There is no automatic path past this stage.",
+      "target_phase": "L1A-S4"
+    },
+    {
+      "key": "export",
+      "name": "Export package",
+      "purpose": "Assemble the approved response in the formats and naming the tender demands.",
+      "inputs": ["Approved response", "Submission formalities"],
+      "human_step": "A person exports, checks, and submits. BidFusion never submits anything.",
+      "target_phase": "L2-F"
+    }
+  ]
+}

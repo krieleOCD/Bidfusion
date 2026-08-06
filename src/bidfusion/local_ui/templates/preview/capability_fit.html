@@ -1,0 +1,92 @@
+{% extends "preview/_preview_base.html" %}
+{% from "partials/product_macros.html" import status_chip %}
+{% block headline %}What we can actually evidence against what is being asked for.{% endblock %}
+{% block module %}
+
+<section aria-labelledby="coverage-heading" class="card card--accent">
+  <h2 id="coverage-heading">Coverage</h2>
+  <dl class="metric-grid">
+    <div class="metric metric--success">
+      <dt class="metric__label">Confirmed</dt>
+      <dd class="metric__value">{{ section.confirmed_count }}</dd>
+      <dd class="metric__note">Covered with evidence recorded</dd>
+    </div>
+    <div class="metric metric--warning">
+      <dt class="metric__label">Not confirmed</dt>
+      <dd class="metric__value">{{ section.unconfirmed_count }}</dd>
+      <dd class="metric__note">Partial, unknown, or awaiting evidence</dd>
+    </div>
+    <div class="metric metric--danger">
+      <dt class="metric__label">Gaps</dt>
+      <dd class="metric__value">{{ section.gap_count }}</dd>
+      <dd class="metric__note">Nothing in the portfolio covers it</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Requirements assessed</dt>
+      <dd class="metric__value">{{ section.items|length }}</dd>
+      <dd class="metric__note">In this demonstration scenario</dd>
+    </div>
+  </dl>
+  <p class="module-card__text">
+    {{ icon('info') }} A capability is only shown as held when evidence is recorded for
+    it. Everything else stays visibly unconfirmed, including the things we probably can do.
+  </p>
+</section>
+
+<section aria-labelledby="matrix-heading" class="card">
+  <h2 id="matrix-heading">Requirement coverage</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">
+        Requirements, the capability offered against each, and the evidence behind it
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Requirement</th>
+          <th scope="col">Capability</th>
+          <th scope="col">Coverage</th>
+          <th scope="col">Evidence</th>
+          <th scope="col">Validity</th>
+          <th scope="col">Owner</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in section.items %}
+        <tr>
+          <th scope="row">{{ row.requirement }}</th>
+          <td>{{ row.capability }}</td>
+          <td>{{ status_chip(row.coverage) }}</td>
+          <td>{{ row.evidence }}</td>
+          <td>{{ row.validity }}</td>
+          <td>{{ row.owner }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="module-card__text">{{ section.catalog_note }}</p>
+</section>
+
+<section aria-labelledby="states-heading" class="card">
+  <h2 id="states-heading">What each coverage state means</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">Coverage states and their meaning</caption>
+      <thead>
+        <tr>
+          <th scope="col">State</th>
+          <th scope="col">Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for state, meaning in section.legend %}
+        <tr>
+          <td>{{ status_chip(state) }}</td>
+          <td>{{ meaning }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

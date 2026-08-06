@@ -1,0 +1,116 @@
+{% extends "product_base.html" %}
+{% from "partials/product_macros.html" import status_chip, module_card %}
+{% block title %}Architecture and Roadmap — BidFusion{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <p class="ocd-overline">Architecture and roadmap</p>
+  <h1>What is built, what is next, and what each step depends on.</h1>
+  <p class="lede">
+    This page is the same record the rest of the interface reads from. Every status chip
+    you see anywhere in BidFusion comes from here, so a module cannot present itself as
+    more finished than this page says it is. Phases up to and including Level 1B are
+    fixed in the repository's architecture contract; phases above it are proposed by this
+    product plan and are marked accordingly.
+  </p>
+</div>
+
+<section aria-labelledby="phases-heading">
+  <div class="group-head">
+    <h2 id="phases-heading">Delivery phases</h2>
+    <p>In order. A phase carries the features that cannot exist before it lands.</p>
+  </div>
+
+  {% for phase in phases %}
+  <article class="phase phase--{{ phase.state.label|lower }}"
+           aria-labelledby="phase-{{ phase.phase_id|replace('.', '-') }}-heading">
+    <div class="phase__head">
+      <span class="phase__id">{{ phase.phase_id }}</span>
+      <h3 id="phase-{{ phase.phase_id|replace('.', '-') }}-heading">{{ phase.title }}</h3>
+      {{ status_chip(phase.state) }}
+      {% if phase.is_proposed %}
+      <span class="type-tag">Proposed</span>
+      {% else %}
+      <span class="type-tag">Architecture contract</span>
+      {% endif %}
+    </div>
+    <p class="phase__summary">{{ phase.summary }}</p>
+    <p class="phase__source">{{ icon('file') }} {{ phase.definition_reference }}</p>
+    {% if phase.features %}
+    <div class="module-grid">
+      {% for module in phase.features %}
+      {{ module_card(module) }}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </article>
+  {% endfor %}
+</section>
+
+<section aria-labelledby="records-heading" class="card">
+  <h2 id="records-heading">Every feature at a glance</h2>
+  <p class="lede">
+    Owner, phase, and the gate each feature has to pass. Open a feature record for its
+    dependencies, limitations, and acceptance criteria.
+  </p>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">All registered BidFusion features</caption>
+      <thead>
+        <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Status</th>
+          <th scope="col">Data mode</th>
+          <th scope="col">Phase</th>
+          <th scope="col">Owner</th>
+          <th scope="col">Open dependencies</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for detail in details %}
+        <tr>
+          <th scope="row">
+            <a href="{{ url_for('feature_detail', feature_key=detail.status.key) }}">
+              {{ detail.status.title }}
+            </a>
+          </th>
+          <td>{{ status_chip(detail.status.status) }}</td>
+          <td>{{ status_chip(detail.status.data_mode) }}</td>
+          <td>{{ detail.status.phase_id }}</td>
+          <td>{{ detail.owner }}</td>
+          <td>
+            {% if detail.dependencies %}
+            <ul>
+              {% for dependency in detail.dependencies %}
+              <li>{{ dependency }}</li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="boundaries-heading" class="card card--accent">
+  <h2 id="boundaries-heading">Boundaries that hold in every phase</h2>
+  <p class="lede">
+    These are not open questions. They are properties of the current build, enforced by
+    the code and its tests rather than by convention.
+  </p>
+  <ul>
+    <li>The interface makes no network call and contacts no external system.</li>
+    <li>No model is called from the interface, and the model gateway is not connected
+        to the pipeline.</li>
+    <li>Freely uploaded files are quarantined and never parsed, extracted, or cleared.</li>
+    <li>Full analysis runs only on the repository's own fixture packages.</li>
+    <li>Preview pages read no uploaded or quarantined content of any kind.</li>
+    <li>Recorded artifacts are refused rather than shown when their integrity check fails.</li>
+    <li>Production customer data is out of scope until a separate decision permits it.</li>
+  </ul>
+</section>
+{% endblock %}
