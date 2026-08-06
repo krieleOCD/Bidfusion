@@ -28,7 +28,7 @@ from enum import StrEnum
 
 from pydantic import Field, model_validator
 
-from bidfusion.schemas.artifact import ArtifactReference
+from bidfusion.schemas.artifact import ArtifactEnvelope, ArtifactReference, ArtifactType
 from bidfusion.schemas.common import BidfusionModel, SemanticVersion
 from bidfusion.schemas.ids import BidId, RunId
 
@@ -205,3 +205,38 @@ class BidRun(BidfusionModel):
         if not is_terminal and self.terminal_reason is not None:
             msg = "terminal_reason is only valid in a terminal state"
             raise ValueError(msg)
+
+
+class BidRunRecord(BidfusionModel):
+    """The sealed, persisted form of one ``BidRun`` snapshot.
+
+    Quarantine has no other persistence layer for a BidRun (no database,
+    no separate run registry file) — this sealed record, written next to
+    the ``UploadManifest`` inside the quarantine package, *is* the
+    authoritative representation. A session-local UI registry may point
+    at it for navigation, but must never be trusted as the record itself
+    (docs/architecture/level-1-target.md, §5).
+    """
+
+    artifact: ArtifactEnvelope
+    bid_run: BidRun
+
+    @model_validator(mode="after")
+    def _record_matches_its_bidrun(self) -> BidRunRecord:
+        if self.artifact.artifact_type is not ArtifactType.BID_RUN_RECORD:
+            msg = "a BidRunRecord requires a bid_run_record artifact"
+            raise ValueError(msg)
+        same_bid = self.artifact.bid_id == self.bid_run.bid_id
+        same_run = self.artifact.run_id == self.bid_run.run_id
+        if not same_bid or not same_run:
+            msg = "the record artifact must carry the same bid_id and run_id as its BidRun"
+            raise ValueError(msg)
+        lineage_ids = {item.artifact_id: item for item in self.artifact.input_artifacts}
+        run_artifact_ids = {item.artifact_id: item for item in self.bid_run.artifact_refs}
+        if lineage_ids != run_artifact_ids:
+            msg = (
+                "the record's artifact lineage must reference exactly the BidRun's "
+                "own artifact_refs — no missing and no extra artifacts"
+            )
+            raise ValueError(msg)
+        return self

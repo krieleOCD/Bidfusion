@@ -37,6 +37,11 @@ def run_id_for(started_at: datetime) -> str:
     return started_at.strftime("RUN-%Y%m%d-%H%M%S%f")
 
 
+def package_id_for(started_at: datetime) -> str:
+    """Build the ``PKG-YYYYMMDD-HHMMSSffffff`` identifier for a quarantine package."""
+    return started_at.strftime("PKG-%Y%m%d-%H%M%S%f")
+
+
 def document_id_for(index: int) -> str:
     """Build the sequential ``DOC-NNN`` identifier for a registered document."""
     if index < 1:

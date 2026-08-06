@@ -26,7 +26,7 @@ from pathlib import Path
 from bidfusion.schemas.artifact import ArtifactReference, ArtifactType
 from bidfusion.schemas.document import Document
 from bidfusion.schemas.ids import BidId, RunId
-from bidfusion.security.preflight import EXTENSION_MIME_TYPES, UNKNOWN_MIME
+from bidfusion.shared.filetype import EXTENSION_MIME_TYPES, UNKNOWN_MIME
 from bidfusion.shared.identifiers import ArtifactIdAllocator, document_id_for
 from bidfusion.shared.pathguards import is_repository_harness_path
 

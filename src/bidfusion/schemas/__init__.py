@@ -13,6 +13,7 @@ from bidfusion.schemas.bidrun import (
     AuthorizationType,
     BidRun,
     BidRunReasonCode,
+    BidRunRecord,
     BidRunState,
     BidRunTransition,
 )
@@ -103,6 +104,7 @@ from bidfusion.schemas.ids import (
     DocumentId,
     KnowledgeItemId,
     OpportunityId,
+    PackageId,
     RequirementId,
     ReviewId,
     RunId,
@@ -174,6 +176,12 @@ from bidfusion.schemas.security import (
     SecurityResult,
     SecurityReviewDisposition,
 )
+from bidfusion.schemas.upload import (
+    DeletionStatus,
+    QuarantinedUploadFile,
+    RetentionPolicy,
+    UploadManifest,
+)
 from bidfusion.schemas.working_package import (
     EvidencedStatement,
     ExecutiveOverview,
@@ -206,6 +214,7 @@ __all__ = [
     "BidId",
     "BidRun",
     "BidRunReasonCode",
+    "BidRunRecord",
     "BidRunState",
     "BidRunTransition",
     "BoundingBox",
@@ -237,6 +246,7 @@ __all__ = [
     "Deadline",
     "DeadlineExtractionResult",
     "DeadlineKind",
+    "DeletionStatus",
     "Document",
     "DocumentId",
     "DocumentInventoryEntry",
@@ -293,6 +303,7 @@ __all__ = [
     "Opportunity",
     "OpportunityId",
     "Page",
+    "PackageId",
     "Paragraph",
     "ProcessingRun",
     "ProcessingStage",
@@ -301,6 +312,7 @@ __all__ = [
     "ProviderConfig",
     "QualityCategory",
     "QualityFinding",
+    "QuarantinedUploadFile",
     "ReasoningRequirement",
     "Requirement",
     "RequirementExtractionResult",
@@ -308,6 +320,7 @@ __all__ = [
     "RequirementId",
     "RequirementModality",
     "RequirementsSummary",
+    "RetentionPolicy",
     "ReviewDecision",
     "ReviewFinding",
     "ReviewId",
@@ -341,5 +354,6 @@ __all__ = [
     "TableRow",
     "TextSpan",
     "UnresolvedConflict",
+    "UploadManifest",
     "WorkingPackage",
 ]

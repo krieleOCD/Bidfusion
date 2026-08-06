@@ -14,11 +14,41 @@ Convention ``bidfusion-artifact-payload:1``:
   share a semantic hash space.
 - ``ArtifactEnvelope.content_ref`` points at the persisted canonical payload
   file, and ``content_hash`` is the SHA-256 of exactly those bytes. This is
-  the Foundation meaning of the envelope hash; the payload file is the only
-  authoritative representation.
-- A full envelope-plus-payload audit file may be persisted additionally; it
-  is a derived convenience representation and must never be processed
-  independently as a valid artifact.
+  the Foundation meaning of the envelope hash, and it makes the payload file
+  **the sole authoritative source for every artifact content field** — no
+  other file may originate or override one.
+- The envelope itself (``artifact_id``, ``producer``, ``input_artifacts``,
+  ``created_at``, ``content_hash``, ...) is *not* part of the payload file —
+  it is excluded by construction, because it is what the payload hash binds
+  to (an envelope embedded in its own hash input would be circular).
+  Reconstructing and verifying a *complete* sealed artifact therefore
+  requires the envelope from a separate source in addition to the payload
+  file.
+- A full envelope-plus-payload audit file (``….audit.json``) may be
+  persisted additionally as a derived, human-inspectable convenience view.
+  Its own duplicate copy of the content fields is never authoritative and
+  must never be used to reconstruct a model or to decide what is displayed
+  or trusted — only the payload file may supply content. Today the audit
+  file is still the practical source for the envelope shell a reader needs
+  to reconstruct a complete model instance (per the point above, the
+  payload file alone is not enough); any reader that consumes it for that
+  purpose must independently verify the assembled result with
+  :func:`verify_sealed_artifact` before trusting or displaying anything —
+  see ``bidfusion.bidrun.quarantine._read_sealed_authoritative`` for the
+  reference implementation of this split. The audit file's *claimed*
+  envelope is data to be checked, never a trusted input on its own.
+- **Security scope.** This sealing scheme, together with the whole-file
+  ``integrity-manifest.json`` digest, is tamper-*evident*: it reliably
+  detects accidental corruption or a careless, internally inconsistent
+  edit. It is not tamper-*proof* and has no external trust anchor — it is
+  entirely self-contained and unkeyed. An actor able to rewrite a payload
+  file, its envelope, its content hash, and the integrity manifest all
+  consistently with each other produces something this scheme cannot
+  distinguish from a genuine, untampered artifact. Strong authenticity
+  against that threat is out of scope for this convention and would
+  require a later, separate mechanism — for example a signature, a keyed
+  MAC, an append-only store, or a digest anchored in an external system of
+  record.
 
 Sealing a self-referential artifact (a model that embeds its own envelope)
 is a two-pass construction: the model is first built against a placeholder
@@ -95,7 +125,13 @@ def payload_digest(payload_bytes: bytes) -> str:
 
 
 def verify_sealed_artifact(model: EnvelopedArtifact, *, domain: str) -> None:
-    """Fail loudly when a sealed artifact does not match its payload hash."""
+    """Fail loudly when a sealed artifact does not match its payload hash.
+
+    Proves internal self-consistency only — that ``model``'s content
+    hashes to what its own envelope claims. It has no external trust
+    anchor and cannot detect a consistently rewritten payload, envelope,
+    and hash (see the module docstring's "Security scope" note).
+    """
     observed = payload_digest(artifact_payload_bytes(model, domain=domain))
     if observed != model.artifact.content_hash:
         msg = (

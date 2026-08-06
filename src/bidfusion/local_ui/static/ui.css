@@ -153,6 +153,41 @@ section h3 { font-size: var(--font-size-h4); }
 }
 .card--accent { border-top: 4px solid var(--ocd-orange); }
 
+/* ---- Form fields (upload form) ---- */
+.field {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+.field-label {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-body-sm);
+}
+.field input[type="file"] {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-body-sm);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  max-width: 100%;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  cursor: pointer;
+  max-width: 70ch;
+  margin-bottom: var(--space-4);
+}
+.checkbox-field input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--ocd-black);
+}
+
 /* ---- Package selection ---- */
 .package-fieldset {
   border: 0;

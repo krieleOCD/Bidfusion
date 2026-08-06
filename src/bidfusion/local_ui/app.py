@@ -10,6 +10,7 @@ forbids scripts and every remote resource. The server binds to
 from __future__ import annotations
 
 import argparse
+import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 from typing import cast
@@ -27,14 +28,18 @@ from flask import (
 from werkzeug.exceptions import HTTPException
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
-from bidfusion.local_ui import artifacts, service
+from bidfusion.bidrun.quarantine import QuarantineError, UploadedFileInput
+from bidfusion.local_ui import artifacts, service, upload_service, upload_viewmodels
 from bidfusion.local_ui.icons import icon
 from bidfusion.local_ui.registry import RunRecord, RunRegistry
+from bidfusion.local_ui.upload_registry import UploadRegistry
 from bidfusion.local_ui.viewmodels import (
     build_review_package_view,
     build_run_view,
     build_working_package_view,
 )
+
+_DEFAULT_QUARANTINE_DIRNAME = "bidfusion-uploads"
 
 _VIEW_MODES = ("structured", "json", "md")
 
@@ -53,17 +58,33 @@ def create_app(
     *,
     registry: RunRegistry | None = None,
     output_base: Path | None = None,
+    upload_registry: UploadRegistry | None = None,
+    quarantine_root: Path | None = None,
 ) -> Flask:
     """Build the UI application.
 
     ``output_base`` optionally fixes the directory below which run
     output roots are created (tests use ``tmp_path``); by default every
     run gets a fresh private temporary directory outside any repository
-    checkout.
+    checkout. ``quarantine_root`` optionally fixes the root below which
+    free uploads are quarantined (tests use ``tmp_path``); by default it
+    is a stable, private directory below the system temporary directory
+    that persists across process restarts (Level 1A — authorized
+    non-production test uploads only, see
+    docs/architecture/level-1-target.md).
     """
     app = Flask(__name__)
     app.config["RUN_REGISTRY"] = registry if registry is not None else RunRegistry()
     app.config["OUTPUT_BASE"] = output_base
+    app.config["UPLOAD_REGISTRY"] = (
+        upload_registry if upload_registry is not None else UploadRegistry()
+    )
+    app.config["QUARANTINE_ROOT"] = (
+        quarantine_root
+        if quarantine_root is not None
+        else Path(tempfile.gettempdir()) / _DEFAULT_QUARANTINE_DIRNAME
+    )
+    app.config["MAX_CONTENT_LENGTH"] = upload_service.MAX_CONTENT_LENGTH
     app.jinja_env.globals["icon"] = icon
 
     @app.after_request
@@ -81,6 +102,30 @@ def create_app(
                 message=str(failure),
             ),
             500,
+        )
+
+    @app.errorhandler(upload_service.UploadValidationError)
+    def _upload_validation_error(failure: upload_service.UploadValidationError) -> tuple[str, int]:
+        return (
+            render_template(
+                "error.html",
+                status_code=400,
+                title="Upload not accepted.",
+                message=str(failure),
+            ),
+            400,
+        )
+
+    @app.errorhandler(QuarantineError)
+    def _quarantine_integrity_error(failure: QuarantineError) -> tuple[str, int]:
+        return (
+            render_template(
+                "error.html",
+                status_code=409,
+                title="Package not available.",
+                message=str(failure),
+            ),
+            409,
         )
 
     @app.errorhandler(HTTPException)
@@ -102,7 +147,38 @@ def create_app(
             "start.html",
             packages=service.list_packages(),
             runs=_registry(app).all(),
+            uploads=_upload_registry(app).all(),
+            upload_policy=upload_viewmodels.upload_policy_view(),
+            authorization_statement=upload_service.AUTHORIZATION_STATEMENT,
         )
+
+    @app.post("/uploads")
+    def submit_upload() -> WerkzeugResponse:
+        confirmed = request.form.get("authorization_confirmed") == "on"
+        uploads = tuple(
+            UploadedFileInput(
+                filename=storage.filename or "",
+                stream=storage.stream,
+                browser_content_type=storage.content_type,
+            )
+            for storage in request.files.getlist("files")
+            if storage.filename
+        )
+        result = upload_service.submit_upload(
+            files=uploads,
+            authorization_confirmed=confirmed,
+            quarantine_root=_quarantine_root(app),
+        )
+        record = _upload_registry(app).add(package_directory=result.package_directory)
+        return redirect(url_for("show_upload", upload_key=record.key), code=303)
+
+    @app.get("/uploads/<upload_key>")
+    def show_upload(upload_key: str) -> str:
+        record = _upload_registry(app).get(upload_key)
+        if record is None:
+            abort(404)
+        view = upload_viewmodels.build_upload_result_view(record.key, record.package_directory)
+        return render_template("upload_result.html", view=view)
 
     @app.post("/runs")
     def start_run() -> WerkzeugResponse:
@@ -249,6 +325,14 @@ def _registry(app: Flask) -> RunRegistry:
 
 def _output_base(app: Flask) -> Path | None:
     return cast(Path | None, app.config["OUTPUT_BASE"])
+
+
+def _upload_registry(app: Flask) -> UploadRegistry:
+    return cast(UploadRegistry, app.config["UPLOAD_REGISTRY"])
+
+
+def _quarantine_root(app: Flask) -> Path:
+    return cast(Path, app.config["QUARANTINE_ROOT"])
 
 
 def main(argv: Sequence[str] | None = None) -> int:

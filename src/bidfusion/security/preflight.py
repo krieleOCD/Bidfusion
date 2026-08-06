@@ -3,13 +3,10 @@
 from __future__ import annotations
 
 import re
-import zipfile
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
-from io import BytesIO
-from pathlib import PurePath
 
 from bidfusion.schemas.artifact import ArtifactReference, ArtifactType
 from bidfusion.schemas.common import Severity
@@ -19,20 +16,25 @@ from bidfusion.schemas.security import (
     SecurityCheckResult,
     SecurityCheckStatus,
 )
+from bidfusion.shared.filetype import (
+    CSV_MIME,
+    DOCX_MIME,
+    EXTENSION_MIME_TYPES,
+    JPEG_MIME,
+    OFFICE_MIME_TYPES,
+    PDF_MIME,
+    PLAIN_TEXT_MIME,
+    PNG_MIME,
+    PPTX_MIME,
+    XLSX_MIME,
+    ZIP_MIME,
+    ZIP_SIGNATURES,
+    ArchiveInspection,
+    detect_mime_type,
+    extension_of,
+    inspect_archive,
+)
 
-PDF_MIME = "application/pdf"
-DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-PLAIN_TEXT_MIME = "text/plain"
-CSV_MIME = "text/csv"
-PNG_MIME = "image/png"
-JPEG_MIME = "image/jpeg"
-ZIP_MIME = "application/zip"
-OLE_MIME = "application/x-ole-storage"
-UNKNOWN_MIME = "application/octet-stream"
-
-OFFICE_MIME_TYPES = frozenset({DOCX_MIME, XLSX_MIME, PPTX_MIME})
 DEFAULT_ALLOWED_MIME_TYPES = frozenset(
     {
         PDF_MIME,
@@ -48,21 +50,7 @@ DEFAULT_ALLOWED_MIME_TYPES = frozenset(
 DEFAULT_BLOCKED_EXTENSIONS = frozenset(
     {"exe", "dll", "bat", "cmd", "ps1", "sh", "js", "vbs", "scr", "com", "msi"}
 )
-EXTENSION_MIME_TYPES: dict[str, frozenset[str]] = {
-    "pdf": frozenset({PDF_MIME}),
-    "docx": frozenset({DOCX_MIME}),
-    "xlsx": frozenset({XLSX_MIME}),
-    "pptx": frozenset({PPTX_MIME}),
-    "txt": frozenset({PLAIN_TEXT_MIME}),
-    "csv": frozenset({CSV_MIME, PLAIN_TEXT_MIME}),
-    "png": frozenset({PNG_MIME}),
-    "jpg": frozenset({JPEG_MIME}),
-    "jpeg": frozenset({JPEG_MIME}),
-}
 
-_ZIP_SIGNATURES = (b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08")
-_OLE_SIGNATURE = bytes.fromhex("d0cf11e0a1b11ae1")
-_PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 _PDF_JAVASCRIPT = re.compile(rb"/(?:JS|JavaScript)\b")
 
 
@@ -97,16 +85,6 @@ class PreflightConfig:
         if self.max_archive_compression_ratio <= 1.0:
             msg = "archive compression-ratio limit must be greater than one"
             raise ValueError(msg)
-
-
-@dataclass(frozen=True, slots=True)
-class _ArchiveInspection:
-    """Normalized ZIP-container facts used by multiple checks."""
-
-    mime_type: str
-    names: frozenset[str]
-    entries: tuple[zipfile.ZipInfo, ...]
-    corrupt: bool = False
 
 
 class DeterministicPreflightScanner:
@@ -145,9 +123,9 @@ class DeterministicPreflightScanner:
             msg = "supplied content does not match the artifact content hash"
             raise ArtifactContentMismatchError(msg)
 
-        extension = _extension(filename)
-        archive = _inspect_archive(content) if content.startswith(_ZIP_SIGNATURES) else None
-        detected_mime = _detect_mime(content, extension, archive)
+        extension = extension_of(filename)
+        archive = inspect_archive(content) if content.startswith(ZIP_SIGNATURES) else None
+        detected_mime = detect_mime_type(content, extension, archive)
 
         checks = (
             SecurityCheckResult(
@@ -301,7 +279,7 @@ class DeterministicPreflightScanner:
 
     def _check_archive_limits(
         self,
-        archive: _ArchiveInspection | None,
+        archive: ArchiveInspection | None,
     ) -> SecurityCheckResult:
         if archive is None:
             return _not_applicable("archive_limits", "Document is not a ZIP container.")
@@ -344,68 +322,10 @@ class DeterministicPreflightScanner:
         )
 
 
-def _extension(filename: str) -> str:
-    return PurePath(filename).suffix.lower().removeprefix(".")
-
-
-def _inspect_archive(content: bytes) -> _ArchiveInspection:
-    try:
-        with zipfile.ZipFile(BytesIO(content), "r") as archive:
-            entries = tuple(archive.infolist())
-    except (OSError, ValueError, zipfile.BadZipFile):
-        return _ArchiveInspection(
-            mime_type=ZIP_MIME,
-            names=frozenset(),
-            entries=(),
-            corrupt=True,
-        )
-
-    names = frozenset(entry.filename.lower() for entry in entries)
-    if "word/document.xml" in names:
-        mime_type = DOCX_MIME
-    elif "xl/workbook.xml" in names:
-        mime_type = XLSX_MIME
-    elif "ppt/presentation.xml" in names:
-        mime_type = PPTX_MIME
-    else:
-        mime_type = ZIP_MIME
-    return _ArchiveInspection(mime_type=mime_type, names=names, entries=entries)
-
-
-def _detect_mime(
-    content: bytes,
-    extension: str,
-    archive: _ArchiveInspection | None,
-) -> str:
-    if content.startswith(b"%PDF-"):
-        return PDF_MIME
-    if archive is not None:
-        return archive.mime_type
-    if content.startswith(_OLE_SIGNATURE):
-        return OLE_MIME
-    if content.startswith(_PNG_SIGNATURE):
-        return PNG_MIME
-    if content.startswith(b"\xff\xd8\xff"):
-        return JPEG_MIME
-    if _is_utf8_text(content):
-        return CSV_MIME if extension == "csv" else PLAIN_TEXT_MIME
-    return UNKNOWN_MIME
-
-
-def _is_utf8_text(content: bytes) -> bool:
-    if b"\x00" in content:
-        return False
-    try:
-        content.decode("utf-8")
-    except UnicodeDecodeError:
-        return False
-    return True
-
-
 def _check_structural_integrity(
     content: bytes,
     detected_mime: str,
-    archive: _ArchiveInspection | None,
+    archive: ArchiveInspection | None,
 ) -> SecurityCheckResult:
     if detected_mime == PDF_MIME:
         if b"%%EOF" not in content[-2048:]:
@@ -477,7 +397,7 @@ def _check_structural_integrity(
 
 def _check_macros(
     detected_mime: str,
-    archive: _ArchiveInspection | None,
+    archive: ArchiveInspection | None,
 ) -> SecurityCheckResult:
     if detected_mime not in OFFICE_MIME_TYPES:
         return _not_applicable("macro_detection", "Document is not a supported Office format.")
@@ -502,7 +422,7 @@ def _check_macros(
 
 def _check_embedded_objects(
     detected_mime: str,
-    archive: _ArchiveInspection | None,
+    archive: ArchiveInspection | None,
 ) -> SecurityCheckResult:
     if detected_mime not in OFFICE_MIME_TYPES:
         return _not_applicable(
@@ -564,7 +484,7 @@ def _check_pdf_embedded_files(content: bytes, detected_mime: str) -> SecurityChe
 def _check_encryption(
     content: bytes,
     detected_mime: str,
-    archive: _ArchiveInspection | None,
+    archive: ArchiveInspection | None,
 ) -> SecurityCheckResult:
     if detected_mime == PDF_MIME:
         if b"/Encrypt" in content:

@@ -33,13 +33,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from hashlib import sha256
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from bidfusion.document_understanding.canonical import (
     CANONICAL_DOMAIN,
@@ -262,13 +263,67 @@ def _audit_ref(content_ref: str) -> str:
     return content_ref.removesuffix(".payload.json") + ".audit.json"
 
 
+_SHA256_HEX_PATTERN = re.compile(r"^[a-f0-9]{64}$")
+
+
+def _parsed_integrity_entries(manifest: object) -> dict[str, str] | None:
+    """Validate and return the manifest's ``files`` mapping, or ``None``.
+
+    Fails closed on any structural surprise — wrong top-level type, a
+    non-mapping ``files`` value, a non-string path or digest, a
+    malformed digest, an absolute or traversal path, or two raw keys
+    that normalize to the same path — rather than raising or silently
+    treating a malformed manifest as "nothing to check". Unknown
+    top-level keys besides ``files`` are ignored (forward compatible);
+    only the ``files`` mapping itself is a closed shape.
+    """
+    if not isinstance(manifest, dict):
+        return None
+    files = manifest.get("files", {})
+    if not isinstance(files, dict):
+        return None
+
+    entries: dict[str, str] = {}
+    seen_normalized: set[str] = set()
+    for relative, digest in files.items():
+        if not isinstance(relative, str) or not isinstance(digest, str):
+            return None
+        if not _SHA256_HEX_PATTERN.fullmatch(digest):
+            return None
+        normalized = _normalized_relative_path(relative)
+        if normalized is None or normalized in seen_normalized:
+            return None
+        seen_normalized.add(normalized)
+        entries[relative] = digest
+    return entries
+
+
+def _normalized_relative_path(relative: str) -> str | None:
+    """A safe, normalized relative POSIX path, or ``None`` if unsafe."""
+    if not relative or relative != relative.strip() or "\\" in relative:
+        return None
+    candidate = PurePosixPath(relative)
+    if candidate.is_absolute():
+        return None
+    parts = candidate.parts
+    if not parts or any(part in ("", ".", "..") for part in parts):
+        return None
+    return candidate.as_posix()
+
+
 def verify_run_integrity(run_directory: Path) -> tuple[str, ...]:
     """Re-hash every manifest entry and report deviations and unlisted files."""
     manifest_path = run_directory / MANIFEST_FILENAME
     if not manifest_path.is_file():
         return ("integrity manifest is missing",)
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    listed: dict[str, str] = manifest.get("files", {})
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ("integrity manifest is unreadable or not valid JSON",)
+
+    listed = _parsed_integrity_entries(manifest)
+    if listed is None:
+        return ("integrity manifest is structurally invalid",)
 
     issues: list[str] = []
     for relative, digest in sorted(listed.items()):

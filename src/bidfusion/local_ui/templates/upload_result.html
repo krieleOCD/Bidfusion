@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ view.key }} — BidFusion{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="ocd-overline">Quarantine</p>
+  <h1>{{ view.key }}.</h1>
+  <p class="lede">
+    Every value on this page is read from the persisted, re-verified
+    quarantine package — nothing is inferred. No parsing, extraction, or
+    security clearance has occurred for this upload.
+  </p>
+</div>
+
+<div class="banner banner--warning">
+  {{ icon('alert') }}
+  <div>
+    <p>{{ view.status_message }}</p>
+  </div>
+</div>
+
+<section aria-labelledby="quarantine-heading" class="card card--accent">
+  <h2 id="quarantine-heading">Quarantine status</h2>
+  <p>
+    <span class="status-badge status-badge--{{ view.status.tone }}">
+      {{ icon(view.status.icon) }} {{ view.status.label }}
+    </span>
+  </p>
+  <dl class="kv-list">
+    <dt>Files</dt>
+    <dd>{{ view.file_count }}</dd>
+    <dt>Upload policy</dt>
+    <dd>{{ view.policy_name }}:{{ view.policy_version }}</dd>
+    <dt>Retention policy</dt>
+    <dd>{{ view.retention_policy }}</dd>
+    <dt>Deletion status</dt>
+    <dd>{{ view.deletion_status }}</dd>
+    <dt>Authorization</dt>
+    <dd>{{ view.authorization_status }}</dd>
+    <dt>Created</dt>
+    <dd>{{ view.created_at }}</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="files-heading" class="card">
+  <h2 id="files-heading">Files</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Type</th>
+          <th scope="col">Size</th>
+          <th scope="col">SHA-256 (short)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in view.files %}
+        <tr>
+          <td><span class="file-name">{{ file.display_name }}</span></td>
+          <td><span class="type-tag">{{ file.detected_type }}</span></td>
+          <td>{{ file.size_label }}</td>
+          <td><code class="path-code">{{ file.short_hash }}</code></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<p><a href="{{ url_for('index') }}">Back to start</a></p>
+{% endblock %}
