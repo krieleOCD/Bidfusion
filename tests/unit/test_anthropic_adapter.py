@@ -28,7 +28,7 @@ from bidfusion.schemas import (
     StructuredOutputSpec,
 )
 
-SECRET_REF = SecretRef(reference="secret://env/BIDFUSION_LLM_API_KEY")
+SECRET_REF = SecretRef(reference="secret://env/BIDFUSION_ANTHROPIC_API_KEY")
 TEST_SECRET = "offline-test-credential"
 
 
@@ -106,7 +106,7 @@ def adapter_for(transport: RecordingTransport) -> AnthropicLLMAdapter:
             max_output_tokens=128,
             route_id="test-route",
         ),
-        secret_resolver=EnvironmentSecretResolver({"BIDFUSION_LLM_API_KEY": TEST_SECRET}),
+        secret_resolver=EnvironmentSecretResolver({"BIDFUSION_ANTHROPIC_API_KEY": TEST_SECRET}),
         transport=transport,
     )
 

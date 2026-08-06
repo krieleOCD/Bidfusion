@@ -36,6 +36,7 @@ Consequences What follows from it (positive and negative)?
 | [0010](./0010-apmp-aligned-bid-management-domain.md) | APMP-aligned Bid Management Domain | ACCEPTED |
 | [0011](./0011-external-capabilities-via-ports-and-adapters.md) | External Capabilities via Ports and Adapters | ACCEPTED |
 | [0012](./0012-focused-typed-extraction-results.md) | Focused Typed Extraction Results | ACCEPTED |
+| [0013](./0013-orange-llm-proxy-canonical-egress.md) | Orange LLM Proxy as the Canonical BidFusion LLM Egress | ACCEPTED |
 
 ## Rules
 

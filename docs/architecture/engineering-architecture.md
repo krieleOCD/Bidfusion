@@ -237,9 +237,31 @@ isolation, and cache isolation remain future enforcement.
 The temporary direct Anthropic adapter selects its model through local
 infrastructure configuration and enforces a deliberately narrow public-data
 egress policy. It is not wired to a business agent, artifact input, inbox,
-or Security Gate. The future internal gateway adapter will decide model,
-provider, deployment, fallback, and routing without changing the domain
-port. No provider logic or provider SDK type belongs in business agents.
+or Security Gate. No provider logic or provider SDK type belongs in
+business agents.
+
+#### Orange LLM Proxy Gateway — ADR-0013
+
+The internal gateway named in ADR-0007 is now the Orange LLM Proxy, an
+OpenAI-compatible `/chat/completions` proxy. It is reached only through a
+second, narrower, provider-neutral port — `LlmClient.complete_structured()`
+(`llm_gateway/port.py`) — rather than by reshaping `LLMPort`/`LLMRequest`.
+`LlmClient` accepts exactly one operation
+(`synthetic_structured_smoke`, routed to `openai/gpt-5.4-mini`), typed
+messages, and a caller-supplied Pydantic `response_type`, and returns a
+schema-validated `StructuredLlmResult[T]` or raises a stable
+`LlmGatewayError`. `OrangeProxyAdapter` (`llm_gateway/orange_proxy.py`)
+is the only module aware of the proxy's wire format, bearer-token auth,
+and guardrail conventions; `port.py` itself stays provider-neutral.
+
+`LLMPort` remains unchanged for backward compatibility with its existing
+consumer (the temporary Anthropic adapter). New fach code should target
+`LlmClient`, not the temporary Anthropic adapter. Whether the two ports are
+later consolidated or one is deprecated is an explicit future decision,
+not resolved by this Foundation slice. In this slice, `LlmClient` and
+`OrangeProxyAdapter` are not wired into `run_package()`, parsing,
+extraction, the Security Gate, or Quarantine, and `BIDFUSION_LLM_ENABLED`
+defaults to `false` — no network call is possible without it.
 
 ### OCR (`document_understanding/ocr/`)
 
