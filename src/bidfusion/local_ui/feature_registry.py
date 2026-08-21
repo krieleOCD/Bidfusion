@@ -60,6 +60,11 @@ class DataMode(StrEnum):
     NOT_CONNECTED = "NOT_CONNECTED"
     """No source of any kind is wired up."""
 
+    LOCAL_INTERNAL_PILOT = "LOCAL_INTERNAL_PILOT"
+    """A local, gitignored runtime store derived from real internal documents
+    on this machine. Never committed, never claimed validated; every record
+    stays marked for human review."""
+
 
 class Visibility(StrEnum):
     """Where a feature appears in the product shell."""
@@ -300,6 +305,23 @@ PHASES: tuple[Phase, ...] = (
         state=PhaseState.PLANNED,
         definition=PhaseDefinition.PROPOSED,
         definition_reference="Proposed by this product plan. No architecture document defines it.",
+    ),
+    Phase(
+        phase_id="GK-P1",
+        title="Golden knowledge pilot (MTD)",
+        summary=(
+            "First real internal knowledge area: a local, read-only inventory "
+            "and deterministic ingestion of the Managed Threat Detection "
+            "document set into a gitignored runtime store, with rule-extracted, "
+            "unverified capability claims and a deterministic demo matching. "
+            "Separated from the bid path per ADR-0009."
+        ),
+        state=PhaseState.DELIVERED,
+        definition=PhaseDefinition.PROPOSED,
+        definition_reference=(
+            "Proposed by this product plan; no architecture document defines it. "
+            "Described in docs/development/golden-dataset-mtd-pilot.md."
+        ),
     ),
 )
 
@@ -990,6 +1012,88 @@ FEATURES: tuple[Feature, ...] = (
         ),
         route_name="architecture_roadmap",
         visibility=Visibility.PRIMARY_NAV,
+    ),
+    Feature(
+        key="golden_knowledge_inventory",
+        title="Golden Knowledge — MTD Inventory",
+        short_description=(
+            "The inventoried Managed Threat Detection document set: every local "
+            "source with its deterministic classification, parse status, and "
+            "review state. Internal knowledge pilot — local dataset, never "
+            "committed to the repository."
+        ),
+        status=FeatureStatus.LIVE,
+        data_mode=DataMode.LOCAL_INTERNAL_PILOT,
+        target_phase="GK-P1",
+        owner=_BID_MANAGEMENT,
+        dependencies=(
+            "A local MTD source directory, read strictly read-only",
+            "The gitignored local golden knowledge runtime store",
+        ),
+        current_capabilities=(
+            "Inventories every local MTD source file with hash-bound identity",
+            "Classifies service family, technology, document type, and version "
+            "deterministically from filenames — never by guessing",
+            "Shows unsupported formats (PPTX) as inventoried, not parsed",
+        ),
+        planned_capabilities=(
+            "Curated review workflow that turns extracted records into "
+            "human-confirmed golden knowledge",
+            "Widen ingestion beyond the pilot document families",
+        ),
+        current_sources=("The local golden knowledge runtime store on this machine",),
+        future_sources=("A governed, reviewed golden knowledge repository",),
+        limitations=(
+            "The knowledge shown is machine-extracted and unverified",
+            _HUMAN_REVIEW_LIMIT,
+            _NO_LIVE_CONNECTOR,
+            _NO_MODEL_CALL,
+            "Parsers are reviewed against synthetic fixtures, not certified "
+            "for hostile production input",
+        ),
+        acceptance_criteria=(
+            "Every file of the local dataset appears in the inventory",
+            "No absolute local path is rendered or serialized",
+            "Unsupported formats stay visible with their status",
+        ),
+        route_name="golden_knowledge",
+        visibility=Visibility.PRIMARY_NAV,
+    ),
+    Feature(
+        key="golden_capability_matching",
+        title="Capability Matching (Pilot)",
+        short_description=(
+            "Five synthetic demo requirements matched deterministically against "
+            "rule-extracted, unverified MTD capability claims with their "
+            "evidence sources."
+        ),
+        status=FeatureStatus.LIVE,
+        data_mode=DataMode.LOCAL_INTERNAL_PILOT,
+        target_phase="GK-P1",
+        owner=_BID_MANAGEMENT,
+        dependencies=("Capability claims extracted into the local golden knowledge store",),
+        current_capabilities=(
+            "Matches by fixed capability tokens — no embeddings, no model",
+            "Keeps matched, partial, unknown, gap, and evidence-required distinct",
+            "Names the evidence sources behind every match",
+        ),
+        planned_capabilities=(
+            "Match reviewed RFP requirements once the golden knowledge is human-confirmed",
+        ),
+        current_sources=("The local golden knowledge runtime store on this machine",),
+        future_sources=("Reviewed requirements from the RFP intelligence lane",),
+        limitations=(
+            "The requirements shown are synthetic demo inputs, not customer RFPs",
+            "Claims are extracted and unverified; a match confirms nothing",
+            _HUMAN_REVIEW_LIMIT,
+            _NO_MODEL_CALL,
+        ),
+        acceptance_criteria=(
+            "Every match states its status and its human review requirement",
+            "Synthetic inputs are labeled as synthetic wherever they appear",
+        ),
+        route_name="golden_matching",
+        visibility=Visibility.MODULE_PAGE,
     ),
 )
 

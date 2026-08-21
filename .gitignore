@@ -32,6 +32,10 @@ inbox/*
 results/*
 !results/.gitkeep
 
+# Local runtime artifacts — golden knowledge derived from real internal
+# documents lives in runtime/golden_dataset and must never be committed
+runtime/
+
 # ---------------------------------------------------------------------------
 # Local databases, model caches, large binaries
 # ---------------------------------------------------------------------------

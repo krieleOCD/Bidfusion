@@ -1,0 +1,136 @@
+{% extends "product_base.html" %}
+{% block title %}Golden Knowledge — MTD Inventory — BidFusion{% endblock %}
+
+{% block hero %}
+<div class="hero">
+  <div class="container hero__inner">
+    <p class="ocd-overline">Golden Knowledge — MTD Inventory</p>
+    <h1>The Managed Threat Detection document set, inventoried and classified.</h1>
+    <p class="module-card__badges">
+      {% for label in view.labels %}
+      <span class="status-badge status-badge--warning">{{ icon('alert') }} {{ label }}</span>
+      {% endfor %}
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<section aria-labelledby="trust-heading" class="card card--accent">
+  <h2 id="trust-heading">What this page shows</h2>
+  <p class="module-card__text">
+    {{ icon('info') }} Real internal service documentation, read strictly read-only from a
+    local directory on this machine. Classification is deterministic from filenames.
+    Extracted content is machine-produced and unverified: HUMAN REVIEW REQUIRED before
+    any of it is treated as golden truth. Nothing here is committed to the repository,
+    and no model, network, or connector is involved.
+  </p>
+</section>
+
+{% if not view.available %}
+<section aria-labelledby="empty-heading" class="card">
+  <h2 id="empty-heading">No local golden knowledge store</h2>
+  <p class="module-card__text">{{ icon('unlink') }} {{ view.note }}</p>
+</section>
+{% else %}
+
+<section aria-labelledby="totals-heading" class="card">
+  <h2 id="totals-heading">Dataset totals</h2>
+  <dl class="metric-grid">
+    <div class="metric">
+      <dt class="metric__label">Source documents</dt>
+      <dd class="metric__value">{{ view.total }}</dd>
+      <dd class="metric__note">Local dataset "{{ view.dataset_label }}"</dd>
+    </div>
+    <div class="metric metric--success">
+      <dt class="metric__label">Parsed</dt>
+      <dd class="metric__value">{{ view.parsed }}</dd>
+      <dd class="metric__note">Ingested: {{ view.ingested }}</dd>
+    </div>
+    <div class="metric metric--warning">
+      <dt class="metric__label">Parse unsupported</dt>
+      <dd class="metric__value">{{ view.unsupported }}</dd>
+      <dd class="metric__note">Inventoried, never parsed</dd>
+    </div>
+    <div class="metric metric--danger">
+      <dt class="metric__label">Parse failed</dt>
+      <dd class="metric__value">{{ view.parse_failed }}</dd>
+      <dd class="metric__note">Failed closed, kept visible</dd>
+    </div>
+    <div class="metric metric--warning">
+      <dt class="metric__label">Human review required</dt>
+      <dd class="metric__value">{{ view.review_required }}</dd>
+      <dd class="metric__note">Every record starts here</dd>
+    </div>
+  </dl>
+</section>
+
+<section aria-labelledby="dist-heading" class="card">
+  <h2 id="dist-heading">Technologies and document families</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">Technology distribution</caption>
+      <thead><tr><th scope="col">Technology</th><th scope="col">Documents</th></tr></thead>
+      <tbody>
+        {% for name, count in view.technologies %}
+        <tr><th scope="row">{{ name }}</th><td>{{ count }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">Document family distribution</caption>
+      <thead><tr><th scope="col">Document family</th><th scope="col">Documents</th></tr></thead>
+      <tbody>
+        {% for name, count in view.document_families %}
+        <tr><th scope="row">{{ name }}</th><td>{{ count }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="sources-heading" class="card">
+  <h2 id="sources-heading">Inventoried sources</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">
+        Every inventoried source document with classification and status
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Filename</th>
+          <th scope="col">Document type</th>
+          <th scope="col">Technology</th>
+          <th scope="col">Version</th>
+          <th scope="col">Parser</th>
+          <th scope="col">Ingestion</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in view.rows %}
+        <tr>
+          <th scope="row">{{ row.filename }}</th>
+          <td>{{ row.document_type }}</td>
+          <td>{{ row.technology }}</td>
+          <td>{{ row.version }}</td>
+          <td>{{ row.parse_support }}</td>
+          <td>{{ row.ingestion_status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if view.warnings %}
+  <ul class="module-card__text">
+    {% for warning in view.warnings %}
+    <li>{{ icon('alert') }} {{ warning }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
+
+{% endif %}
+{% endblock %}

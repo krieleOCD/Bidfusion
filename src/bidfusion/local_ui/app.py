@@ -30,9 +30,11 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.wrappers.response import Response as WerkzeugResponse
 
 from bidfusion.bidrun.quarantine import QuarantineError, UploadedFileInput
+from bidfusion.golden_dataset.store import GoldenKnowledgeStore
 from bidfusion.local_ui import (
     artifacts,
     feature_registry,
+    golden_service,
     preview_service,
     product_shell,
     scenario_registry,
@@ -70,6 +72,7 @@ def create_app(
     output_base: Path | None = None,
     upload_registry: UploadRegistry | None = None,
     quarantine_root: Path | None = None,
+    golden_store_root: Path | None = None,
 ) -> Flask:
     """Build the UI application.
 
@@ -95,6 +98,9 @@ def create_app(
         else Path(tempfile.gettempdir()) / _DEFAULT_QUARANTINE_DIRNAME
     )
     app.config["MAX_CONTENT_LENGTH"] = upload_service.MAX_CONTENT_LENGTH
+    app.config["GOLDEN_STORE_ROOT"] = (
+        golden_store_root if golden_store_root is not None else GoldenKnowledgeStore.default_root()
+    )
     app.jinja_env.globals["icon"] = icon
 
     @app.after_request
@@ -202,6 +208,20 @@ def create_app(
         )
 
     _register_preview_pages(app)
+
+    @app.get("/golden-knowledge")
+    def golden_knowledge() -> str:
+        return render_template(
+            "golden_knowledge.html",
+            view=golden_service.load_inventory_view(_golden_store_root(app)),
+        )
+
+    @app.get("/golden-knowledge/matching")
+    def golden_matching() -> str:
+        return render_template(
+            "golden_matching.html",
+            view=golden_service.load_matching_view(_golden_store_root(app)),
+        )
 
     @app.get("/")
     @app.get("/rfp-intelligence")
@@ -472,6 +492,10 @@ def _artifact_permitted(record: RunRecord, artifact_name: str) -> bool:
 
 def _registry(app: Flask) -> RunRegistry:
     return cast(RunRegistry, app.config["RUN_REGISTRY"])
+
+
+def _golden_store_root(app: Flask) -> Path:
+    return cast(Path, app.config["GOLDEN_STORE_ROOT"])
 
 
 def _output_base(app: Flask) -> Path | None:

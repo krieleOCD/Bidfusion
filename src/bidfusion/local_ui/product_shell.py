@@ -50,6 +50,7 @@ _DATA_MODE_DISPLAY: dict[DataMode, tuple[str, str]] = {
     DataMode.CURATED_DEMO: ("warning", "info"),
     DataMode.STATIC_PREVIEW: ("neutral", "minus"),
     DataMode.NOT_CONNECTED: ("neutral", "unlink"),
+    DataMode.LOCAL_INTERNAL_PILOT: ("warning", "layers"),
 }
 
 _PHASE_STATE_DISPLAY: dict[PhaseState, tuple[str, str]] = {
@@ -75,6 +76,7 @@ _DATA_MODE_LABEL: dict[DataMode, str] = {
     DataMode.CURATED_DEMO: "CURATED DEMO",
     DataMode.STATIC_PREVIEW: "STATIC PREVIEW",
     DataMode.NOT_CONNECTED: "NOT CONNECTED",
+    DataMode.LOCAL_INTERNAL_PILOT: "LOCAL INTERNAL PILOT",
 }
 
 #: What a reader has to understand about a surface before trusting what
@@ -128,6 +130,10 @@ _DATA_MODE_MEANING: dict[DataMode, str] = {
     ),
     DataMode.STATIC_PREVIEW: "Layout and structure only. There is no data source behind it.",
     DataMode.NOT_CONNECTED: "Nothing is wired up. No system is contacted.",
+    DataMode.LOCAL_INTERNAL_PILOT: (
+        "A local, gitignored store derived from real internal documents on this "
+        "machine. Machine-extracted, unverified, and never committed."
+    ),
 }
 
 _NO_SOURCE = "Not connected"
@@ -246,6 +252,27 @@ NAV_WORLDS: tuple[NavWorld, ...] = (
                 label="Review and Approval",
                 endpoint="review_approval",
                 feature_key="review_approval",
+            ),
+        ),
+        member_endpoints=(),
+    ),
+    NavWorld(
+        key="golden",
+        label="Golden Knowledge",
+        endpoint="golden_knowledge",
+        feature_key="golden_knowledge_inventory",
+        items=(
+            NavItem(
+                key="inventory",
+                label="MTD Inventory",
+                endpoint="golden_knowledge",
+                feature_key="golden_knowledge_inventory",
+            ),
+            NavItem(
+                key="matching",
+                label="Capability Matching",
+                endpoint="golden_matching",
+                feature_key="golden_capability_matching",
             ),
         ),
         member_endpoints=(),
