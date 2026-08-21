@@ -28,7 +28,11 @@ from bidfusion.document_understanding.canonical import (
     build_canonical_document,
 )
 from bidfusion.document_understanding.parsers import DocxTextParser, parser_for
-from bidfusion.document_understanding.parsers.docx_text import MAX_DOCUMENT_PART_BYTES
+from bidfusion.document_understanding.parsers.docx_text import (
+    MAX_DOCUMENT_PART_BYTES,
+    MAX_GRID_SPAN,
+    MAX_OUTLINE_LEVEL,
+)
 from bidfusion.schemas import (
     ArtifactReference,
     ArtifactType,
@@ -607,6 +611,296 @@ def test_external_entity_declaration_is_rejected_by_the_dtd_guard() -> None:
 
     with pytest.raises(DocumentParsingError, match="document type declaration"):
         parse(content, force_allow=True)
+
+
+def test_plain_text_mentioning_doctype_is_not_a_false_positive() -> None:
+    """The guard looks for a declaration, not for the word in body text."""
+    content = simple_docx(
+        paragraph("The DOCTYPE keyword and &lt;!ENTITY are discussed in annex B.")
+    )
+
+    parsed = parse(content)
+
+    assert parsed.pages[0].paragraphs[0].text == (
+        "The DOCTYPE keyword and <!ENTITY are discussed in annex B."
+    )
+
+
+def test_standalone_entity_declaration_without_a_doctype_is_rejected() -> None:
+    hostile = (
+        '<?xml version="1.0"?>'
+        '<!ENTITY loose "expanded">'
+        f'<w:document xmlns:w="{WORD_NS}"><w:body><w:p><w:r><w:t>&loose;</w:t>'
+        "</w:r></w:p></w:body></w:document>"
+    ).encode()
+    content = docx_bytes({"[Content_Types].xml": CONTENT_TYPES_XML, "word/document.xml": hostile})
+
+    with pytest.raises(DocumentParsingError, match="document type declaration"):
+        parse(content, force_allow=True)
+
+
+# --------------------------------------------------------------------------
+# Document-part encoding policy (only UTF-8 XML is accepted)
+# --------------------------------------------------------------------------
+
+
+def entity_bomb_xml(encoding_declaration: str) -> str:
+    """An internal-subset entity bomb carrying the given XML declaration."""
+    return (
+        f"{encoding_declaration}"
+        "<!DOCTYPE lolz ["
+        '<!ENTITY lol "lol">'
+        '<!ENTITY lol2 "&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;&lol;">'
+        '<!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">'
+        "]>"
+        f'<w:document xmlns:w="{WORD_NS}"><w:body><w:p><w:r><w:t>&lol3;</w:t>'
+        "</w:r></w:p></w:body></w:document>"
+    )
+
+
+@pytest.mark.parametrize(
+    "codec",
+    ["utf-16", "utf-16-le", "utf-16-be", "utf-32", "utf-32-le", "utf-32-be"],
+)
+def test_non_utf8_encoded_document_parts_are_rejected(codec: str) -> None:
+    """The regression for the UTF-16/UTF-32 DTD-guard bypass.
+
+    An ASCII byte scan cannot see ``<!DOCTYPE`` once the part is encoded as
+    UTF-16 or UTF-32, while ``ElementTree`` still honours the declaration and
+    expands the entities. The encoding policy has to reject these before any
+    parsing happens.
+    """
+    raw = entity_bomb_xml('<?xml version="1.0" encoding="UTF-16"?>').encode(codec)
+    content = docx_bytes({"[Content_Types].xml": CONTENT_TYPES_XML, "word/document.xml": raw})
+
+    with pytest.raises(DocumentParsingError, match="unsupported XML encoding"):
+        parse(content, force_allow=True)
+
+
+@pytest.mark.parametrize(
+    "declared",
+    ["UTF-16", "utf-16", "uTf-16Le", "UTF-32", "ISO-8859-1", "windows-1252", "UTF-7"],
+)
+def test_non_utf8_encoding_declarations_are_rejected(declared: str) -> None:
+    """Mixed case included: the declared encoding is compared case-insensitively."""
+    raw = (
+        f'<?xml version="1.0" encoding="{declared}"?>'
+        f'<w:document xmlns:w="{WORD_NS}"><w:body><w:p><w:r><w:t>Body.</w:t>'
+        "</w:r></w:p></w:body></w:document>"
+    ).encode()
+    content = docx_bytes({"[Content_Types].xml": CONTENT_TYPES_XML, "word/document.xml": raw})
+
+    with pytest.raises(DocumentParsingError, match="unsupported XML encoding"):
+        parse(content, force_allow=True)
+
+
+def test_utf16_entity_payload_produces_no_expanded_text_and_no_partial_result() -> None:
+    """Nothing is returned and nothing is expanded when the encoding is refused."""
+    raw = entity_bomb_xml('<?xml version="1.0" encoding="UTF-16"?>').encode("utf-16")
+    content = docx_bytes({"[Content_Types].xml": CONTENT_TYPES_XML, "word/document.xml": raw})
+
+    with pytest.raises(DocumentParsingError) as caught:
+        parse(content, force_allow=True)
+
+    rendered = f"{caught.value!s} {caught.value!r} {caught.value.args}"
+    assert "lol" not in rendered
+    assert caught.value.error_code == "PARSER_TECHNICAL_FAILURE"
+
+
+@pytest.mark.parametrize(
+    "declaration",
+    [
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
+        '<?xml version="1.0" encoding="utf-8"?>',
+        '<?xml version="1.0"?>',
+        "",
+    ],
+)
+def test_utf8_and_declaration_free_document_parts_are_accepted(declaration: str) -> None:
+    raw = (
+        f"{declaration}"
+        f'<w:document xmlns:w="{WORD_NS}"><w:body><w:p><w:r><w:t>Body.</w:t>'
+        "</w:r></w:p></w:body></w:document>"
+    ).encode()
+    content = docx_bytes({"[Content_Types].xml": CONTENT_TYPES_XML, "word/document.xml": raw})
+
+    assert parse(content, force_allow=True).pages[0].paragraphs[0].text == "Body."
+
+
+def test_utf8_bom_document_part_is_accepted() -> None:
+    """A UTF-8 BOM is legal in OOXML and must not be confused with a UTF-16 one."""
+    raw = (
+        b"\xef\xbb\xbf"
+        + (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            f'<w:document xmlns:w="{WORD_NS}"><w:body><w:p><w:r><w:t>Body.</w:t>'
+            "</w:r></w:p></w:body></w:document>"
+        ).encode()
+    )
+    content = docx_bytes({"[Content_Types].xml": CONTENT_TYPES_XML, "word/document.xml": raw})
+
+    assert parse(content, force_allow=True).pages[0].paragraphs[0].text == "Body."
+
+
+def test_utf8_document_part_carrying_a_doctype_is_still_rejected_by_the_dtd_guard() -> None:
+    """The encoding gate must not displace the DTD refusal it protects."""
+    raw = entity_bomb_xml('<?xml version="1.0" encoding="UTF-8"?>').encode()
+    content = docx_bytes({"[Content_Types].xml": CONTENT_TYPES_XML, "word/document.xml": raw})
+
+    with pytest.raises(DocumentParsingError, match="document type declaration"):
+        parse(content, force_allow=True)
+
+
+# --------------------------------------------------------------------------
+# Numeric attribute normalization (ASCII decimal digits only)
+# --------------------------------------------------------------------------
+
+
+def grid_span_docx(raw_value: str) -> bytes:
+    """A one-cell table whose ``w:gridSpan`` carries exactly ``raw_value``."""
+    body = (
+        "<w:tbl><w:tr>"
+        f'<w:tc><w:tcPr><w:gridSpan w:val="{raw_value}"/></w:tcPr>'
+        "<w:p><w:r><w:t>cell</w:t></w:r></w:p></w:tc>"
+        "</w:tr></w:tbl>"
+    )
+    return simple_docx(body)
+
+
+def outline_level_docx(raw_value: str) -> bytes:
+    """A single paragraph whose ``w:outlineLvl`` carries exactly ``raw_value``."""
+    body = (
+        f'<w:p><w:pPr><w:outlineLvl w:val="{raw_value}"/></w:pPr>'
+        "<w:r><w:t>Heading</w:t></w:r></w:p>"
+    )
+    return simple_docx(body)
+
+
+#: Values ``str.isdigit()`` accepts but ``int()`` either rejects or misreads.
+NON_ASCII_DIGITS = ["²", "³", "٣", "３", "⁵"]
+
+
+@pytest.mark.parametrize("raw_value", NON_ASCII_DIGITS)
+def test_non_ascii_digit_grid_span_raises_a_stable_parser_error(raw_value: str) -> None:
+    """The regression for the ``isdigit()``/``int()`` mismatch on grid spans."""
+    with pytest.raises(DocumentParsingError, match="grid span") as caught:
+        parse(grid_span_docx(raw_value), force_allow=True)
+
+    assert caught.value.error_code == "PARSER_TECHNICAL_FAILURE"
+    assert raw_value not in f"{caught.value!s} {caught.value!r} {caught.value.args}"
+
+
+@pytest.mark.parametrize("raw_value", NON_ASCII_DIGITS)
+def test_non_ascii_digit_outline_level_raises_a_stable_parser_error(raw_value: str) -> None:
+    """The regression for the ``isdigit()``/``int()`` mismatch on outline levels."""
+    with pytest.raises(DocumentParsingError, match="outline level") as caught:
+        parse(outline_level_docx(raw_value), force_allow=True)
+
+    assert caught.value.error_code == "PARSER_TECHNICAL_FAILURE"
+    assert raw_value not in f"{caught.value!s} {caught.value!r} {caught.value.args}"
+
+
+@pytest.mark.parametrize("raw_value", ["", "-5", "0", " 3", "3 ", "3.0", "abc", "1e3", "+3"])
+def test_malformed_grid_span_values_are_rejected(raw_value: str) -> None:
+    with pytest.raises(DocumentParsingError, match="grid span"):
+        parse(grid_span_docx(raw_value), force_allow=True)
+
+
+@pytest.mark.parametrize("raw_value", ["", "-1", " 2", "2.0", "abc"])
+def test_malformed_outline_level_values_are_rejected(raw_value: str) -> None:
+    with pytest.raises(DocumentParsingError, match="outline level"):
+        parse(outline_level_docx(raw_value), force_allow=True)
+
+
+def test_excessive_grid_span_is_rejected() -> None:
+    with pytest.raises(DocumentParsingError, match="grid span"):
+        parse(grid_span_docx(str(MAX_GRID_SPAN + 1)), force_allow=True)
+
+
+def test_excessive_outline_level_is_rejected() -> None:
+    with pytest.raises(DocumentParsingError, match="outline level"):
+        parse(outline_level_docx(str(MAX_OUTLINE_LEVEL + 1)), force_allow=True)
+
+
+@pytest.mark.parametrize("digits", [5_000, 10_000])
+def test_gigantic_grid_span_stays_inside_the_parser_taxonomy(digits: int) -> None:
+    """Digit strings past CPython's int-conversion limit must not escape.
+
+    ``int`` refuses to convert more than ``sys.get_int_max_str_digits()``
+    (4300 by default) digits and raises a bare :class:`ValueError` — so a
+    long-enough all-digit ``w:val`` passes the digit guard yet crashes the
+    conversion. The parser must reject it as an ordinary out-of-range
+    value instead.
+    """
+    with pytest.raises(DocumentParsingError, match="grid span"):
+        parse(grid_span_docx("9" * digits), force_allow=True)
+
+
+@pytest.mark.parametrize("digits", [5_000, 10_000])
+def test_gigantic_outline_level_stays_inside_the_parser_taxonomy(digits: int) -> None:
+    with pytest.raises(DocumentParsingError, match="outline level"):
+        parse(outline_level_docx("9" * digits), force_allow=True)
+
+
+def test_leading_zeros_keep_their_numeric_value() -> None:
+    """``0002`` is the number 2; zero-padding must not shift the value."""
+    parsed = parse(grid_span_docx("0002"), force_allow=True)
+
+    cell = parsed.pages[0].tables[0].rows[0].cells[0]
+    assert cell.column_span == 2
+
+
+@pytest.mark.parametrize("raw_value", ["1", "2", str(MAX_GRID_SPAN)])
+def test_grid_span_boundary_values_are_accepted(raw_value: str) -> None:
+    parsed = parse(grid_span_docx(raw_value), force_allow=True)
+
+    cell = parsed.pages[0].tables[0].rows[0].cells[0]
+    assert cell.column_span == int(raw_value)
+    assert cell.column == 1
+
+
+@pytest.mark.parametrize(("raw_value", "expected_level"), [("0", 1), ("4", 5), ("8", 9)])
+def test_outline_level_boundary_values_become_headings(raw_value: str, expected_level: int) -> None:
+    parsed = parse(outline_level_docx(raw_value), force_allow=True)
+
+    assert [section.level for section in parsed.pages[0].sections] == [expected_level]
+
+
+def test_body_text_outline_level_is_not_a_heading() -> None:
+    """Word writes ``w:outlineLvl w:val="9"`` for body text — legal, not a heading."""
+    parsed = parse(outline_level_docx("9"), force_allow=True)
+
+    assert parsed.pages[0].sections == ()
+    assert parsed.pages[0].paragraphs[0].text == "Heading"
+
+
+def test_missing_grid_span_attribute_still_defaults_to_a_single_column() -> None:
+    body = "<w:tbl><w:tr><w:tc><w:tcPr/><w:p><w:r><w:t>cell</w:t></w:r></w:p></w:tc></w:tr></w:tbl>"
+
+    parsed = parse(simple_docx(body), force_allow=True)
+
+    assert parsed.pages[0].tables[0].rows[0].cells[0].column_span == 1
+
+
+# --------------------------------------------------------------------------
+# Documented scope: only word/document.xml is parsed
+# --------------------------------------------------------------------------
+
+
+def test_header_and_footer_parts_are_outside_the_content_model() -> None:
+    """Headers and footers are deliberately not read by this slice."""
+    header = document_xml("<w:p><w:r><w:t>HEADER-ONLY-SENTINEL</w:t></w:r></w:p>")
+    footer = document_xml("<w:p><w:r><w:t>FOOTER-ONLY-SENTINEL</w:t></w:r></w:p>")
+    content = simple_docx(
+        paragraph("Body paragraph."),
+        extra={"word/header1.xml": header, "word/footer1.xml": footer},
+    )
+
+    parsed = parse(content, force_allow=True)
+
+    rendered = " ".join(item.text for item in parsed.pages[0].paragraphs)
+    assert rendered == "Body paragraph."
+    assert "SENTINEL" not in rendered
 
 
 def set_encrypted_flag(raw: bytes) -> bytes:

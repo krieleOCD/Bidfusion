@@ -21,16 +21,34 @@ parser relies on is re-checked here and fails closed:
   decompression happens.
 - **The main document part is read through a hard byte ceiling** instead
   of trusting the size the archive declares for it.
+- **Only UTF-8 XML is accepted for the document part.** The declaration
+  guard below scans bytes, so a part encoded as UTF-16 or UTF-32 would hide
+  ``<!DOCTYPE`` from it while ``ElementTree`` still honoured the declaration
+  — the guard would be bypassed rather than enforced. Byte-order marks for
+  those encodings, embedded NUL bytes, and any declared encoding other than
+  UTF-8 are refused before parsing. See :func:`_require_utf8_xml`.
 - **A document type declaration is refused outright.**
   ``xml.etree.ElementTree`` *does* expand internal entities, so a
   billion-laughs payload is a real risk; legitimate OOXML never carries a
   ``<!DOCTYPE``. External entities are separately refused by the stdlib
   parser, which resolves no external references.
+- **Numeric attributes must be ASCII decimal digits.** ``str.isdigit``
+  accepts superscript, Arabic-Indic and full-width digits that ``int``
+  either rejects or reads as a different number, so every ``w:val`` this
+  parser converts goes through :func:`_decimal_value` and fails closed
+  inside the parser error taxonomy instead of raising a bare ``ValueError``.
 - **A VBA macro project makes the document unsupported.** The Security
   Gate already blocks macro-enabled Office files at CRITICAL severity, so
   this is defense in depth for callers that bypass the pipeline. The entry
   suffix comes from :mod:`bidfusion.shared.filetype` so macro presence
   stays defined in exactly one place.
+
+Scope. Only ``word/document.xml`` is parsed. Headers, footers, footnotes,
+endnotes, comments, and text boxes live in their own archive parts and are
+**not** part of this slice's content model: they are intentionally ignored
+rather than merged into the body, because their reading order relative to
+the body is a layout question this parser has deliberately not taken on.
+Widening that scope is a separate change, not a tweak to this module.
 
 Content model. A DOCX has no page structure until it is laid out, so every
 block lands on canonical page 1 rather than inventing page numbers that
@@ -87,9 +105,37 @@ MAX_DOCUMENT_PART_BYTES = 64 * 1024 * 1024
 
 _READ_CHUNK_BYTES = 1024 * 1024
 
+#: Widest ``w:gridSpan`` this parser will accept for a single cell.
+MAX_GRID_SPAN = 1_000
+
+#: Highest ``w:outlineLvl`` WordprocessingML defines. Levels 0-8 are the nine
+#: heading levels; 9 is Word's "body text" marker and is not a heading.
+MAX_OUTLINE_LEVEL = 9
+
 _DOCTYPE_DECLARATION = re.compile(rb"<!\s*(?:DOCTYPE|ENTITY)")
 _HEADING_STYLE = re.compile(r"^heading([1-9])$")
 _WINDOWS_DRIVE = re.compile(r"^[A-Za-z]:")
+
+_UTF8_BOM = b"\xef\xbb\xbf"
+
+#: Byte-order marks this parser refuses outright. UTF-32 is listed first
+#: because its little-endian mark begins with the UTF-16 little-endian one.
+_REJECTED_BOMS = (
+    b"\x00\x00\xfe\xff",  # UTF-32BE
+    b"\xff\xfe\x00\x00",  # UTF-32LE
+    b"\xfe\xff",  # UTF-16BE
+    b"\xff\xfe",  # UTF-16LE
+)
+
+#: The ``encoding`` pseudo-attribute of a leading XML declaration.
+_XML_DECLARATION_ENCODING = re.compile(
+    rb"""\A<\?xml[^>]*?\bencoding\s*=\s*["']([A-Za-z0-9._+-]+)["']""",
+    re.IGNORECASE,
+)
+
+_ACCEPTED_XML_ENCODINGS = frozenset({"utf-8", "utf8"})
+
+_UNSUPPORTED_ENCODING = "DOCX main document part uses an unsupported XML encoding"
 
 #: Builds one canonical-bound provenance reference for a block or cell.
 _SourceFactory = Callable[[SourceLocator, str | None], SourceReference]
@@ -213,9 +259,52 @@ class DocxTextParser:
         return ParsedContent(pages=(page,), title=title, warnings=tuple(warnings))
 
 
+def _require_utf8_xml(raw: bytes) -> bytes:
+    """Refuse any document part that is not UTF-8 encoded XML.
+
+    The document type guard below scans bytes, so it can only see a
+    declaration that is written in ASCII-compatible bytes. Encode the same
+    part as UTF-16 or UTF-32 and ``<!DOCTYPE`` becomes invisible to it while
+    :mod:`xml.etree.ElementTree` still honours the declaration and expands
+    the internal subset — the guard would be bypassed rather than enforced.
+
+    Rather than decode attacker-controlled bytes with a permissive codec in
+    order to scan them, the part is required to be UTF-8 in the first place.
+    Three cheap, independent checks establish that:
+
+    - a UTF-16 or UTF-32 byte-order mark is refused outright;
+    - a NUL byte is refused. XML 1.0 forbids U+0000 as a character, so a
+      genuine UTF-8 part cannot contain one, while any UTF-16/UTF-32 part
+      must — its markup is ASCII, which those encodings pad with NULs. This
+      is what catches a wide-encoded part carrying no byte-order mark;
+    - a declared encoding other than UTF-8 is refused, case-insensitively,
+      which covers single-byte encodings that survive the NUL check.
+
+    A UTF-8 BOM is legal in OOXML and is stripped rather than refused.
+    """
+    if raw.startswith(_REJECTED_BOMS):
+        raise DocumentParsingError(_UNSUPPORTED_ENCODING)
+
+    body = raw.removeprefix(_UTF8_BOM)
+    if b"\x00" in body:
+        raise DocumentParsingError(_UNSUPPORTED_ENCODING)
+
+    declared = _XML_DECLARATION_ENCODING.match(body)
+    if declared is not None:
+        name = declared.group(1).decode("ascii").lower()
+        if name not in _ACCEPTED_XML_ENCODINGS:
+            raise DocumentParsingError(_UNSUPPORTED_ENCODING)
+
+    try:
+        body.decode("utf-8")
+    except UnicodeDecodeError as failure:
+        raise DocumentParsingError(_UNSUPPORTED_ENCODING) from failure
+    return body
+
+
 def _read_body(content: bytes) -> ElementTree.Element:
     """Return the validated ``w:body`` element of the main document part."""
-    document_xml = _read_document_part(content)
+    document_xml = _require_utf8_xml(_read_document_part(content))
     if _DOCTYPE_DECLARATION.search(document_xml):
         msg = "DOCX main document part carries a document type declaration"
         raise DocumentParsingError(msg)
@@ -382,18 +471,64 @@ def _cell_text(cell: ElementTree.Element) -> str:
     return "\n".join(text for text in texts if text)
 
 
+def _decimal_value(element: ElementTree.Element, *, maximum: int, subject: str) -> int | None:
+    """The ``w:val`` of ``element`` as an ASCII decimal integer, or ``None``.
+
+    ``str.isdigit`` is not a safe guard for ``int``: it also accepts
+    superscripts (``²``), Arabic-Indic (``٣``) and full-width (``３``)
+    digits. ``int`` then raises :class:`ValueError` on the first kind and
+    silently reads a different number on the others, so a crafted attribute
+    could escape this module as an unnormalized exception. Requiring the
+    value to be ASCII as well makes the conversion total.
+
+    ``subject`` is a fixed internal description, never the attribute value:
+    a malformed value must not reach the message.
+
+    The digit count is bounded *before* conversion: ``int`` itself raises a
+    bare :class:`ValueError` past ``sys.get_int_max_str_digits()`` (4300 by
+    default), so a long-enough all-digit value would otherwise escape the
+    parser taxonomy. More significant digits than ``maximum`` has cannot be
+    in range, so that case is the ordinary above-maximum rejection; leading
+    zeros are ignored for the bound and keep their numeric value.
+    """
+    raw = element.get(f"{_W}val")
+    if raw is None:
+        return None
+    if not (raw.isascii() and raw.isdigit()):
+        msg = f"DOCX {subject} is not an ASCII decimal number"
+        raise DocumentParsingError(msg)
+    significant = raw.lstrip("0") or "0"
+    if len(significant) > len(str(maximum)):
+        msg = f"DOCX {subject} exceeds the supported maximum"
+        raise DocumentParsingError(msg)
+    value = int(significant)
+    if value > maximum:
+        msg = f"DOCX {subject} exceeds the supported maximum"
+        raise DocumentParsingError(msg)
+    return value
+
+
 def _grid_span(cell: ElementTree.Element) -> int:
-    """Horizontal span of a cell; anything unparsable counts as a single column."""
+    """Horizontal span of a cell; an absent attribute means a single column.
+
+    A malformed span fails closed instead of quietly collapsing to one
+    column: silently renumbering the columns of a hostile table would move
+    cell text under the wrong header without anything recording that it
+    happened.
+    """
     properties = cell.find(f"{_W}tcPr")
     if properties is None:
         return 1
     span = properties.find(f"{_W}gridSpan")
     if span is None:
         return 1
-    raw = span.get(f"{_W}val")
-    if raw is None or not raw.isdigit():
+    value = _decimal_value(span, maximum=MAX_GRID_SPAN, subject="table cell grid span")
+    if value is None:
         return 1
-    return max(int(raw), 1)
+    if value < 1:
+        msg = "DOCX table cell grid span is below the supported minimum"
+        raise DocumentParsingError(msg)
+    return value
 
 
 def _heading_level(paragraph: ElementTree.Element) -> int | None:
@@ -410,10 +545,10 @@ def _heading_level(paragraph: ElementTree.Element) -> int | None:
             return int(match.group(1))
 
     outline = properties.find(f"{_W}outlineLvl")
-    if outline is not None:
-        raw_level = outline.get(f"{_W}val")
-        if raw_level is not None and raw_level.isdigit():
-            level = int(raw_level) + 1
-            if 1 <= level <= 9:
-                return level
-    return None
+    if outline is None:
+        return None
+    level = _decimal_value(outline, maximum=MAX_OUTLINE_LEVEL, subject="paragraph outline level")
+    if level is None or level == MAX_OUTLINE_LEVEL:
+        # Levels 0-8 are headings 1-9; 9 is Word's body-text marker.
+        return None
+    return level + 1
