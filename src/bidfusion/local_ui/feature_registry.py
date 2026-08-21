@@ -1095,6 +1095,56 @@ FEATURES: tuple[Feature, ...] = (
         route_name="golden_matching",
         visibility=Visibility.MODULE_PAGE,
     ),
+    Feature(
+        key="requirement_knowledge_assessment",
+        title="Requirement Knowledge Assessment",
+        short_description=(
+            "Extracted RFP requirements from a completed synthetic run, "
+            "deterministically normalized and matched as candidates against "
+            "the golden knowledge pilot, with evidence and mandatory human "
+            "review."
+        ),
+        status=FeatureStatus.LIVE,
+        data_mode=DataMode.LOCAL_INTERNAL_PILOT,
+        target_phase="GK-P1",
+        owner=_BID_MANAGEMENT,
+        dependencies=(
+            "A completed synthetic pipeline run with extracted requirements",
+            "Capability claims in the local golden knowledge runtime store",
+        ),
+        current_capabilities=(
+            "Converts extracted requirements into golden requirement candidates "
+            "deterministically — no model, no embeddings",
+            "Detects negative or excluding requirement language and never turns "
+            "it into a positive candidate match",
+            "Shows candidate match status, matched capability, claim status, "
+            "and the evidence sources behind every candidate",
+            "Keeps RFP provenance and golden evidence provenance separate",
+        ),
+        planned_capabilities=(
+            "Recorded human review decisions on individual assessments",
+            "Assessment over reviewed, human-confirmed golden knowledge",
+        ),
+        current_sources=(
+            "Requirement artifacts of a completed synthetic run",
+            "The local golden knowledge runtime store on this machine",
+        ),
+        future_sources=("A governed, reviewed golden knowledge repository",),
+        limitations=(
+            "The RFP input is a synthetic fixture package, never a customer RFP",
+            "Claims are machine-extracted and unverified; a candidate match confirms nothing",
+            _HUMAN_REVIEW_LIMIT,
+            _NO_MODEL_CALL,
+            "An absent or damaged golden store means not evaluated, never a gap",
+        ),
+        acceptance_criteria=(
+            "Every assessment states its human review requirement",
+            "A negative or excluded requirement never produces a positive candidate match",
+            "A missing golden store renders a safe not-evaluated state",
+        ),
+        route_name="show_knowledge_assessment",
+        visibility=Visibility.MODULE_SECTION,
+    ),
 )
 
 

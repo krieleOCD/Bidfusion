@@ -224,8 +224,12 @@ def test_the_upload_surface_names_exactly_the_accepted_types(client: FlaskClient
     html = _html(client, "/")
 
     assert "PDF, XLSX, TXT" in html
+    # The fixture-package listing legitimately names the synthetic DOCX
+    # file processed by the *run* lane; the upload policy itself must
+    # still never claim Word or docx support.
+    without_fixture_listing = html.replace("mtd-requirements.docx", "")
     for forbidden in ("Word", ".docx", "all formats", "All formats", "any format"):
-        assert forbidden not in html
+        assert forbidden not in without_fixture_listing
 
 
 def test_the_upload_surface_promises_no_automatic_analysis(client: FlaskClient) -> None:

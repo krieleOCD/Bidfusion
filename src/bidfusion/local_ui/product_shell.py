@@ -205,6 +205,7 @@ NAV_WORLDS: tuple[NavWorld, ...] = (
             "show_run",
             "show_working_package",
             "show_review_package",
+            "show_knowledge_assessment",
             "show_upload",
         ),
     ),
@@ -551,7 +552,13 @@ def _module_card(item: Feature) -> ModuleCardView:
 #: link to them without that context, so feature records name them
 #: without offering a link.
 CONTEXTUAL_ENDPOINTS = frozenset(
-    {"show_run", "show_working_package", "show_review_package", "show_upload"}
+    {
+        "show_run",
+        "show_working_package",
+        "show_review_package",
+        "show_knowledge_assessment",
+        "show_upload",
+    }
 )
 
 

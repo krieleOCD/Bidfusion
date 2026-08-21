@@ -46,6 +46,28 @@ import pytest
 
 from bidfusion.document_understanding.canonical import build_canonical_document
 from bidfusion.document_understanding.parsers import parser_for
+from bidfusion.golden_dataset.contracts import (
+    CapabilityCategory,
+    CapabilityClaim,
+    ConfidenceBand,
+    DocumentType,
+    EvidenceReference,
+    ExtractionStatus,
+    HumanReviewStatus,
+    IngestionStatus,
+    KnowledgeDocument,
+    KnowledgeInventory,
+    KnowledgeProvenance,
+    KnowledgeSection,
+    KnowledgeSource,
+    KnowledgeSourceLocator,
+    ParseStatus,
+    ParseSupport,
+    ProvenanceStatus,
+    ServiceFamily,
+    Technology,
+)
+from bidfusion.golden_dataset.store import GoldenKnowledgeStore
 from bidfusion.schemas import (
     ArtifactReference,
     ArtifactType,
@@ -131,6 +153,128 @@ def build_package_canonicals(
 def build_rfp_minimal_canonicals() -> tuple[CanonicalDocument, ...]:
     """Canonical documents of the clean fixture package."""
     return build_package_canonicals(RFP_MINIMAL, _CHAIN_FILENAMES)
+
+
+# ---------------------------------------------------------------------------
+# Synthetic golden knowledge snapshot (offline stand-in for the runtime store)
+# ---------------------------------------------------------------------------
+
+GOLDEN_SOURCE_ID = "GKS-00000000000a"
+GOLDEN_SOURCE_FILENAME = "SD-Synthetic MTD v1.0.docx"
+_GOLDEN_HASH = "e" * 64
+
+#: The pilot capabilities the synthetic snapshot claims, one claim each.
+SYNTHETIC_GOLDEN_CAPABILITIES = (
+    CapabilityCategory.TWENTY_FOUR_SEVEN_MONITORING,
+    CapabilityCategory.MICROSOFT_SENTINEL_SUPPORT,
+    CapabilityCategory.MICROSOFT_DEFENDER_XDR_SUPPORT,
+    CapabilityCategory.INCIDENT_ISOLATION,
+    CapabilityCategory.TRANSITION_ACTIVATION,
+    CapabilityCategory.HANDOVER_TO_OPERATIONS,
+)
+
+
+def synthetic_golden_claims(
+    capabilities: tuple[CapabilityCategory, ...] = SYNTHETIC_GOLDEN_CAPABILITIES,
+) -> tuple[CapabilityClaim, ...]:
+    """Synthetic EXTRACTED_UNVERIFIED claims with synthetic evidence."""
+    return tuple(
+        CapabilityClaim(
+            claim_id=f"GCL-{index:012x}",
+            service_family=ServiceFamily.MANAGED_THREAT_DETECTION,
+            technology=Technology.GENERIC_MTD,
+            capability=capability,
+            statement=f"Synthetic claim for {capability.value}.",
+            evidence_refs=(
+                EvidenceReference(
+                    source_id=GOLDEN_SOURCE_ID,
+                    section_id=f"SEC-{index:04d}",
+                    locator=KnowledgeSourceLocator(paragraph_index=index),
+                    source_version="1.0",
+                ),
+            ),
+            confidence_band=ConfidenceBand.HIGH,
+        )
+        for index, capability in enumerate(capabilities, start=1)
+    )
+
+
+def populate_synthetic_golden_store(
+    root: Path,
+    claims: tuple[CapabilityClaim, ...] | None = None,
+) -> GoldenKnowledgeStore:
+    """Write a complete, referentially intact synthetic golden store."""
+    if claims is None:
+        claims = synthetic_golden_claims()
+    store = GoldenKnowledgeStore(root)
+    store.write_inventory(
+        KnowledgeInventory(
+            dataset_label="synthetic-test-set",
+            sources=(
+                KnowledgeSource(
+                    source_id=GOLDEN_SOURCE_ID,
+                    filename=GOLDEN_SOURCE_FILENAME,
+                    extension="docx",
+                    file_size=100,
+                    source_hash=_GOLDEN_HASH,
+                    service_family=ServiceFamily.MANAGED_THREAT_DETECTION,
+                    technology=Technology.GENERIC_MTD,
+                    document_type=DocumentType.SERVICE_DESCRIPTION,
+                    version="1.0",
+                    parse_support=ParseSupport.SUPPORTED,
+                    parse_status=ParseStatus.PARSED,
+                    ingestion_status=IngestionStatus.INGESTED,
+                    review_status=HumanReviewStatus.REQUIRED,
+                    provenance_id="GPV-000000000abc",
+                ),
+            ),
+        )
+    )
+    section_ids = sorted(
+        {reference.section_id for claim in claims for reference in claim.evidence_refs}
+    ) or ["SEC-0001"]
+    store.write_document(
+        KnowledgeDocument(
+            knowledge_document_id="GKD-00000000000a",
+            source_id=GOLDEN_SOURCE_ID,
+            schema_version="1.0.0",
+            title="Synthetic MTD service description",
+            service_family=ServiceFamily.MANAGED_THREAT_DETECTION,
+            technology=Technology.GENERIC_MTD,
+            document_type=DocumentType.SERVICE_DESCRIPTION,
+            source_version="1.0",
+            sections=tuple(
+                KnowledgeSection(
+                    section_id=section_id,
+                    heading=None,
+                    text=f"Synthetic capability statement {section_id}.",
+                    source_locator=KnowledgeSourceLocator(paragraph_index=index),
+                    source_id=GOLDEN_SOURCE_ID,
+                )
+                for index, section_id in enumerate(section_ids, start=1)
+            ),
+            provenance=KnowledgeProvenance(
+                source_id=GOLDEN_SOURCE_ID,
+                filename=GOLDEN_SOURCE_FILENAME,
+                source_hash=_GOLDEN_HASH,
+                document_version="1.0",
+                locator=KnowledgeSourceLocator(whole_document=True),
+            ),
+            extraction_status=ExtractionStatus.EXTRACTED,
+            review_status=HumanReviewStatus.REQUIRED,
+            provenance_status=ProvenanceStatus.PROVENANCE_FULL,
+        )
+    )
+    store.write_claims(claims)
+    return store
+
+
+@pytest.fixture
+def synthetic_golden_store(tmp_path: Path) -> Path:
+    """A populated synthetic golden store root below ``tmp_path``."""
+    root = tmp_path / "golden-store"
+    populate_synthetic_golden_store(root)
+    return root
 
 
 def _network_blocked(*_args: object, **_kwargs: object) -> None:

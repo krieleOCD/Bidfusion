@@ -152,11 +152,23 @@ def match_requirements(
     return tuple(match_requirement(requirement, claims) for requirement in requirements)
 
 
-def _recognized_aspects(requirement: RequirementCandidate) -> tuple[CapabilityCategory, ...]:
+def recognized_capabilities(text: str) -> tuple[CapabilityCategory, ...]:
+    """The pilot capabilities whose fixed tokens occur in ``text``.
+
+    This is the matcher's own token scan, exposed so callers can report
+    which aspects the deterministic pilot recognized without duplicating
+    the taxonomy. Order follows the token table; each capability appears
+    at most once.
+    """
     aspects: list[CapabilityCategory] = []
     for pattern, capability in _ASPECT_TOKENS:
-        if pattern.search(requirement.text) and capability not in aspects:
+        if pattern.search(text) and capability not in aspects:
             aspects.append(capability)
+    return tuple(aspects)
+
+
+def _recognized_aspects(requirement: RequirementCandidate) -> tuple[CapabilityCategory, ...]:
+    aspects = list(recognized_capabilities(requirement.text))
     if requirement.capability_hint is not None and requirement.capability_hint not in aspects:
         aspects.append(requirement.capability_hint)
     return tuple(aspects)

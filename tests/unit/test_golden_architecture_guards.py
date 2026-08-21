@@ -23,6 +23,7 @@ _GOLDEN_MODULES = sorted(GOLDEN.glob("*.py"))
 _FORBIDDEN_BIDFUSION_PACKAGES = frozenset(
     {
         "bidfusion.bidrun",
+        "bidfusion.bid_intelligence",
         "bidfusion.local_ui",
         "bidfusion.llm_gateway",
         "bidfusion.intake",

@@ -35,6 +35,7 @@ from bidfusion.local_ui import (
     artifacts,
     feature_registry,
     golden_service,
+    knowledge_assessment_service,
     preview_service,
     product_shell,
     scenario_registry,
@@ -328,6 +329,19 @@ def create_app(
             view_mode=view_mode,
             raw_text=raw_text,
         )
+
+    @app.get("/runs/<run_key>/knowledge-assessment")
+    def show_knowledge_assessment(run_key: str) -> str:
+        record = _require_record(app, run_key)
+        try:
+            view = knowledge_assessment_service.build_knowledge_assessment_view(
+                record, _golden_store_root(app)
+            )
+        except artifacts.ArtifactAccessError as refused:
+            abort(409, description=str(refused))
+        if view is None:
+            abort(404)
+        return render_template("knowledge_assessment.html", view=view)
 
     @app.get("/runs/<run_key>/review-package")
     def show_review_package(run_key: str) -> str:

@@ -15,6 +15,7 @@ from bidfusion.shared.pathguards import trusted_synthetic_root
 KNOWN_PACKAGES = (
     "rfp-blocked",
     "rfp-minimal",
+    "rfp-mtd",
     "rfp-quality-review",
     "rfp-review",
     "rfp-unsupported",

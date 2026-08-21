@@ -65,6 +65,11 @@ _CAPABILITY_LABELS: dict[CapabilityCategory, str] = {
 }
 
 
+def capability_label(capability: CapabilityCategory) -> str:
+    """Human-readable label of one pilot capability, defined exactly once."""
+    return _CAPABILITY_LABELS[capability]
+
+
 @dataclass(frozen=True, slots=True)
 class SourceRow:
     """One inventory table row; filename only, never a path."""

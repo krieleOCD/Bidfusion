@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Knowledge assessment · {{ view.run_key }} — BidFusion{% endblock %}
+{% block content %}
+<div class="page-head">
+  <p class="ocd-overline">Requirement knowledge assessment</p>
+  <h1>RFP requirements against the golden knowledge pilot.</h1>
+  <p class="lede">
+    Run {{ view.run_key }} ({{ view.package_name }}): every extracted requirement,
+    its deterministic normalization, and its candidate match with evidence.
+  </p>
+  <p class="module-card__badges">
+    {% for label in view.labels %}
+    <span class="status-badge status-badge--warning">{{ icon('alert') }} {{ label }}</span>
+    {% endfor %}
+  </p>
+</div>
+
+<section aria-labelledby="review-heading" class="card card--accent">
+  <h2 id="review-heading">{{ view.review_banner }}</h2>
+  <p class="module-card__text">{{ icon('alert') }} {{ view.candidate_note }}.</p>
+  <p class="module-card__text">{{ view.method_note }}</p>
+</section>
+
+{% if not view.store_available %}
+<section aria-labelledby="store-heading" class="card">
+  <h2 id="store-heading">Golden knowledge store not used</h2>
+  <p class="module-card__text">{{ icon('unlink') }} {{ view.store_note }}</p>
+</section>
+{% endif %}
+
+{% for row in view.rows %}
+<section aria-labelledby="assessment-{{ row.requirement_id }}" class="card">
+  <h2 id="assessment-{{ row.requirement_id }}">{{ row.requirement_id }} — requirement</h2>
+  <p class="module-card__text">&ldquo;{{ row.requirement_text }}&rdquo;</p>
+  <dl class="kv-list">
+    <dt>Obligation</dt>
+    <dd>{{ row.modality }}{% if row.is_mandatory %} (mandatory){% endif %}</dd>
+    <dt>Source</dt>
+    <dd>{{ icon('file') }} {{ row.source }}</dd>
+    <dt>Language</dt>
+    <dd>{{ row.language }}</dd>
+  </dl>
+  <h3>Normalization</h3>
+  <dl class="kv-list">
+    <dt>Technology hint</dt>
+    <dd>{{ row.technology_hint }}</dd>
+    <dt>Capability hints</dt>
+    <dd>
+      {% if row.capability_hints %}{{ row.capability_hints | join(', ') }}{% else %}—{% endif %}
+    </dd>
+  </dl>
+  <h3>Golden candidate match</h3>
+  <dl class="metric-grid">
+    <div class="metric">
+      <dt class="metric__label">Match status</dt>
+      <dd class="metric__value">{{ row.match_status }}</dd>
+      <dd class="metric__note">Deterministic pilot verdict — a candidate, not a decision</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Matched capability</dt>
+      <dd class="metric__value">{{ row.matched_capability }}</dd>
+      <dd class="metric__note">Claim status: {{ row.claim_status }}</dd>
+    </div>
+    <div class="metric metric--warning">
+      <dt class="metric__label">Human review</dt>
+      <dd class="metric__value">{{ row.human_review }}</dd>
+      <dd class="metric__note">{{ row.candidate_note }}</dd>
+    </div>
+  </dl>
+  <p class="module-card__text">{{ row.rationale }}</p>
+  {% if row.evidence %}
+  <h3>Evidence</h3>
+  <ul>
+    {% for reference in row.evidence %}
+    <li>
+      {{ icon('file') }} {{ reference.filename }} — section {{ reference.section_id }},
+      {{ reference.locator }} (version {{ reference.source_version }})
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="module-card__text">{{ icon('alert') }} No evidence — nothing is claimed.</p>
+  {% endif %}
+</section>
+{% endfor %}
+
+<p>
+  <a href="{{ url_for('show_run', run_key=view.run_key) }}">Back to the run</a>
+</p>
+{% endblock %}

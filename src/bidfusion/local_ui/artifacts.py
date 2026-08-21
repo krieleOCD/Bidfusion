@@ -110,6 +110,14 @@ def _validate_dataset(payload: object) -> NormalizedBidDataset:
     return NormalizedBidDataset.model_validate(payload)
 
 
+def load_requirements(run_directory: Path) -> RequirementExtractionResult:
+    """Validated requirement extraction result, after integrity check."""
+    require_intact(run_directory)
+    return RequirementExtractionResult.model_validate(
+        _read_json(run_directory, _REQUIREMENTS_AUDIT)
+    )
+
+
 def load_review_package(run_directory: Path) -> ReviewPackage:
     """Validated review-package model for the structured view."""
     require_intact(run_directory)

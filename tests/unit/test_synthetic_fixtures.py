@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import zipfile
 from hashlib import sha256
 from io import BytesIO
 from pathlib import Path
@@ -57,6 +58,7 @@ def test_pdf_fixtures_are_byte_reproducible(tmp_path: Path) -> None:
         "rfp-review/declared-encrypted.pdf",
         "rfp-unsupported/blank-scan.pdf",
         "rfp-quality-review/mixed-scan.pdf",
+        "rfp-mtd/mtd-requirements.docx",
     ):
         assert (regenerated / relative).read_bytes() == (FIXTURES / relative).read_bytes(), relative
 
@@ -112,6 +114,19 @@ def test_requirements_workbook_contains_expected_sheets_and_cells() -> None:
         assert timeline[2][1].value == "2026-10-15 14:00"
     finally:
         workbook.close()
+
+
+def test_mtd_docx_fixture_is_labeled_synthetic_and_passes_preflight() -> None:
+    path = FIXTURES / "rfp-mtd" / "mtd-requirements.docx"
+    with zipfile.ZipFile(BytesIO(path.read_bytes())) as archive:
+        document = archive.read("word/document.xml").decode("utf-8")
+
+    assert "SYNTHETIC RFP FIXTURE" in document
+    for label in ("REQ-M1", "REQ-M7", "REQ-M8"):
+        assert label in document
+    assert "Splunk support is not required and is excluded from scope." in document
+    assert "QuantumTrace AlphaSIEM" in document
+    assert assess_fixture(path).completed_successfully
 
 
 def test_quality_review_package_carries_the_expected_review_triggers() -> None:

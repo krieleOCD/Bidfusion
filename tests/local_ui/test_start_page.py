@@ -14,6 +14,7 @@ from bidfusion.local_ui.app import create_app
 KNOWN_PACKAGES = (
     "rfp-blocked",
     "rfp-minimal",
+    "rfp-mtd",
     "rfp-quality-review",
     "rfp-review",
     "rfp-unsupported",
