@@ -10,6 +10,7 @@
         "normalized_bid_dataset",
         "compliance_matrix",
         "working_package",
+        "reviewed_working_package",
         "upload_manifest",
         "bid_run_record"
       ],

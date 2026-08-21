@@ -484,10 +484,10 @@ FEATURES: tuple[Feature, ...] = (
             "Shows the extracted timeline and submission formalities",
             "Names the document, page, or cell behind every statement",
             "Offers the versioned package as JSON and Markdown",
+            "Generates a versioned, integrity-checked reviewed working package "
+            "that carries recorded human review decisions",
         ),
-        planned_capabilities=(
-            "Carry recorded human review decisions into a reviewed working package",
-        ),
+        planned_capabilities=(),
         current_sources=("The working-package artifacts of the run",),
         future_sources=(),
         limitations=(

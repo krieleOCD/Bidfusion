@@ -180,6 +180,99 @@
   {% endif %}
 </section>
 
+{% if reviewed_package %}
+<section aria-labelledby="reviewed-package-heading" class="card card--accent">
+  <h2 id="reviewed-package-heading">{{ reviewed_package.title }}</h2>
+  {% if not reviewed_package.packages_available %}
+  <p class="module-card__text">{{ icon('alert') }} {{ reviewed_package.packages_note }}</p>
+  {% elif reviewed_package.package %}
+  {% set rp = reviewed_package.package %}
+  <p>
+    {% if rp.is_complete %}
+    <span class="status-badge status-badge--success">{{ icon('check') }} {{ rp.state_label }}</span>
+    {% else %}
+    <span class="status-badge status-badge--warning">{{ icon('alert') }} {{ rp.state_label }}</span>
+    {% endif %}
+  </p>
+  <p class="module-card__text">
+    {{ icon('info') }} {{ rp.scope_note }}
+    {{ rp.golden_note }}
+  </p>
+  <dl class="kv-list">
+    <dt>Package</dt>
+    <dd>{{ rp.package_id }} (version {{ rp.package_version }})</dd>
+    <dt>Generated</dt>
+    <dd>{{ rp.created_at }}</dd>
+    <dt>Requirements</dt>
+    <dd>{{ rp.total_requirements }}</dd>
+    <dt>Reviewed</dt>
+    <dd>{{ rp.reviewed }}</dd>
+    <dt>Pending</dt>
+    <dd>{{ rp.pending }}</dd>
+    <dt>Confirmed candidates</dt>
+    <dd>{{ rp.confirmed_candidate }}</dd>
+    <dt>Rejected candidates</dt>
+    <dd>{{ rp.rejected_candidate }}</dd>
+    <dt>Needs clarification</dt>
+    <dd>{{ rp.needs_clarification }}</dd>
+  </dl>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Requirement</th>
+          <th scope="col">Candidate match</th>
+          <th scope="col">Golden claim</th>
+          <th scope="col">Bid review</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rp.rows %}
+        <tr>
+          <td>
+            {{ row.requirement_id }} ({{ row.modality }})<br>
+            {{ row.text }}<br>
+            <span class="source-chip">{{ icon('file') }} {{ row.source }}</span>
+          </td>
+          <td>{{ row.match_status }}</td>
+          <td>
+            {{ row.claim_status }}
+            {% for evidence in row.evidence %}
+            <br><span class="source-chip">{{ icon('file') }} {{ evidence.section_id }} ({{ evidence.source_version }})</span>
+            {% endfor %}
+          </td>
+          <td>
+            {{ row.review_label }}
+            {% if row.reviewer %}
+            <br>{{ row.reviewer }}, {{ row.reviewed_at }} (revision {{ row.review_version }})
+            {% endif %}
+            {% if row.review_rationale %}
+            <br>{{ row.review_rationale }}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if rp.newer_reviews_exist %}
+  <p class="module-card__text">{{ icon('alert') }} {{ rp.newer_reviews_note }}</p>
+  {% endif %}
+  {% else %}
+  <p class="module-card__text">
+    No reviewed working package has been generated for this run yet.
+  </p>
+  {% endif %}
+  {% if reviewed_package.can_generate %}
+  <form method="post" action="{{ url_for('generate_reviewed_package', run_key=run.key) }}" class="actions">
+    <button type="submit" class="btn btn--primary">
+      Generate Reviewed Working Package {{ icon('arrow-right') }}
+    </button>
+  </form>
+  {% endif %}
+</section>
+{% endif %}
+
 {% if review_summary %}
 <section aria-labelledby="reviewed-heading" class="card">
   <h2 id="reviewed-heading">Reviewed knowledge assessment</h2>

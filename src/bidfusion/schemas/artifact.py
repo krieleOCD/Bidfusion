@@ -25,6 +25,7 @@ class ArtifactType(StrEnum):
     NORMALIZED_BID_DATASET = "normalized_bid_dataset"
     COMPLIANCE_MATRIX = "compliance_matrix"
     WORKING_PACKAGE = "working_package"
+    REVIEWED_WORKING_PACKAGE = "reviewed_working_package"
     UPLOAD_MANIFEST = "upload_manifest"
     BID_RUN_RECORD = "bid_run_record"
 

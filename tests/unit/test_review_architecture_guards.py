@@ -22,6 +22,7 @@ _REVIEW_MODULES = sorted(REVIEW.glob("*.py"))
 _UI_REVIEW_MODULES = (
     LOCAL_UI / "knowledge_assessment_service.py",
     LOCAL_UI / "knowledge_review_service.py",
+    LOCAL_UI / "reviewed_package_service.py",
 )
 
 _FORBIDDEN_RUNTIME_ROOTS = frozenset(

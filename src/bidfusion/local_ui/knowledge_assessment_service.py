@@ -41,6 +41,7 @@ from bidfusion.local_ui import artifacts
 from bidfusion.local_ui.golden_service import capability_label
 from bidfusion.local_ui.registry import RunRecord
 from bidfusion.local_ui.viewmodels import source_label
+from bidfusion.schemas.extraction import RequirementExtractionResult
 
 #: Honest banner lines the assessment page shows verbatim.
 ASSESSMENT_LABELS = (
@@ -179,15 +180,15 @@ class KnowledgeAssessmentView:
         return _METHOD_NOTE.format(count=self.claim_count)
 
 
-def compute_assessment_result(
+def compute_assessment_inputs(
     record: RunRecord,
     store_root: Path,
-) -> KnowledgeAssessmentResult | None:
-    """The deterministic assessment batch for one permitted run, or ``None``.
+) -> tuple[RequirementExtractionResult, KnowledgeAssessmentResult] | None:
+    """The run's authoritative requirements plus their assessment batch.
 
     Only a processed run whose recorded outcome is ``completed`` may be
-    assessed — the same gate as the working package, so both the page
-    and the review mutation always stand on quality-accepted,
+    assessed — the same gate as the working package, so both the pages
+    and every review-side mutation always stand on quality-accepted,
     integrity-verified artifacts. May raise
     :class:`bidfusion.local_ui.artifacts.ArtifactAccessError` when the
     run's integrity re-check fails.
@@ -201,7 +202,16 @@ def compute_assessment_result(
         return None
     requirements = artifacts.load_requirements(summary.run_directory)
     snapshot = load_claims_snapshot(store_root)
-    return assess_requirements(requirements.requirements, snapshot)
+    return requirements, assess_requirements(requirements.requirements, snapshot)
+
+
+def compute_assessment_result(
+    record: RunRecord,
+    store_root: Path,
+) -> KnowledgeAssessmentResult | None:
+    """The deterministic assessment batch for one permitted run, or ``None``."""
+    inputs = compute_assessment_inputs(record, store_root)
+    return None if inputs is None else inputs[1]
 
 
 def reviews_root_for(record: RunRecord) -> Path:
