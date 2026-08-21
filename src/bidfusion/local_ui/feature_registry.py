@@ -1120,11 +1120,11 @@ FEATURES: tuple[Feature, ...] = (
             "Shows candidate match status, matched capability, claim status, "
             "and the evidence sources behind every candidate",
             "Keeps RFP provenance and golden evidence provenance separate",
+            "Records immutable, versioned human review decisions per assessment "
+            "— confirm, reject, or needs clarification — bound to the exact "
+            "assessment content reviewed",
         ),
-        planned_capabilities=(
-            "Recorded human review decisions on individual assessments",
-            "Assessment over reviewed, human-confirmed golden knowledge",
-        ),
+        planned_capabilities=("Assessment over reviewed, human-confirmed golden knowledge",),
         current_sources=(
             "Requirement artifacts of a completed synthetic run",
             "The local golden knowledge runtime store on this machine",
@@ -1141,6 +1141,7 @@ FEATURES: tuple[Feature, ...] = (
             "Every assessment states its human review requirement",
             "A negative or excluded requirement never produces a positive candidate match",
             "A missing golden store renders a safe not-evaluated state",
+            "A bid review decision never changes a golden claim",
         ),
         route_name="show_knowledge_assessment",
         visibility=Visibility.MODULE_SECTION,

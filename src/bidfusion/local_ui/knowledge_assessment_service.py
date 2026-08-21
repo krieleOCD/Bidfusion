@@ -16,15 +16,25 @@ as a traceback.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import UTC
 from pathlib import Path
 
 from bidfusion.bid_intelligence.matching import (
+    KnowledgeAssessmentResult,
     KnowledgeStoreState,
     RequirementKnowledgeAssessment,
     RequirementLanguage,
     assess_requirements,
     load_claims_snapshot,
+)
+from bidfusion.bid_intelligence.review import (
+    RequirementAssessmentReview,
+    ReviewedRequirementAssessment,
+    ReviewState,
+    RunReviewStore,
+    assessment_digest,
+    project_reviewed_assessments,
 )
 from bidfusion.golden_dataset.contracts import KnowledgeSourceLocator
 from bidfusion.local_ui import artifacts
@@ -45,6 +55,29 @@ CANDIDATE_ONLY_LABEL = "Candidate match — not a compliance decision"
 NOT_EVALUATED_LABEL = "NOT EVALUATED"
 NEGATED_LANGUAGE_LABEL = "NEGATIVE OR EXCLUDING LANGUAGE"
 OBLIGATION_LANGUAGE_LABEL = "OBLIGATION"
+
+#: Scope statements every review control carries verbatim.
+REVIEW_SCOPE_NOTE = "This decision applies to this bid assessment only."
+REVIEW_GOLDEN_NOTE = "It does not validate or modify the underlying Golden Knowledge claim."
+
+_REVIEWS_BROKEN_NOTE = (
+    "The stored review records for this run could not be read. No review is "
+    "shown or accepted until they validate again."
+)
+
+_REVIEW_STATE_LABELS: dict[ReviewState, str] = {
+    ReviewState.PENDING: "PENDING — no decision recorded",
+    ReviewState.CONFIRMED: "REVIEW CONFIRMED CANDIDATE",
+    ReviewState.REJECTED: "REVIEW REJECTED CANDIDATE",
+    ReviewState.NEEDS_CLARIFICATION: "CLARIFICATION REQUIRED",
+}
+
+#: Decision options the review form renders; values are the closed enum.
+REVIEW_DECISION_OPTIONS: tuple[tuple[str, str], ...] = (
+    ("CONFIRMED", "Confirm candidate"),
+    ("REJECTED", "Reject candidate"),
+    ("NEEDS_CLARIFICATION", "Needs clarification"),
+)
 
 _METHOD_NOTE = (
     "The requirements below were extracted from this run's SYNTHETIC RFP "
@@ -69,10 +102,24 @@ class AssessmentEvidenceView:
 
 
 @dataclass(frozen=True, slots=True)
+class ReviewStateView:
+    """The human-review dimension of one assessment, ready to render."""
+
+    label: str
+    is_pending: bool
+    reviewer: str | None = None
+    reviewed_at: str | None = None
+    review_rationale: str | None = None
+    review_version: int | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class AssessmentRow:
     """One requirement with its normalization, candidate match, and review."""
 
     requirement_id: str
+    assessment_id: str
+    assessment_digest: str
     requirement_text: str
     modality: str
     is_mandatory: bool
@@ -85,8 +132,25 @@ class AssessmentRow:
     claim_status: str
     rationale: str
     evidence: tuple[AssessmentEvidenceView, ...]
+    review: ReviewStateView = field(
+        default_factory=lambda: ReviewStateView(
+            label=_REVIEW_STATE_LABELS[ReviewState.PENDING], is_pending=True
+        )
+    )
     human_review: str = HUMAN_REVIEW_LABEL
     candidate_note: str = CANDIDATE_ONLY_LABEL
+    review_scope_note: str = REVIEW_SCOPE_NOTE
+    review_golden_note: str = REVIEW_GOLDEN_NOTE
+
+
+@dataclass(frozen=True, slots=True)
+class ReviewCountsView:
+    """How many assessments sit in each review state, for the summary."""
+
+    pending: int
+    confirmed: int
+    rejected: int
+    needs_clarification: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,9 +163,15 @@ class KnowledgeAssessmentView:
     store_note: str
     claim_count: int
     rows: tuple[AssessmentRow, ...]
+    reviews_available: bool = True
+    reviews_note: str | None = None
+    review_counts: ReviewCountsView = ReviewCountsView(0, 0, 0, 0)
+    decision_options: tuple[tuple[str, str], ...] = REVIEW_DECISION_OPTIONS
     labels: tuple[str, ...] = ASSESSMENT_LABELS
     review_banner: str = HUMAN_REVIEW_LABEL
     candidate_note: str = CANDIDATE_ONLY_LABEL
+    review_scope_note: str = REVIEW_SCOPE_NOTE
+    review_golden_note: str = REVIEW_GOLDEN_NOTE
 
     @property
     def method_note(self) -> str:
@@ -109,17 +179,18 @@ class KnowledgeAssessmentView:
         return _METHOD_NOTE.format(count=self.claim_count)
 
 
-def build_knowledge_assessment_view(
+def compute_assessment_result(
     record: RunRecord,
     store_root: Path,
-) -> KnowledgeAssessmentView | None:
-    """Assessment page projection, or ``None`` when the run does not permit it.
+) -> KnowledgeAssessmentResult | None:
+    """The deterministic assessment batch for one permitted run, or ``None``.
 
-    Only a processed run whose recorded outcome is ``completed`` may
-    render this view — the same gate as the working package, so the page
-    always stands on quality-accepted, integrity-verified artifacts.
-    May raise :class:`bidfusion.local_ui.artifacts.ArtifactAccessError`
-    when the run's integrity re-check fails.
+    Only a processed run whose recorded outcome is ``completed`` may be
+    assessed — the same gate as the working package, so both the page
+    and the review mutation always stand on quality-accepted,
+    integrity-verified artifacts. May raise
+    :class:`bidfusion.local_ui.artifacts.ArtifactAccessError` when the
+    run's integrity re-check fails.
     """
     summary = record.summary
     if (
@@ -130,24 +201,106 @@ def build_knowledge_assessment_view(
         return None
     requirements = artifacts.load_requirements(summary.run_directory)
     snapshot = load_claims_snapshot(store_root)
-    result = assess_requirements(requirements.requirements, snapshot)
+    return assess_requirements(requirements.requirements, snapshot)
+
+
+def reviews_root_for(record: RunRecord) -> Path:
+    """Where this run's review records live: beside, never inside, the run.
+
+    The run directory's integrity manifest is sealed at pipeline time,
+    so review records are stored in a sibling directory under the run's
+    private output root.
+    """
+    return record.output_root / "reviews"
+
+
+def load_reviews(record: RunRecord) -> tuple[RequirementAssessmentReview, ...] | None:
+    """Stored reviews for one run; ``None`` means the store is damaged."""
+    try:
+        return RunReviewStore(reviews_root_for(record)).read_reviews()
+    except Exception:  # noqa: BLE001 - a broken review store must never raise into a page
+        return None
+
+
+def build_knowledge_assessment_view(
+    record: RunRecord,
+    store_root: Path,
+) -> KnowledgeAssessmentView | None:
+    """Assessment page projection, or ``None`` when the run does not permit it."""
+    result = compute_assessment_result(record, store_root)
+    if result is None:
+        return None
+    snapshot = load_claims_snapshot(store_root)
     filenames = snapshot.source_filenames
+    reviews = load_reviews(record)
+    projection = project_reviewed_assessments(
+        result.assessments, reviews if reviews is not None else ()
+    )
+    counts = projection.counts
+    reviewed_by_id = {item.assessment.assessment_id: item for item in projection.reviewed}
     return KnowledgeAssessmentView(
         run_key=record.key,
         package_name=record.package_name,
         store_available=result.store_state is KnowledgeStoreState.AVAILABLE,
         store_note=result.store_note,
         claim_count=result.claim_count,
-        rows=tuple(_row(item, filenames) for item in result.assessments),
+        rows=tuple(
+            _row(
+                item,
+                filenames,
+                review_view=_review_state_view(reviewed_by_id[item.assessment_id]),
+            )
+            for item in result.assessments
+        ),
+        reviews_available=reviews is not None,
+        reviews_note=None if reviews is not None else _REVIEWS_BROKEN_NOTE,
+        review_counts=ReviewCountsView(
+            pending=counts[ReviewState.PENDING],
+            confirmed=counts[ReviewState.CONFIRMED],
+            rejected=counts[ReviewState.REJECTED],
+            needs_clarification=counts[ReviewState.NEEDS_CLARIFICATION],
+        ),
+    )
+
+
+def build_review_summary(
+    record: RunRecord,
+    store_root: Path,
+) -> KnowledgeAssessmentView | None:
+    """The reviewed working-package projection for the working-package page.
+
+    Same data as the assessment page — machine candidate, golden claim
+    state, and human review stay three distinct concepts — reused so the
+    working package never grows its own matching or review logic.
+    """
+    return build_knowledge_assessment_view(record, store_root)
+
+
+def _review_state_view(reviewed: ReviewedRequirementAssessment) -> ReviewStateView:
+    review = reviewed.review
+    if review is None:
+        return ReviewStateView(label=_REVIEW_STATE_LABELS[ReviewState.PENDING], is_pending=True)
+    return ReviewStateView(
+        label=_REVIEW_STATE_LABELS[reviewed.review_state],
+        is_pending=False,
+        reviewer=review.reviewer,
+        reviewed_at=review.reviewed_at.astimezone(UTC).strftime("%Y-%m-%d %H:%M UTC"),
+        review_rationale=review.rationale,
+        review_version=review.review_version,
     )
 
 
 def _row(
     assessment: RequirementKnowledgeAssessment,
     filenames: dict[str, str],
+    *,
+    review_view: ReviewStateView,
 ) -> AssessmentRow:
     return AssessmentRow(
         requirement_id=assessment.requirement_id,
+        assessment_id=assessment.assessment_id,
+        assessment_digest=assessment_digest(assessment),
+        review=review_view,
         requirement_text=assessment.requirement_text,
         modality=assessment.requirement_modality.value,
         is_mandatory=assessment.mandatory,

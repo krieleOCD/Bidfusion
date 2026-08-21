@@ -36,6 +36,7 @@ from bidfusion.local_ui import (
     feature_registry,
     golden_service,
     knowledge_assessment_service,
+    knowledge_review_service,
     preview_service,
     product_shell,
     scenario_registry,
@@ -320,6 +321,9 @@ def create_app(
             if package_view is None:
                 abort(404)
             raw_text = _raw_text(record, view_mode, "working-package")
+            review_summary = knowledge_assessment_service.build_review_summary(
+                record, _golden_store_root(app)
+            )
         except artifacts.ArtifactAccessError as refused:
             abort(409, description=str(refused))
         return render_template(
@@ -328,6 +332,7 @@ def create_app(
             package=package_view,
             view_mode=view_mode,
             raw_text=raw_text,
+            review_summary=review_summary,
         )
 
     @app.get("/runs/<run_key>/knowledge-assessment")
@@ -342,6 +347,23 @@ def create_app(
         if view is None:
             abort(404)
         return render_template("knowledge_assessment.html", view=view)
+
+    @app.post("/runs/<run_key>/knowledge-assessment/reviews")
+    def submit_knowledge_review(run_key: str) -> WerkzeugResponse:
+        record = _require_record(app, run_key)
+        try:
+            review = knowledge_review_service.submit_review(
+                record, _golden_store_root(app), request.form
+            )
+        except knowledge_review_service.ReviewRequestError as refused:
+            abort(400, description=str(refused))
+        except knowledge_review_service.ReviewConflictError as refused:
+            abort(409, description=str(refused))
+        except artifacts.ArtifactAccessError as refused:
+            abort(409, description=str(refused))
+        if review is None:
+            abort(404)
+        return redirect(url_for("show_knowledge_assessment", run_key=record.key), code=303)
 
     @app.get("/runs/<run_key>/review-package")
     def show_review_package(run_key: str) -> str:

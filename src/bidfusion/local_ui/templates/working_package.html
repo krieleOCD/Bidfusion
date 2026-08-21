@@ -179,6 +179,53 @@
   <p>No open questions were raised.</p>
   {% endif %}
 </section>
+
+{% if review_summary %}
+<section aria-labelledby="reviewed-heading" class="card">
+  <h2 id="reviewed-heading">Reviewed knowledge assessment</h2>
+  <p class="module-card__text">
+    {{ icon('info') }} {{ review_summary.review_scope_note }}
+    {{ review_summary.review_golden_note }}
+  </p>
+  <dl class="kv-list">
+    <dt>Pending review</dt>
+    <dd>{{ review_summary.review_counts.pending }}</dd>
+    <dt>Review confirmed candidate</dt>
+    <dd>{{ review_summary.review_counts.confirmed }}</dd>
+    <dt>Review rejected candidate</dt>
+    <dd>{{ review_summary.review_counts.rejected }}</dd>
+    <dt>Clarification required</dt>
+    <dd>{{ review_summary.review_counts.needs_clarification }}</dd>
+  </dl>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Requirement</th>
+          <th scope="col">Candidate match</th>
+          <th scope="col">Golden claim</th>
+          <th scope="col">Bid review</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in review_summary.rows %}
+        <tr>
+          <td>{{ row.requirement_id }}</td>
+          <td>{{ row.match_status }}</td>
+          <td>{{ row.claim_status }}</td>
+          <td>{{ row.review.label }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="actions">
+    <a class="btn btn--secondary" href="{{ url_for('show_knowledge_assessment', run_key=run.key) }}">
+      Open the review surface {{ icon('arrow-right') }}
+    </a>
+  </p>
+</section>
+{% endif %}
 {% else %}
 <section aria-label="Raw artifact view">
   <pre class="artifact-pre">{{ raw_text }}</pre>

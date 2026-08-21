@@ -19,7 +19,43 @@
   <h2 id="review-heading">{{ view.review_banner }}</h2>
   <p class="module-card__text">{{ icon('alert') }} {{ view.candidate_note }}.</p>
   <p class="module-card__text">{{ view.method_note }}</p>
+  <p class="module-card__text">
+    {{ icon('info') }} {{ view.review_scope_note }} {{ view.review_golden_note }}
+  </p>
 </section>
+
+<section aria-labelledby="review-summary-heading" class="card">
+  <h2 id="review-summary-heading">Reviewed working package projection</h2>
+  <dl class="metric-grid">
+    <div class="metric">
+      <dt class="metric__label">Pending review</dt>
+      <dd class="metric__value">{{ view.review_counts.pending }}</dd>
+      <dd class="metric__note">No human decision recorded yet</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Review confirmed candidate</dt>
+      <dd class="metric__value">{{ view.review_counts.confirmed }}</dd>
+      <dd class="metric__note">For this bid assessment only</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Review rejected candidate</dt>
+      <dd class="metric__value">{{ view.review_counts.rejected }}</dd>
+      <dd class="metric__note">Candidate not accepted for this bid</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Clarification required</dt>
+      <dd class="metric__value">{{ view.review_counts.needs_clarification }}</dd>
+      <dd class="metric__note">A person could not yet resolve it</dd>
+    </div>
+  </dl>
+</section>
+
+{% if not view.reviews_available %}
+<section aria-labelledby="reviews-broken-heading" class="card">
+  <h2 id="reviews-broken-heading">Review records unavailable</h2>
+  <p class="module-card__text">{{ icon('alert') }} {{ view.reviews_note }}</p>
+</section>
+{% endif %}
 
 {% if not view.store_available %}
 <section aria-labelledby="store-heading" class="card">
@@ -49,25 +85,64 @@
       {% if row.capability_hints %}{{ row.capability_hints | join(', ') }}{% else %}—{% endif %}
     </dd>
   </dl>
-  <h3>Golden candidate match</h3>
+  <h3>Candidate match, golden claim, and bid review</h3>
   <dl class="metric-grid">
     <div class="metric">
-      <dt class="metric__label">Match status</dt>
+      <dt class="metric__label">Candidate match</dt>
       <dd class="metric__value">{{ row.match_status }}</dd>
-      <dd class="metric__note">Deterministic pilot verdict — a candidate, not a decision</dd>
+      <dd class="metric__note">
+        Machine verdict for {{ row.matched_capability }} — a candidate, not a decision
+      </dd>
     </div>
     <div class="metric">
-      <dt class="metric__label">Matched capability</dt>
-      <dd class="metric__value">{{ row.matched_capability }}</dd>
-      <dd class="metric__note">Claim status: {{ row.claim_status }}</dd>
+      <dt class="metric__label">Golden claim</dt>
+      <dd class="metric__value">{{ row.claim_status }}</dd>
+      <dd class="metric__note">Knowledge state — unchanged by any bid review</dd>
     </div>
     <div class="metric metric--warning">
-      <dt class="metric__label">Human review</dt>
-      <dd class="metric__value">{{ row.human_review }}</dd>
+      <dt class="metric__label">Bid review</dt>
+      <dd class="metric__value">{{ row.review.label }}</dd>
       <dd class="metric__note">{{ row.candidate_note }}</dd>
     </div>
   </dl>
   <p class="module-card__text">{{ row.rationale }}</p>
+  {% if not row.review.is_pending %}
+  <p class="module-card__text">
+    {{ icon('check') }} Reviewed by {{ row.review.reviewer }} on {{ row.review.reviewed_at }}
+    (revision {{ row.review.review_version }}).
+    {% if row.review.review_rationale %}Rationale: &ldquo;{{ row.review.review_rationale }}&rdquo;{% endif %}
+  </p>
+  {% endif %}
+  <h3>Record a review decision</h3>
+  <p class="module-card__text">
+    {{ icon('info') }} {{ row.review_scope_note }} {{ row.review_golden_note }}
+  </p>
+  <form action="{{ url_for('submit_knowledge_review', run_key=view.run_key) }}" method="post">
+    <input type="hidden" name="assessment_id" value="{{ row.assessment_id }}">
+    <input type="hidden" name="assessment_digest" value="{{ row.assessment_digest }}">
+    <p>
+      <label>Decision
+        <select name="decision" required>
+          {% for value, label in view.decision_options %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </p>
+    <p>
+      <label>Reviewer
+        <input type="text" name="reviewer" required maxlength="120">
+      </label>
+    </p>
+    <p>
+      <label>Rationale (optional)
+        <textarea name="rationale" maxlength="2000" rows="2"></textarea>
+      </label>
+    </p>
+    <button class="btn btn--secondary" type="submit">
+      Record review decision {{ icon('arrow-right') }}
+    </button>
+  </form>
   {% if row.evidence %}
   <h3>Evidence</h3>
   <ul>
