@@ -12,7 +12,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from bidfusion.llm_gateway.port import GuardrailPolicyKey, ModelPolicyKey
+from bidfusion.llm_gateway.port import (
+    GuardrailPolicyKey,
+    ModelPolicyKey,
+    StructuredLlmOperation,
+)
+from bidfusion.schemas.common import DataClassification
 
 #: The only model allowed in this slice. Any other configured or resolved
 #: value is fail-closed rejected by ``OrangeProxySettings`` and by the
@@ -29,12 +34,35 @@ ALLOWED_MODELS: frozenset[str] = frozenset({"openai/gpt-5.4-mini"})
 #:   complex_review          -> claude-sonnet-4-6@default
 MODEL_POLICY: Mapping[ModelPolicyKey, str] = {
     ModelPolicyKey.SYNTHETIC_STRUCTURED_SMOKE: "openai/gpt-5.4-mini",
+    ModelPolicyKey.RFP_REQUIREMENT_NORMALIZATION: "openai/gpt-5.4-mini",
 }
 
 
 def resolve_model(key: ModelPolicyKey) -> str:
     """Return the concrete model for an allowlisted model-policy key."""
     return MODEL_POLICY[key]
+
+
+#: Operation-scoped data-classification policy. Every operation must
+#: declare exactly which classifications it may carry; anything else is a
+#: request-policy violation before any transport call. The pilot
+#: normalization operation accepts only content the operator explicitly
+#: asserted as anonymized and authorized for the Orange LLM pilot —
+#: identified customer data, personal data, and raw documents are not
+#: permitted classifications for it.
+OPERATION_DATA_CLASSIFICATIONS: Mapping[StructuredLlmOperation, frozenset[DataClassification]] = {
+    StructuredLlmOperation.SYNTHETIC_STRUCTURED_SMOKE: frozenset({DataClassification.PUBLIC}),
+    StructuredLlmOperation.RFP_REQUIREMENT_NORMALIZATION: frozenset(
+        {DataClassification.ANONYMIZED_INTERNAL_PILOT}
+    ),
+}
+
+
+def allowed_data_classifications(
+    operation: StructuredLlmOperation,
+) -> frozenset[DataClassification]:
+    """Return the allowlisted data classifications for one operation."""
+    return OPERATION_DATA_CLASSIFICATIONS[operation]
 
 
 @dataclass(frozen=True, slots=True)

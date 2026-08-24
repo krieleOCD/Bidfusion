@@ -29,7 +29,12 @@ from urllib.request import HTTPRedirectHandler, OpenerDirector, Request, build_o
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from bidfusion.llm_gateway.errors import LlmGatewayError, LlmGatewayErrorCode
-from bidfusion.llm_gateway.policy import ALLOWED_MODELS, resolve_guardrails, resolve_model
+from bidfusion.llm_gateway.policy import (
+    ALLOWED_MODELS,
+    allowed_data_classifications,
+    resolve_guardrails,
+    resolve_model,
+)
 from bidfusion.llm_gateway.port import (
     GuardrailPolicyKey,
     GuardrailStatus,
@@ -58,6 +63,9 @@ _MAX_BACKOFF_SECONDS: float = 4.0
 #: — an unmapped or mismatched pair is a REQUEST_POLICY_VIOLATION.
 _OPERATION_MODEL_POLICY_KEY: dict[StructuredLlmOperation, ModelPolicyKey] = {
     StructuredLlmOperation.SYNTHETIC_STRUCTURED_SMOKE: ModelPolicyKey.SYNTHETIC_STRUCTURED_SMOKE,
+    StructuredLlmOperation.RFP_REQUIREMENT_NORMALIZATION: (
+        ModelPolicyKey.RFP_REQUIREMENT_NORMALIZATION
+    ),
 }
 
 _RETRYABLE_STATUS_CODES: dict[int, LlmGatewayErrorCode] = {
@@ -336,6 +344,11 @@ class OrangeProxyAdapter:
 
         expected_key = _OPERATION_MODEL_POLICY_KEY.get(request.operation)
         if expected_key is None or request.model_policy_key != expected_key:
+            raise LlmGatewayError(
+                LlmGatewayErrorCode.REQUEST_POLICY_VIOLATION, request_id=request.request_id
+            )
+
+        if request.data_classification not in allowed_data_classifications(request.operation):
             raise LlmGatewayError(
                 LlmGatewayErrorCode.REQUEST_POLICY_VIOLATION, request_id=request.request_id
             )

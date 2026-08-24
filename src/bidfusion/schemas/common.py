@@ -99,12 +99,19 @@ class ProcessingStatus(StrEnum):
 
 
 class DataClassification(StrEnum):
-    """Data classification, drives handling and data-policy decisions."""
+    """Data classification, drives handling and data-policy decisions.
+
+    ``ANONYMIZED_INTERNAL_PILOT`` labels anonymized real RFP content the
+    operator has explicitly cleared for the Orange LLM pilot. It is an
+    operator assertion, never an automated claim that anonymization is
+    complete or perfect.
+    """
 
     PUBLIC = "PUBLIC"
     INTERNAL = "INTERNAL"
     CONFIDENTIAL = "CONFIDENTIAL"
     RESTRICTED = "RESTRICTED"
+    ANONYMIZED_INTERNAL_PILOT = "ANONYMIZED_INTERNAL_PILOT"
 
 
 class RequirementModality(StrEnum):
