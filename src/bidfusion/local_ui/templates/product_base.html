@@ -9,35 +9,59 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
+  <p class="visually-hidden">Knowledge and Evidence · Product Preview · Architecture and Roadmap</p>
   <header class="app-header">
-    <div class="container app-header__inner">
+    <div class="app-header__inner">
       <a class="wordmark" href="{{ url_for('index') }}">
-        <span class="wordmark__org">{{ shell.organization_name }}</span>
-        <span class="wordmark__sep" aria-hidden="true">·</span>
-        <span class="wordmark__product">{{ shell.product_name }}</span>
+        <img class="brand-logo"
+             src="{{ url_for('static', filename='ocd-logo-master-white.png') }}"
+             alt="{{ shell.organization_name }}">
+        <span class="wordmark__product">{{ shell.product_name }}<span class="wordmark__period">.</span></span>
       </a>
-      <div class="app-header__badges">
-        <span class="env-badge env-badge--scope">{{ icon('shield') }} Local Synthetic MVP</span>
+      <div class="app-header__tools">
+        <details class="command-menu">
+          <summary>{{ icon('list') }} Jump to anything</summary>
+          <nav class="command-menu__panel" aria-label="Quick navigation">
+            <p class="command-menu__label">Workspace</p>
+            <a href="{{ url_for('index') }}">Bids</a>
+            <a href="{{ url_for('compliance') }}">Compliance</a>
+            <a href="{{ url_for('qualification') }}">Qualification</a>
+            <a href="{{ url_for('golden_knowledge') }}">Knowledge</a>
+            <a href="{{ url_for('win_strategy') }}">Win strategy</a>
+            <a href="{{ url_for('proposal_factory') }}">Proposal</a>
+            <a href="{{ url_for('review_approval') }}">Review</a>
+            <a href="{{ url_for('overview') }}">Product status</a>
+          </nav>
+        </details>
         <span class="env-badge env-badge--preview">{{ shell.preview_label }} · {{ shell.stage_label }}</span>
-        <span class="env-badge env-badge--warning">{{ icon('alert') }} Not approved for production customer data</span>
       </div>
     </div>
     <nav class="product-nav" aria-label="Product areas">
-      <ul class="container product-nav__list">
+      <ul class="product-nav__list">
         {% for world in shell.worlds %}
-        <li>
-          <a class="product-nav__link{% if world.is_active %} product-nav__link--active{% endif %}"
+        <li{% if world.is_internal %} class="product-nav__item--internal"{% endif %}>
+          <a class="product-nav__link{% if world.is_active %} product-nav__link--active{% endif %}{% if world.is_internal %} product-nav__link--internal{% endif %}"
              href="{{ url_for(world.endpoint) }}"
-             {% if world.is_active %}aria-current="page"{% endif %}>{{ world.label }}</a>
+            {% if world.is_active %}aria-current="page"{% endif %}>
+            {{ icon(world.icon) }} {{ world.label }}
+          </a>
         </li>
         {% endfor %}
       </ul>
     </nav>
+    <div class="scope-bar">
+      <p class="scope-bar__inner">
+        {{ icon('shield') }}
+        <span class="scope-bar__full">Local Synthetic MVP — runs only local synthetic and curated demonstration data.
+              Not approved for production customer data.</span>
+        <span class="scope-bar__short">Local synthetic only · no production customer data</span>
+      </p>
+    </div>
   </header>
 
   {% if shell.sub_nav %}
   <nav class="module-nav" aria-label="{{ shell.active_world_key }} sections">
-    <ul class="container module-nav__list">
+    <ul class="module-nav__list">
       {% for item in shell.sub_nav %}
       <li>
         <a class="module-nav__link{% if item.is_active %} module-nav__link--active{% endif %}"
@@ -56,43 +80,38 @@
   {% if shell.feature_status %}
   {% set state = shell.feature_status %}
   <section class="feature-strip" aria-label="Feature status of this page">
-    <div class="container feature-strip__inner">
-      <dl class="feature-strip__facts">
-        <div class="feature-strip__fact">
-          <dt>Feature</dt>
-          <dd>{{ state.title }}</dd>
+    <div class="feature-strip__inner">
+      <details class="feature-strip__details">
+        <summary>
+          <span class="feature-strip__title">{{ state.title }}</span>
+          <span class="status-badge status-badge--{{ state.status.tone }}">
+            {{ icon(state.status.icon) }} {{ state.status.label }}
+          </span>
+          <span class="status-badge status-badge--{{ state.data_mode.tone }}">
+            {{ icon(state.data_mode.icon) }} {{ state.data_mode.label }}
+          </span>
+          <span class="feature-strip__hint feature-strip__hint--closed">Feature status</span>
+          <span class="feature-strip__hint feature-strip__hint--open">Hide feature status</span>
+        </summary>
+        <div class="feature-strip__body">
+          <dl class="feature-strip__facts">
+            <div class="feature-strip__fact">
+              <dt>Target phase</dt>
+              <dd>{{ state.phase_id }} — {{ state.phase_title }}</dd>
+            </div>
+            <div class="feature-strip__fact">
+              <dt>Current source</dt>
+              <dd>{{ state.current_source }}</dd>
+            </div>
+          </dl>
+          <p class="feature-strip__note">{{ icon('info') }} {{ state.review_note }}</p>
+          <p class="feature-strip__link">
+            <a href="{{ url_for('feature_detail', feature_key=state.key) }}">
+              Full feature record {{ icon('arrow-right') }}
+            </a>
+          </p>
         </div>
-        <div class="feature-strip__fact">
-          <dt>Status</dt>
-          <dd>
-            <span class="status-badge status-badge--{{ state.status.tone }}">
-              {{ icon(state.status.icon) }} {{ state.status.label }}
-            </span>
-          </dd>
-        </div>
-        <div class="feature-strip__fact">
-          <dt>Data mode</dt>
-          <dd>
-            <span class="status-badge status-badge--{{ state.data_mode.tone }}">
-              {{ icon(state.data_mode.icon) }} {{ state.data_mode.label }}
-            </span>
-          </dd>
-        </div>
-        <div class="feature-strip__fact">
-          <dt>Target phase</dt>
-          <dd>{{ state.phase_id }} — {{ state.phase_title }}</dd>
-        </div>
-        <div class="feature-strip__fact">
-          <dt>Current source</dt>
-          <dd>{{ state.current_source }}</dd>
-        </div>
-      </dl>
-      <p class="feature-strip__note">{{ icon('info') }} {{ state.review_note }}</p>
-      <p class="feature-strip__link">
-        <a href="{{ url_for('feature_detail', feature_key=state.key) }}">
-          Full feature record {{ icon('arrow-right') }}
-        </a>
-      </p>
+      </details>
     </div>
   </section>
   {% endif %}
@@ -107,9 +126,10 @@
     {% block content %}{% endblock %}
   </main>
   <footer class="app-footer container">
-    <p>BidFusion internal product preview — local only, synthetic and curated demonstration data.
-       This interface makes no network calls, reaches no external system, and renders only the
-       versioned artifacts of the local pipeline plus clearly marked preview content.</p>
+    <p><strong>BidFusion.</strong> Bid decisions remain human decisions. Machine outputs retain
+       their source, confidence context, freshness and recorded review state.</p>
+    <p>Internal product preview — local only, synthetic and curated demonstration data.
+       No network calls or external systems.</p>
   </footer>
 </body>
 </html>

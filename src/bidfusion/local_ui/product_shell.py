@@ -151,7 +151,14 @@ class NavItem:
 
 @dataclass(frozen=True, slots=True)
 class NavWorld:
-    """One top-level area of the product and the pages inside it."""
+    """One top-level area of the product and the pages inside it.
+
+    ``group`` separates the operational workspace ("workspace") — the
+    places a person working on one bid actually goes — from the internal
+    surfaces ("internal"): the product roadmap and the future-capability
+    previews. The internal group renders quieter, so someone working a
+    bid is not constantly steered toward future-feature material.
+    """
 
     key: str
     label: str
@@ -159,23 +166,18 @@ class NavWorld:
     feature_key: str
     items: tuple[NavItem, ...]
     member_endpoints: tuple[str, ...]
+    group: str = "workspace"
+    icon: str = "file"
 
 
-#: The product navigation. Three working worlds between an overview and
-#: the roadmap, matching how a bid actually moves: understand the RFP,
-#: understand the field, produce the response.
+#: The product navigation. The operational workspace mirrors the actual
+#: functional loop — understand the RFP, hold the knowledge and its
+#: evidence — while roadmap and future-capability previews step back
+#: into a separate internal group.
 NAV_WORLDS: tuple[NavWorld, ...] = (
     NavWorld(
-        key="overview",
-        label="Overview",
-        endpoint="overview",
-        feature_key="product_overview",
-        items=(),
-        member_endpoints=(),
-    ),
-    NavWorld(
-        key="rfp",
-        label="RFP Intelligence",
+        key="bids",
+        label="Bids",
         endpoint="index",
         feature_key="rfp_intake",
         items=(
@@ -200,6 +202,18 @@ NAV_WORLDS: tuple[NavWorld, ...] = (
                 endpoint="qualification",
                 feature_key="qualification",
             ),
+            NavItem(
+                key="factory",
+                label="Proposal",
+                endpoint="proposal_factory",
+                feature_key="proposal_factory",
+            ),
+            NavItem(
+                key="review_approval",
+                label="Review",
+                endpoint="review_approval",
+                feature_key="review_approval",
+            ),
         ),
         member_endpoints=(
             "show_run",
@@ -208,10 +222,33 @@ NAV_WORLDS: tuple[NavWorld, ...] = (
             "show_knowledge_assessment",
             "show_upload",
         ),
+        icon="target",
     ),
     NavWorld(
-        key="competitive",
-        label="Competitive Intelligence",
+        key="golden",
+        label="Knowledge",
+        endpoint="golden_knowledge",
+        feature_key="golden_knowledge_inventory",
+        items=(
+            NavItem(
+                key="inventory",
+                label="MTD Inventory",
+                endpoint="golden_knowledge",
+                feature_key="golden_knowledge_inventory",
+            ),
+            NavItem(
+                key="matching",
+                label="Capability Matching",
+                endpoint="golden_matching",
+                feature_key="golden_capability_matching",
+            ),
+        ),
+        member_endpoints=(),
+        icon="layers",
+    ),
+    NavWorld(
+        key="portfolio",
+        label="Portfolio and Strategy",
         endpoint="competitive_intelligence",
         feature_key="competitive_intelligence",
         items=(
@@ -235,56 +272,30 @@ NAV_WORLDS: tuple[NavWorld, ...] = (
             ),
         ),
         member_endpoints=(),
+        icon="users",
     ),
     NavWorld(
-        key="proposal",
-        label="Proposal Factory",
-        endpoint="proposal_factory",
-        feature_key="proposal_factory",
+        key="product",
+        label="Product Status",
+        endpoint="overview",
+        feature_key="product_overview",
         items=(
             NavItem(
-                key="factory",
-                label="Response Lifecycle",
-                endpoint="proposal_factory",
-                feature_key="proposal_factory",
+                key="operating_model",
+                label="Operating Model",
+                endpoint="overview",
+                feature_key="product_overview",
             ),
             NavItem(
-                key="review_approval",
-                label="Review and Approval",
-                endpoint="review_approval",
-                feature_key="review_approval",
+                key="roadmap",
+                label="Architecture and Roadmap",
+                endpoint="architecture_roadmap",
+                feature_key="architecture_roadmap",
             ),
         ),
-        member_endpoints=(),
-    ),
-    NavWorld(
-        key="golden",
-        label="Golden Knowledge",
-        endpoint="golden_knowledge",
-        feature_key="golden_knowledge_inventory",
-        items=(
-            NavItem(
-                key="inventory",
-                label="MTD Inventory",
-                endpoint="golden_knowledge",
-                feature_key="golden_knowledge_inventory",
-            ),
-            NavItem(
-                key="matching",
-                label="Capability Matching",
-                endpoint="golden_matching",
-                feature_key="golden_capability_matching",
-            ),
-        ),
-        member_endpoints=(),
-    ),
-    NavWorld(
-        key="roadmap",
-        label="Architecture and Roadmap",
-        endpoint="architecture_roadmap",
-        feature_key="architecture_roadmap",
-        items=(),
         member_endpoints=("feature_detail",),
+        group="internal",
+        icon="map",
     ),
 )
 
@@ -309,12 +320,18 @@ class NavItemView:
 
 @dataclass(frozen=True, slots=True)
 class NavWorldView:
-    """One top-level navigation entry, ready to render."""
+    """One top-level navigation entry, ready to render.
+
+    ``is_internal`` marks the roadmap and future-capability areas, which
+    the navigation renders visually quieter than the working areas.
+    """
 
     key: str
     label: str
     endpoint: str
     is_active: bool
+    is_internal: bool
+    icon: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -426,6 +443,8 @@ def build_shell_context(endpoint: str | None) -> ShellContext:
             label=world.label,
             endpoint=world.endpoint,
             is_active=active_world is not None and world.key == active_world.key,
+            is_internal=world.group == "internal",
+            icon=world.icon,
         )
         for world in NAV_WORLDS
     )

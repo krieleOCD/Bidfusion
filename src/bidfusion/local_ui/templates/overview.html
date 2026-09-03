@@ -1,114 +1,85 @@
 {% extends "product_base.html" %}
 {% from "partials/product_macros.html" import module_card, status_chip %}
-{% block title %}Overview — BidFusion{% endblock %}
+{% block title %}Operating model — BidFusion{% endblock %}
 {% block hero %}
-<div class="hero">
+<div class="hero hero--product">
   <div class="container hero__inner">
-    <p class="ocd-overline">BidFusion — internal product preview</p>
-    <h1>From an RFP package to a bid decision you can defend.</h1>
-    <p class="lede">
-      BidFusion turns a tender package into evidence-backed requirements, deadlines,
-      and formalities — then carries that evidence through qualification, compliance,
-      strategy, and the response itself. This build implements the first part of that
-      path for real. The rest is shown as it is meant to work, marked as such, so it
-      can be argued with before it is built.
-    </p>
+    <p class="ocd-overline">BidFusion operating model</p>
+    <h1>The operating system for a bid <span class="hero__accent">you can defend</span>.</h1>
+    <p class="lede">BidFusion connects qualification, requirements, evidence, human decisions and package readiness without turning the bid into a wall of dashboards.</p>
+    <div class="hero-question-grid" aria-label="Questions every bid view must answer">
+      <div><span>01</span><strong>Which bid?</strong><p>One explicit scope and source of truth.</p></div>
+      <div><span>02</span><strong>What state?</strong><p>Recorded lifecycle state, never simulated progress.</p></div>
+      <div><span>03</span><strong>What risk?</strong><p>Attention ordered by impact and evidence.</p></div>
+      <div><span>04</span><strong>What next?</strong><p>One clear next best action.</p></div>
+    </div>
+    <p class="actions"><a class="btn btn--primary" href="{{ url_for('index') }}">Open bid workspace {{ icon('arrow-right') }}</a></p>
   </div>
 </div>
 {% endblock %}
 {% block content %}
-
-<section aria-labelledby="today-heading" class="card card--accent">
-  <h2 id="today-heading">Where the product stands today</h2>
-  <p class="lede">
-    Intake, security gating, analysis of the repository's own fixture packages, and the
-    resulting working and review packages are implemented and run for real. Everything
-    from customer intelligence onwards is a preview: the information model is designed,
-    the connectors and the reasoning behind them are not built.
-  </p>
-  <dl class="kv-list">
-    <dt>Real today</dt>
-    <dd>
-      Authorized upload into quarantine, deterministic security gating, rule-based
-      extraction over synthetic fixtures, working and review packages with per-statement
-      provenance.
-    </dd>
-    <dt>Not real yet</dt>
-    <dd>
-      Every external system. No CRM, no document archive, no communication data, no web
-      research, no model call, and no autonomous agent runs anywhere in this build.
-    </dd>
-    <dt>Scope</dt>
-    <dd>
-      Level 1A — authorized non-production test data only. Production customer data is a
-      separate decision and is not permitted here.
-    </dd>
-  </dl>
-</section>
-
-{% for group in groups %}
-<section aria-labelledby="group-{{ group.key }}-heading">
-  <div class="group-head">
-    <h2 id="group-{{ group.key }}-heading">{{ group.title }} ({{ group.modules|length }})</h2>
-    <p>{{ group.summary }}</p>
-  </div>
-  <div class="module-grid">
-    {% for module in group.modules %}
-    {{ module_card(module) }}
+<section aria-labelledby="lifecycle-heading" class="operating-model">
+  <div class="section-heading-row"><div><p class="section-kicker">APMP-aligned working rhythm</p><h2 id="lifecycle-heading">One lifecycle, seven decision stages</h2></div></div>
+  <ol class="lifecycle" aria-label="Bid lifecycle">
+    {% for number, stage, note in [
+      ('01', 'Qualify', 'Should we bid?'),
+      ('02', 'Understand', 'What is asked and why?'),
+      ('03', 'Strategize', 'How can we win?'),
+      ('04', 'Design', 'What will we offer?'),
+      ('05', 'Respond', 'How do we tell the story?'),
+      ('06', 'Review', 'Is it true, complete and strong?'),
+      ('07', 'Submit', 'Is the package controlled?')
+    ] %}
+    <li><span>{{ number }}</span><strong>{{ stage }}</strong><p>{{ note }}</p></li>
     {% endfor %}
+  </ol>
+  <ol class="flow-band flow-band--quiet" aria-label="Functional production loop">
+    <li>RFP <span aria-hidden="true">→</span></li><li>Requirements <span aria-hidden="true">→</span></li><li>Knowledge <span aria-hidden="true">→</span></li><li>Evidence <span aria-hidden="true">→</span></li><li>Human Review <span aria-hidden="true">→</span></li><li>Working Package</li>
+  </ol>
+</section>
+
+<section aria-labelledby="laws-heading" class="design-laws">
+  <div class="section-heading-row"><div><p class="section-kicker">Non-negotiable interaction laws</p><h2 id="laws-heading">Designed for trust under time pressure</h2></div></div>
+  <div class="principle-grid">
+    <article><span>01</span><h3>Attention before reporting</h3><p>The next decision and its impact come before analytics.</p></article>
+    <article><span>02</span><h3>Human outranks machine</h3><p>Candidate, knowledge claim and bid decision never share one status.</p></article>
+    <article><span>03</span><h3>Why is one click away</h3><p>Every derived signal exposes its evidence and calculation context.</p></article>
+    <article><span>04</span><h3>Three useful depths</h3><p>Executive summary, practitioner workspace and audit detail coexist without duplication.</p></article>
   </div>
 </section>
-{% endfor %}
 
-<section aria-labelledby="reading-heading" class="card">
-  <h2 id="reading-heading">How to read a status on any page</h2>
-  <p class="lede">
-    Every page states two things about itself before it shows anything: how far the
-    feature is built, and where its data comes from. The two are independent — a feature
-    can be fully built and still render demonstration data.
-  </p>
-  <div class="table-wrap">
-    <table class="data-table">
-      <caption class="visually-hidden">Feature statuses and what each one means</caption>
-      <thead>
-        <tr>
-          <th scope="col">Status</th>
-          <th scope="col">What it means</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for status, meaning in status_legend %}
-        <tr>
-          <td>{{ status_chip(status) }}</td>
-          <td>{{ meaning }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<section aria-labelledby="today-heading" class="status-reality">
+  <div class="section-heading-row"><div><p class="section-kicker">Product truth</p><h2 id="today-heading">Where the product stands today</h2></div></div>
+  <div class="reality-grid">
+    <article class="reality-card reality-card--live"><span class="status-badge status-badge--success">{{ icon('check') }} REAL TODAY</span><h3>Verified local bid loop</h3><p>Authorized upload, deterministic security gating, synthetic-fixture extraction, evidence-backed candidate matching, versioned human review and reviewed working packages.</p></article>
+    <article class="reality-card"><span class="status-badge status-badge--neutral">{{ icon('minus') }} NOT CONNECTED</span><h3>Future operating system</h3><p>No CRM, archive, communication data, web research, model call or autonomous agent is connected in this build. Preview surfaces remain visibly marked.</p></article>
+    <article class="reality-card"><span class="status-badge status-badge--warning">{{ icon('shield') }} LEVEL 1A</span><h3>Authorized test scope</h3><p>Local synthetic and curated demonstration data only. Production customer data is not permitted here.</p></article>
   </div>
-  <div class="table-wrap">
-    <table class="data-table">
-      <caption class="visually-hidden">Data modes and what each one means</caption>
-      <thead>
-        <tr>
-          <th scope="col">Data mode</th>
-          <th scope="col">What it means</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for mode, meaning in data_mode_legend %}
-        <tr>
-          <td>{{ status_chip(mode) }}</td>
-          <td>{{ meaning }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <p class="actions">
-    <a class="btn btn--secondary" href="{{ url_for('architecture_roadmap') }}">
-      {{ icon('map') }} Open the full roadmap
-    </a>
-  </p>
+</section>
+
+<section aria-labelledby="capabilities-heading" class="capability-index">
+  <details class="disclosure disclosure--large">
+    <summary><span><span class="section-kicker">Product inventory</span><strong id="capabilities-heading">Explore all capabilities and roadmap states</strong></span><span>{{ groups|length }} capability groups</span></summary>
+    <div class="disclosure__body">
+      {% for group in groups %}
+      <section aria-labelledby="group-{{ group.key }}-heading">
+        <div class="group-head"><h2 id="group-{{ group.key }}-heading">{{ group.title }} ({{ group.modules|length }})</h2><p>{{ group.summary }}</p></div>
+        <div class="module-grid">{% for module in group.modules %}{{ module_card(module) }}{% endfor %}</div>
+      </section>
+      {% endfor %}
+    </div>
+  </details>
+</section>
+
+<section aria-labelledby="reading-heading" class="capability-index">
+  <details class="disclosure disclosure--large">
+    <summary><span><span class="section-kicker">Trust legend</span><strong id="reading-heading">How to read product status and data mode</strong></span><span>Audit reference</span></summary>
+    <div class="disclosure__body">
+      <p>Feature maturity and data provenance are independent. A feature can be built and still use demonstration data.</p>
+      <div class="table-wrap"><table class="data-table"><caption class="visually-hidden">Feature statuses and meanings</caption><thead><tr><th scope="col">Status</th><th scope="col">What it means</th></tr></thead><tbody>{% for status, meaning in status_legend %}<tr><td>{{ status_chip(status) }}</td><td>{{ meaning }}</td></tr>{% endfor %}</tbody></table></div>
+      <div class="table-wrap"><table class="data-table"><caption class="visually-hidden">Data modes and meanings</caption><thead><tr><th scope="col">Data mode</th><th scope="col">What it means</th></tr></thead><tbody>{% for mode, meaning in data_mode_legend %}<tr><td>{{ status_chip(mode) }}</td><td>{{ meaning }}</td></tr>{% endfor %}</tbody></table></div>
+      <a class="btn btn--secondary" href="{{ url_for('architecture_roadmap') }}">{{ icon('map') }} Open the full roadmap</a>
+    </div>
+  </details>
 </section>
 {% endblock %}

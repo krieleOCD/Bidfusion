@@ -1,17 +1,16 @@
 {% extends "product_base.html" %}
 {% from "partials/product_macros.html" import status_chip %}
-{% block title %}RFP Intelligence — BidFusion{% endblock %}
+{% block title %}Bids — BidFusion{% endblock %}
 {% block hero %}
 <div class="hero">
   <div class="container hero__inner">
-    <p class="ocd-overline">BidFusion — RFP intelligence</p>
-    <h1>Upload your RFP package and turn it into actionable bid intelligence.</h1>
+    <p class="ocd-overline">Bids · Intake and runs</p>
+    <h1>Start or open a bid with a source of truth you can inspect.</h1>
     <p class="lede">
-      BidFusion securely inventories and quarantines authorized test documents. Cleared
-      packages can later be transformed into evidence-based requirements, deadlines,
-      formalities and reviewable bid intelligence. In this build the two lanes are kept
-      strictly apart: the repository's own synthetic packages run the full local pipeline,
-      while a free upload only ever reaches quarantine.
+      Choose a trusted synthetic package to enter the full bid workflow, or place authorized
+      test documents into quarantine. The two lanes stay deliberately separate: only the
+      repository fixtures can turn it into actionable bid intelligence with requirements,
+      evidence, human decisions and a package.
     </p>
   </div>
 </div>
@@ -22,7 +21,8 @@
   <div class="split__main">
 
     <section aria-labelledby="upload-heading" class="card card--accent">
-      <h2 id="upload-heading">Upload authorized test RFP</h2>
+      <p class="section-kicker">Upload authorized test RFP · Quarantine lane</p>
+      <h2 id="upload-heading">Add authorized test documents</h2>
       <div class="banner banner--warning">
         {{ icon('alert') }}
         <div>
@@ -96,7 +96,8 @@
     </section>
 
     <section aria-labelledby="synthetic-heading" class="card">
-      <h2 id="synthetic-heading">Synthetic demo packages</h2>
+      <p class="section-kicker">Synthetic demo packages · Bid workflow lane</p>
+      <h2 id="synthetic-heading">Start with a verified synthetic package</h2>
       <p class="lede">
         These are the repository's own generated fixture packages. They are the only
         packages the full pipeline will process, and they exercise it for real: security

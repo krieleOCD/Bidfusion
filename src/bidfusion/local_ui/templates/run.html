@@ -1,230 +1,145 @@
 {% extends "base.html" %}
-{% block title %}{{ view.key }} · {{ view.package_name }} — BidFusion{% endblock %}
-{% block content %}
-<div class="page-head">
-  <p class="ocd-overline">{{ 'Full analysis' if view.requested_processing else 'Security review' }}</p>
-  <h1>{{ view.package_name }} — {{ view.key }}.</h1>
-  <p class="lede">
-    Every status on this page is read from the versioned results of the local
-    pipeline run. The interface adds nothing of its own.
-  </p>
+{% from "partials/trust_macros.html" import workflow_stepper %}
+{% block title %}{{ view.package_name }} · {{ view.key }} — BidFusion{% endblock %}
+{% block hero %}
+<div class="hero hero--workspace">
+  <div class="container hero__inner">
+    <p class="ocd-overline">Bid Command Center</p>
+    <div class="hero-title-row">
+      <div>
+        <h1>{{ view.package_name }}<span class="hero__accent">.</span></h1>
+        <p class="lede">One recorded bid state, one next action, and the evidence behind every signal.</p>
+      </div>
+      <div class="outcome-block">
+        <span class="outcome-block__label">Recorded outcome</span>
+        <strong>{{ view.outcome }}</strong>
+        <span>{{ 'Full analysis' if view.requested_processing else 'Security checks only' }}</span>
+      </div>
+    </div>
+    <dl class="page-context page-context--compact">
+      <div><dt>Bid run</dt><dd>{{ view.key }}</dd></div>
+      <div><dt>Package</dt><dd>{{ view.package_name }}</dd></div>
+      <div><dt>Source of truth</dt><dd>Versioned local artifacts</dd></div>
+    </dl>
+    {{ workflow_stepper(workspace.steps) }}
+  </div>
 </div>
+{% endblock %}
+{% block content %}
+<nav class="bid-context-nav" aria-label="Bid workspace">
+  <a class="bid-context-nav__active" href="{{ url_for('show_run', run_key=view.key) }}" aria-current="page">Command center</a>
+  {% if view.is_completed %}
+  <a href="{{ url_for('show_knowledge_assessment', run_key=view.key) }}">Requirements &amp; review</a>
+  <a href="{{ url_for('show_working_package', run_key=view.key) }}">Working package</a>
+  {% elif view.is_quality_review %}
+  <a href="{{ url_for('show_review_package', run_key=view.key) }}">Review package</a>
+  {% endif %}
+  <a href="#audit">Evidence &amp; audit</a>
+</nav>
 
 {% if view.is_blocked %}
-<div class="banner banner--danger">
-  {{ icon('octagon-x') }}
-  <div>
-    <p>Package blocked by the security gate.</p>
-    <p>No document of this package was parsed or processed downstream.</p>
-  </div>
-</div>
+<div class="banner banner--danger">{{ icon('octagon-x') }}<div><p>Package blocked by the security gate.</p><p>No document of this package was parsed or processed downstream.</p></div></div>
 {% elif view.is_security_review %}
-<div class="banner banner--warning">
-  {{ icon('alert') }}
-  <div>
-    <p>Manual security review required.</p>
-    <p>The package gate recorded at least one pending decision; processing is not permitted.
-       This interface cannot release a manual review.</p>
-  </div>
-</div>
+<div class="banner banner--warning">{{ icon('alert') }}<div><p>Manual security review required.</p><p>The package gate recorded at least one pending decision. This interface cannot release it.</p></div></div>
 {% elif view.is_failed %}
-<div class="banner banner--danger">
-  {{ icon('x') }}
-  <div>
-    <p>Run failed.</p>
-    <p>The quality gate recorded FAILED. No working package and no review package
-       were produced for this run.</p>
-  </div>
-</div>
+<div class="banner banner--danger">{{ icon('x') }}<div><p>Run failed.</p><p>The quality gate recorded FAILED. No working package was produced.</p></div></div>
 {% endif %}
 
-<section aria-labelledby="metrics-heading" class="card">
-  <h2 id="metrics-heading">What this run recorded</h2>
-  <p class="module-card__text">
-    Every number below is a count of something the run wrote down. No stage that did not
-    run contributes a figure, and nothing here is estimated.
-  </p>
-  <dl class="metric-grid">
-    {% for metric in view.metrics %}
-    <div class="metric metric--{{ metric.tone }}">
-      <dt class="metric__label">{{ metric.label }}</dt>
-      <dd class="metric__value">{{ metric.value }}</dd>
-      <dd class="metric__note">{{ metric.note }}</dd>
-    </div>
-    {% endfor %}
-  </dl>
-</section>
-
-<section aria-labelledby="gate-heading" class="card card--accent">
-  <h2 id="gate-heading">Security gate</h2>
-  <p>
-    <span class="status-badge status-badge--{{ view.gate.decision.tone }}">
-      {{ icon(view.gate.decision.icon) }} {{ view.gate.decision.label }}
-    </span>
-  </p>
-  <dl class="kv-list">
-    <dt>Policy</dt>
-    <dd>{{ view.gate.policy_id }}</dd>
-    <dt>Run directory</dt>
-    <dd><code class="path-code">{{ view.run_directory }}</code></dd>
-  </dl>
-
-  {% if view.gate.reasons %}
-  <h3>Findings</h3>
-  <ul>
-    {% for reason in view.gate.reasons %}
-    <li>{{ reason }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  <h3>Documents</h3>
-  <div class="table-wrap">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th scope="col">File</th>
-          <th scope="col">Security verdict</th>
-          <th scope="col">Note</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for document in view.gate.documents %}
-        <tr>
-          <td><span class="file-name">{{ document.filename }}</span></td>
-          <td>
-            <span class="status-badge status-badge--{{ document.verdict.tone }}">
-              {{ icon(document.verdict.icon) }} {{ document.verdict.label }}
-            </span>
-          </td>
-          <td>{{ document.detail or '—' }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  {% if view.gate.rejected %}
-  <h3>Rejected at intake</h3>
-  <ul>
-    {% for entry in view.gate.rejected %}
-    <li>{{ entry }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-
-  <p class="package-option__meta">
-    {{ icon('info') }} Deterministic preflight results are development-time checks.
-    A PASS here is not a production security clearance.
-  </p>
-</section>
-
-{% if view.stages %}
-<section aria-labelledby="processing-heading" class="card">
-  <h2 id="processing-heading">Processing</h2>
-  <p class="package-option__meta">
-    Recorded stage outcomes of this run — no synthetic progress is shown.
-  </p>
-  <ol class="stage-list">
-    {% for stage in view.stages %}
-    <li>
-      <span class="stage-name">{{ stage.label }}</span>
-      <span class="status-badge status-badge--{{ stage.outcome.tone }}">
-        {{ icon(stage.outcome.icon) }} {{ stage.outcome.label }}
-      </span>
-    </li>
-    {% endfor %}
-  </ol>
-</section>
+{% if workspace_error %}
+<div class="banner banner--warning">{{ icon('alert') }}<div><p>Knowledge assessment not shown.</p><p>{{ workspace_error }}</p></div></div>
 {% endif %}
 
-{% if view.quality %}
-<section aria-labelledby="quality-heading" class="card card--accent">
-  <h2 id="quality-heading">Quality gate</h2>
-  <p>
-    <span class="status-badge status-badge--{{ view.quality.status.tone }}">
-      {{ icon(view.quality.status.icon) }} {{ view.quality.status.label }}
-    </span>
-  </p>
-  <dl class="kv-list">
-    <dt>Gate</dt>
-    <dd>{{ view.quality.gate_id }}</dd>
-  </dl>
-  {% if view.quality.signals %}
-  <h3>Signals</h3>
-  <ul>
-    {% for signal in view.quality.signals %}
-    <li>{{ signal }}</li>
+<section aria-labelledby="next-heading" class="attention-command">
+  <div class="section-heading-row">
+    <div><p class="section-kicker">Decision queue</p><h2 id="next-heading">What needs attention next</h2></div>
+    <span class="attention-command__count">{{ workspace.attention|length }} recorded issue{{ '' if workspace.attention|length == 1 else 's' }}</span>
+  </div>
+  <div class="next-action next-action--primary">
+    <p class="next-action__label">Next best action</p>
+    <p class="next-action__text">{{ workspace.next_action.text }}</p>
+    {% if workspace.next_action.endpoint %}
+    <a class="btn btn--primary" href="{{ url_for(workspace.next_action.endpoint, run_key=view.key) }}">{{ workspace.next_action.link_label }} {{ icon('arrow-right') }}</a>
+    {% endif %}
+  </div>
+  {% if workspace.attention %}
+  <div class="attention-list" role="list" aria-label="Attention required">
+    {% for item in workspace.attention %}
+    <article class="attention-item attention-item--{{ item.priority|lower }}" role="listitem">
+      <div class="attention-item__priority">{{ item.priority }}</div>
+      <div><h3>{{ item.issue }}</h3><p>{{ item.impact }}</p></div>
+      <dl><div><dt>Owner</dt><dd>{{ item.owner }}</dd></div><div><dt>Due</dt><dd>{{ item.due }}</dd></div></dl>
+      {% if item.endpoint %}<a href="{{ url_for(item.endpoint, run_key=view.key) }}">{{ item.link_label }} {{ icon('arrow-right') }}</a>{% endif %}
+    </article>
     {% endfor %}
-  </ul>
-  {% endif %}
+  </div>
+  {% else %}<p class="empty-state-inline">No additional issue is recorded for this run.</p>{% endif %}
+</section>
+
+{% if workspace.counts %}
+<section aria-labelledby="counts-heading" class="health-panel">
+  <div class="section-heading-row">
+    <div><p class="section-kicker">Explainable bid health</p><h2 id="counts-heading">Where this bid stands</h2></div>
+    {% if workspace.coverage %}<p class="section-summary"><strong>{{ workspace.coverage.reviewed }} / {{ workspace.coverage.total }}</strong> reviewed by a person</p>{% endif %}
+  </div>
+  <p class="module-card__text">Every signal is derived from verified artifacts and recorded review state. Candidate coverage is not a compliance decision.</p>
+  <div class="health-signals">
+    {% for signal in workspace.health %}
+    <article class="health-signal health-signal--{{ signal.tone }}">
+      <div class="health-signal__top"><h3>{{ signal.label }}</h3><strong>{{ signal.value }}</strong></div>
+      <div class="progress-track" role="img" aria-label="{{ signal.label }}: {{ signal.percent }} percent"><span class="progress-track__bar p{{ signal.percent }}"></span></div>
+      <details><summary>Why?</summary><p>{{ signal.note }}</p></details>
+    </article>
+    {% endfor %}
+  </div>
+  <details class="disclosure disclosure--facts">
+    <summary>Show counted bid facts</summary>
+    <dl class="metric-grid">
+      {% for count in workspace.counts %}<div class="metric metric--{{ count.tone }}"><dt class="metric__label">{{ count.label }}</dt><dd class="metric__value">{{ count.value }}</dd><dd class="metric__note">{{ count.note }}</dd></div>{% endfor %}
+    </dl>
+  </details>
 </section>
 {% endif %}
 
 {% if view.is_completed %}
-<section aria-labelledby="wp-panel-heading" class="card card--accent">
-  <h2 id="wp-panel-heading">Working package</h2>
-  <p>
-    The quality gate recorded ACCEPTABLE; the complete working package with
-    per-statement provenance is available.
-  </p>
-  <p class="actions">
-    <a class="btn btn--primary" href="{{ url_for('show_working_package', run_key=view.key) }}">
-      Open working package {{ icon('arrow-right') }}
-    </a>
-  </p>
-</section>
-
-<section aria-labelledby="ka-panel-heading" class="card">
-  <h2 id="ka-panel-heading">Knowledge assessment</h2>
-  <p>
-    Candidate matches of the extracted requirements against the golden
-    knowledge pilot, with evidence. Every result requires human review —
-    a candidate match is not a compliance decision.
-  </p>
-  <p class="actions">
-    <a class="btn btn--secondary" href="{{ url_for('show_knowledge_assessment', run_key=view.key) }}">
-      Open knowledge assessment {{ icon('arrow-right') }}
-    </a>
-  </p>
+<section aria-labelledby="outputs-heading" class="outputs-panel">
+  <div class="section-heading-row"><div><p class="section-kicker">Bid outputs</p><h2 id="outputs-heading">Continue the work</h2></div></div>
+  <div class="module-grid module-grid--two">
+    <article class="card card--accent"><p class="card-eyebrow">Practitioner workspace</p><h3>Requirements &amp; human review</h3><p>Inspect one requirement at a time, separate machine evidence from the bid decision, and record the reviewer.</p><a class="btn btn--primary" href="{{ url_for('show_knowledge_assessment', run_key=view.key) }}">Open knowledge assessment {{ icon('arrow-right') }}</a></article>
+    <article class="card"><p class="card-eyebrow">Executive output</p><h3>Working package</h3><p>Open the quality-accepted package and its reviewed, versioned projection with per-statement provenance.</p><a class="btn btn--secondary" href="{{ url_for('show_working_package', run_key=view.key) }}">Open working package {{ icon('arrow-right') }}</a></article>
+  </div>
 </section>
 {% endif %}
 
 {% if view.is_quality_review %}
-<section aria-labelledby="rp-panel-heading" class="card">
-  <h2 id="rp-panel-heading">Review package</h2>
-  <div class="banner banner--warning">
-    {{ icon('alert') }}
-    <div>
-      <p>NOT A COMPLETE BID WORKING PACKAGE.</p>
-      <p>The quality gate requires manual review. Only the explicitly marked
-         review package is available for this run.</p>
-    </div>
-  </div>
-  <p class="actions">
-    <a class="btn btn--secondary" href="{{ url_for('show_review_package', run_key=view.key) }}">
-      Open review package {{ icon('arrow-right') }}
-    </a>
-  </p>
-</section>
+<section aria-labelledby="rp-panel-heading" class="card card--accent"><h2 id="rp-panel-heading">Review package</h2><p><strong>NOT A COMPLETE BID WORKING PACKAGE.</strong> The quality gate requires manual review.</p><a class="btn btn--secondary" href="{{ url_for('show_review_package', run_key=view.key) }}">Open review package {{ icon('arrow-right') }}</a></section>
 {% endif %}
 
 {% if view.offer_full_analysis %}
-<section aria-labelledby="full-analysis-heading" class="card">
-  <h2 id="full-analysis-heading">Full analysis</h2>
-  <p>
-    The package gate is CLEARED. Running the full analysis starts a
-    <strong>new full run of the same synthetic package</strong> — intake,
-    preflight, and package gate run again, followed by parsing, extraction,
-    normalization, the quality gate, and package generation.
-  </p>
-  <form action="{{ url_for('process_run', run_key=view.key) }}" method="post">
-    <button class="btn btn--primary" type="submit">
-      Run full analysis {{ icon('arrow-right') }}
-    </button>
-  </form>
-</section>
+<section aria-labelledby="full-analysis-heading" class="card card--accent"><p class="card-eyebrow">Available next step</p><h2 id="full-analysis-heading">Full analysis</h2><p>The package gate is CLEARED. Running the full analysis starts a new full run of the same synthetic package; intake and all gates run again.</p><form action="{{ url_for('process_run', run_key=view.key) }}" method="post"><button class="btn btn--primary" type="submit">Run full analysis {{ icon('arrow-right') }}</button></form></section>
 {% endif %}
+
+<section id="audit" aria-labelledby="audit-heading" class="audit-panel">
+  <div class="section-heading-row"><div><p class="section-kicker">Audit depth</p><h2 id="audit-heading">Evidence &amp; recorded pipeline state</h2></div></div>
+  <p>Open these records when you need to verify why BidFusion shows a state. They are kept out of the primary decision flow.</p>
+  <details class="disclosure">
+    <summary>Run metrics and processing stages</summary>
+    <div class="disclosure__body"><h3>What this run recorded</h3><dl class="metric-grid">{% for metric in view.metrics %}<div class="metric metric--{{ metric.tone }}"><dt class="metric__label">{{ metric.label }}</dt><dd class="metric__value">{{ metric.value }}</dd><dd class="metric__note">{{ metric.note }}</dd></div>{% endfor %}</dl>
+      {% if view.stages %}<h3>Processing</h3><ol class="stage-list">{% for stage in view.stages %}<li><span class="stage-name">{{ stage.label }}</span><span class="status-badge status-badge--{{ stage.outcome.tone }}">{{ icon(stage.outcome.icon) }} {{ stage.outcome.label }}</span></li>{% endfor %}</ol>{% endif %}
+    </div>
+  </details>
+  <details class="disclosure">
+    <summary>Security gate and document verdicts</summary>
+    <div class="disclosure__body">
+      <p><span class="status-badge status-badge--{{ view.gate.decision.tone }}">{{ icon(view.gate.decision.icon) }} {{ view.gate.decision.label }}</span></p>
+      <dl class="kv-list"><dt>Policy</dt><dd>{{ view.gate.policy_id }}</dd><dt>Run directory</dt><dd><code class="path-code">{{ view.run_directory }}</code></dd></dl>
+      {% if view.gate.reasons %}<h3>Findings</h3><ul>{% for reason in view.gate.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>{% endif %}
+      <div class="table-wrap"><table class="data-table"><caption class="visually-hidden">Security verdict of every registered document</caption><thead><tr><th scope="col">File</th><th scope="col">Security verdict</th><th scope="col">Note</th></tr></thead><tbody>{% for document in view.gate.documents %}<tr><td><span class="file-name">{{ document.filename }}</span></td><td><span class="status-badge status-badge--{{ document.verdict.tone }}">{{ icon(document.verdict.icon) }} {{ document.verdict.label }}</span></td><td>{{ document.detail or '—' }}</td></tr>{% endfor %}</tbody></table></div>
+      {% if view.gate.rejected %}<h3>Rejected at intake</h3><ul>{% for entry in view.gate.rejected %}<li>{{ entry }}</li>{% endfor %}</ul>{% endif %}
+      <p class="package-option__meta">{{ icon('info') }} Deterministic preflight results are development-time checks. A PASS here is not a production security clearance.</p>
+    </div>
+  </details>
+  {% if view.quality %}<details class="disclosure"><summary>Quality gate</summary><div class="disclosure__body"><p><span class="status-badge status-badge--{{ view.quality.status.tone }}">{{ icon(view.quality.status.icon) }} {{ view.quality.status.label }}</span></p><dl class="kv-list"><dt>Gate</dt><dd>{{ view.quality.gate_id }}</dd></dl>{% if view.quality.signals %}<h3>Signals</h3><ul>{% for signal in view.quality.signals %}<li>{{ signal }}</li>{% endfor %}</ul>{% endif %}</div></details>{% endif %}
+</section>
 
 <p><a href="{{ url_for('index') }}">Back to package selection</a></p>
 {% endblock %}

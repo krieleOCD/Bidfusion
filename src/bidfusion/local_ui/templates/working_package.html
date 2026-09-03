@@ -1,31 +1,270 @@
 {% extends "base.html" %}
 {% from "partials/macros.html" import view_toggle, downloads, statement_list %}
+{% from "partials/trust_macros.html" import machine_chip, knowledge_chip, human_chip, evidence_cards %}
 {% block title %}Working package · {{ run.key }} — BidFusion{% endblock %}
-{% block content %}
-<div class="page-head">
-  <p class="ocd-overline">Working package</p>
-  <h1>Working package — {{ package.bid_id }}.</h1>
-  <p class="lede">
-    Generated from run {{ run.key }} ({{ run.package_name }}) with an ACCEPTABLE
-    quality gate. Every statement below carries its documented source.
-  </p>
+{% block hero %}
+<div class="hero hero--workspace">
+  <div class="container hero__inner">
+    <p class="ocd-overline">Working package</p>
+    <h1>Working package — <span class="hero__accent">{{ package.bid_id }}</span>.</h1>
+    <p class="lede">
+      Generated from run {{ run.key }} ({{ run.package_name }}) with an ACCEPTABLE
+      quality gate. Every statement below carries its documented source.
+    </p>
+    <dl class="page-context">
+      <div>
+        <dt>Run</dt>
+        <dd>{{ package.run_id }}</dd>
+      </div>
+      <div>
+        <dt>Generated</dt>
+        <dd>{{ package.generated_at }}</dd>
+      </div>
+      <div>
+        <dt>Completeness</dt>
+        <dd>{{ package.completeness }}</dd>
+      </div>
+    </dl>
+  </div>
 </div>
-
+{% endblock %}
+{% block content %}
+<nav class="bid-context-nav" aria-label="Bid workspace">
+  <a href="{{ url_for('show_run', run_key=run.key) }}">Command center</a>
+  <a href="{{ url_for('show_knowledge_assessment', run_key=run.key) }}">Requirements &amp; review</a>
+  <a class="bid-context-nav__active" href="{{ url_for('show_working_package', run_key=run.key) }}" aria-current="page">Working package</a>
+  <a href="#package-audit">Evidence &amp; audit</a>
+</nav>
 <div class="actions">
   {{ view_toggle('show_working_package', run.key, view_mode) }}
 </div>
 
-<dl class="kv-list">
-  <dt>Run</dt>
-  <dd>{{ package.run_id }}</dd>
-  <dt>Generated</dt>
-  <dd>{{ package.generated_at }}</dd>
-  <dt>Completeness</dt>
-  <dd>{{ package.completeness }}</dd>
-</dl>
-
 {% if view_mode == 'structured' %}
-<section aria-labelledby="exec-heading" class="card card--accent">
+
+{% if reviewed_package %}
+<section aria-labelledby="reviewed-package-heading" class="card card--accent">
+  <h2 id="reviewed-package-heading">{{ reviewed_package.title }}</h2>
+  {% if not reviewed_package.packages_available %}
+  <p class="module-card__text">{{ icon('alert') }} {{ reviewed_package.packages_note }}</p>
+  {% elif reviewed_package.package %}
+  {% set rp = reviewed_package.package %}
+  <dl class="page-context">
+    <div>
+      <dt>Package</dt>
+      <dd>{{ rp.package_id }} (version {{ rp.package_version }})</dd>
+    </div>
+    <div>
+      <dt>Generated</dt>
+      <dd>{{ rp.created_at }}</dd>
+    </div>
+    <div>
+      <dt>Review coverage</dt>
+      <dd>{{ rp.reviewed }} / {{ rp.total_requirements }} reviewed</dd>
+    </div>
+    <div>
+      <dt>State</dt>
+      <dd>
+        {% if rp.is_complete %}
+        <span class="status-badge status-badge--success">{{ icon('check') }} {{ rp.state_label }}</span>
+        {% else %}
+        <span class="status-badge status-badge--warning">{{ icon('alert') }} {{ rp.state_label }}</span>
+        {% endif %}
+      </dd>
+    </div>
+  </dl>
+  <p class="module-card__text">
+    {{ icon('info') }} {{ rp.scope_note }}
+    {{ rp.golden_note }}
+  </p>
+
+  {% if rp.newer_reviews_exist %}
+  <div class="package-banner package-banner--newer">
+    {{ icon('alert') }}
+    <p>{{ rp.newer_reviews_note }}
+       Generating creates version {{ rp.package_version + 1 }} — existing package
+       versions remain unchanged.</p>
+  </div>
+  {% else %}
+  <div class="package-banner package-banner--current">
+    {{ icon('check') }}
+    <p>This package version reflects the latest recorded review state.</p>
+  </div>
+  {% endif %}
+
+  <div class="package-readiness">
+  {% if rp.total_requirements %}
+  <div class="package-readiness__bar">
+    <div><span>Human review coverage</span><strong>{{ rp.reviewed }} / {{ rp.total_requirements }}</strong></div>
+    <div class="progress-track" role="img" aria-label="{{ rp.reviewed }} of {{ rp.total_requirements }} reviewed by a person"><span class="progress-track__bar p{{ ((rp.reviewed * 100 / rp.total_requirements) | round | int) }}"></span></div>
+  </div>
+  {% endif %}
+  <dl class="metric-grid">
+    <div class="metric">
+      <dt class="metric__label">Requirements</dt>
+      <dd class="metric__value">{{ rp.total_requirements }}</dd>
+      <dd class="metric__note">In this package version</dd>
+    </div>
+    <div class="metric{% if rp.reviewed %} metric--success{% endif %}">
+      <dt class="metric__label">Reviewed</dt>
+      <dd class="metric__value">{{ rp.reviewed }}</dd>
+      <dd class="metric__note">Human decisions recorded</dd>
+    </div>
+    <div class="metric{% if rp.pending %} metric--warning{% endif %}">
+      <dt class="metric__label">Pending</dt>
+      <dd class="metric__value">{{ rp.pending }}</dd>
+      <dd class="metric__note">No decision recorded yet</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Confirmed candidates</dt>
+      <dd class="metric__value">{{ rp.confirmed_candidate }}</dd>
+      <dd class="metric__note">For this bid assessment only</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Rejected candidates</dt>
+      <dd class="metric__value">{{ rp.rejected_candidate }}</dd>
+      <dd class="metric__note">Candidate not accepted</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Needs clarification</dt>
+      <dd class="metric__value">{{ rp.needs_clarification }}</dd>
+      <dd class="metric__note">Unresolved by review</dd>
+    </div>
+  </dl>
+  </div>
+
+  {% set pending_rows = rp.rows | selectattr('reviewer', 'none') | list %}
+  {% set clarify_rows = rp.rows | selectattr('review_label', 'equalto', 'CLARIFICATION REQUIRED') | list %}
+  {% set no_candidate_rows = rp.rows | rejectattr('match_status', 'in', ('MATCHED', 'PARTIAL')) | list %}
+  {% if rp.newer_reviews_exist or pending_rows or clarify_rows or no_candidate_rows %}
+  <h3>Attention required</h3>
+  <ul class="attention-list">
+    {% if rp.newer_reviews_exist %}
+    <li>{{ icon('alert') }} Package state is stale — a newer review state exists.</li>
+    {% endif %}
+    {% for row in pending_rows %}
+    <li><span class="req-ref">{{ row.requirement_id }}</span> Awaiting a human review decision.</li>
+    {% endfor %}
+    {% for row in clarify_rows %}
+    <li><span class="req-ref">{{ row.requirement_id }}</span> Clarification required before a decision.</li>
+    {% endfor %}
+    {% for row in no_candidate_rows %}
+    <li><span class="req-ref">{{ row.requirement_id }}</span> No machine candidate ({{ row.match_status }}).</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <details class="disclosure disclosure--large">
+  <summary><span><span class="section-kicker">Practitioner depth</span><strong>Requirements in this package</strong></span><span>{{ rp.rows|length }} canonical records</span></summary>
+  <div class="disclosure__body">
+  {% for row in rp.rows %}
+  <article class="req-card" aria-label="Requirement {{ row.requirement_id }}">
+    <div class="req-card__head">
+      <span class="req-card__id">{{ row.requirement_id }}</span>
+      <span class="status-badge status-badge--neutral">{{ icon('info') }} {{ row.modality }}</span>
+      <span class="source-chip">{{ icon('file') }} {{ row.source }}</span>
+    </div>
+    <p>{{ row.text }}</p>
+    <div class="trust-grid">
+      <div class="trust-cell trust-cell--machine">
+        <p class="trust-cell__layer">Machine</p>
+        <p class="trust-cell__value">{{ machine_chip(row.match_status) }}</p>
+      </div>
+      <div class="trust-cell trust-cell--knowledge">
+        <p class="trust-cell__layer">Golden claim</p>
+        <p class="trust-cell__value">{{ knowledge_chip(row.claim_status) }}</p>
+      </div>
+      <div class="trust-cell trust-cell--human">
+        <p class="trust-cell__layer">Bid review</p>
+        <p class="trust-cell__value">{{ human_chip(row.review_label) }}</p>
+        {% if row.reviewer %}
+        <p class="trust-cell__note">{{ row.reviewer }}, {{ row.reviewed_at }}
+          (revision {{ row.review_version }})</p>
+        {% endif %}
+      </div>
+    </div>
+    {% if row.review_rationale %}
+    <p class="review-decision">Rationale: &ldquo;{{ row.review_rationale }}&rdquo;</p>
+    {% endif %}
+    {% if row.evidence %}
+    <details class="disclosure">
+      <summary>Evidence — {{ row.evidence | length }} source reference(s)</summary>
+      <div class="disclosure__body">
+        {{ evidence_cards(row.evidence) }}
+      </div>
+    </details>
+    {% else %}
+    <p class="module-card__text">{{ icon('alert') }} No evidence — nothing is claimed.</p>
+    {% endif %}
+  </article>
+  {% endfor %}
+  </div>
+  </details>
+  {% else %}
+  <p class="module-card__text">
+    No reviewed working package has been generated for this run yet.
+  </p>
+  {% endif %}
+  {% if reviewed_package.can_generate %}
+  <form method="post" action="{{ url_for('generate_reviewed_package', run_key=run.key) }}" class="actions">
+    <button type="submit" class="btn btn--primary">
+      Generate Reviewed Working Package {{ icon('arrow-right') }}
+    </button>
+  </form>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if review_summary %}
+<section aria-labelledby="reviewed-heading" class="card">
+  <h2 id="reviewed-heading">Reviewed knowledge assessment</h2>
+  <p class="module-card__text">
+    {{ icon('info') }} {{ review_summary.review_scope_note }}
+    {{ review_summary.review_golden_note }}
+  </p>
+  <dl class="kv-list">
+    <dt>Pending review</dt>
+    <dd>{{ review_summary.review_counts.pending }}</dd>
+    <dt>Review confirmed candidate</dt>
+    <dd>{{ review_summary.review_counts.confirmed }}</dd>
+    <dt>Review rejected candidate</dt>
+    <dd>{{ review_summary.review_counts.rejected }}</dd>
+    <dt>Clarification required</dt>
+    <dd>{{ review_summary.review_counts.needs_clarification }}</dd>
+  </dl>
+  <details class="disclosure"><summary>Open the full review-state ledger</summary><div class="disclosure__body"><div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">
+        Review state of every requirement assessment in this run
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">Requirement</th>
+          <th scope="col">Candidate match</th>
+          <th scope="col">Golden claim</th>
+          <th scope="col">Bid review</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in review_summary.rows %}
+        <tr>
+          <td>{{ row.requirement_id }}</td>
+          <td>{{ machine_chip(row.match_status) }}</td>
+          <td>{{ knowledge_chip(row.claim_status) }}</td>
+          <td>{{ human_chip(row.review.label) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div></div></details>
+  <p class="actions">
+    <a class="btn btn--secondary" href="{{ url_for('show_knowledge_assessment', run_key=run.key) }}">
+      Open the review surface {{ icon('arrow-right') }}
+    </a>
+  </p>
+</section>
+{% endif %}
+
+<section aria-labelledby="exec-heading" class="card">
   <h2 id="exec-heading">Executive overview</h2>
   {% if package.executive %}
   <ul>
@@ -48,6 +287,7 @@
   {% if package.timeline %}
   <div class="table-wrap">
     <table class="data-table">
+      <caption class="visually-hidden">Extracted deadlines with provenance</caption>
       <thead>
         <tr>
           <th scope="col">Due (UTC)</th>
@@ -73,7 +313,7 @@
   {% endif %}
 </section>
 
-<section aria-labelledby="requirements-heading" class="card">
+<section id="package-audit" aria-labelledby="requirements-heading" class="card">
   <h2 id="requirements-heading">Requirements</h2>
   <p>
     {{ package.total_requirements }} normalized requirement(s);
@@ -92,6 +332,7 @@
   {% if package.mandatory %}
   <div class="table-wrap">
     <table class="data-table">
+      <caption class="visually-hidden">Mandatory requirements</caption>
       <thead>
         <tr>
           <th scope="col">ID</th>
@@ -122,6 +363,7 @@
   {% if package.other %}
   <div class="table-wrap">
     <table class="data-table">
+      <caption class="visually-hidden">Optional and other requirements</caption>
       <thead>
         <tr>
           <th scope="col">ID</th>
@@ -180,145 +422,6 @@
   {% endif %}
 </section>
 
-{% if reviewed_package %}
-<section aria-labelledby="reviewed-package-heading" class="card card--accent">
-  <h2 id="reviewed-package-heading">{{ reviewed_package.title }}</h2>
-  {% if not reviewed_package.packages_available %}
-  <p class="module-card__text">{{ icon('alert') }} {{ reviewed_package.packages_note }}</p>
-  {% elif reviewed_package.package %}
-  {% set rp = reviewed_package.package %}
-  <p>
-    {% if rp.is_complete %}
-    <span class="status-badge status-badge--success">{{ icon('check') }} {{ rp.state_label }}</span>
-    {% else %}
-    <span class="status-badge status-badge--warning">{{ icon('alert') }} {{ rp.state_label }}</span>
-    {% endif %}
-  </p>
-  <p class="module-card__text">
-    {{ icon('info') }} {{ rp.scope_note }}
-    {{ rp.golden_note }}
-  </p>
-  <dl class="kv-list">
-    <dt>Package</dt>
-    <dd>{{ rp.package_id }} (version {{ rp.package_version }})</dd>
-    <dt>Generated</dt>
-    <dd>{{ rp.created_at }}</dd>
-    <dt>Requirements</dt>
-    <dd>{{ rp.total_requirements }}</dd>
-    <dt>Reviewed</dt>
-    <dd>{{ rp.reviewed }}</dd>
-    <dt>Pending</dt>
-    <dd>{{ rp.pending }}</dd>
-    <dt>Confirmed candidates</dt>
-    <dd>{{ rp.confirmed_candidate }}</dd>
-    <dt>Rejected candidates</dt>
-    <dd>{{ rp.rejected_candidate }}</dd>
-    <dt>Needs clarification</dt>
-    <dd>{{ rp.needs_clarification }}</dd>
-  </dl>
-  <div class="table-wrap">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th scope="col">Requirement</th>
-          <th scope="col">Candidate match</th>
-          <th scope="col">Golden claim</th>
-          <th scope="col">Bid review</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in rp.rows %}
-        <tr>
-          <td>
-            {{ row.requirement_id }} ({{ row.modality }})<br>
-            {{ row.text }}<br>
-            <span class="source-chip">{{ icon('file') }} {{ row.source }}</span>
-          </td>
-          <td>{{ row.match_status }}</td>
-          <td>
-            {{ row.claim_status }}
-            {% for evidence in row.evidence %}
-            <br><span class="source-chip">{{ icon('file') }} {{ evidence.section_id }} ({{ evidence.source_version }})</span>
-            {% endfor %}
-          </td>
-          <td>
-            {{ row.review_label }}
-            {% if row.reviewer %}
-            <br>{{ row.reviewer }}, {{ row.reviewed_at }} (revision {{ row.review_version }})
-            {% endif %}
-            {% if row.review_rationale %}
-            <br>{{ row.review_rationale }}
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% if rp.newer_reviews_exist %}
-  <p class="module-card__text">{{ icon('alert') }} {{ rp.newer_reviews_note }}</p>
-  {% endif %}
-  {% else %}
-  <p class="module-card__text">
-    No reviewed working package has been generated for this run yet.
-  </p>
-  {% endif %}
-  {% if reviewed_package.can_generate %}
-  <form method="post" action="{{ url_for('generate_reviewed_package', run_key=run.key) }}" class="actions">
-    <button type="submit" class="btn btn--primary">
-      Generate Reviewed Working Package {{ icon('arrow-right') }}
-    </button>
-  </form>
-  {% endif %}
-</section>
-{% endif %}
-
-{% if review_summary %}
-<section aria-labelledby="reviewed-heading" class="card">
-  <h2 id="reviewed-heading">Reviewed knowledge assessment</h2>
-  <p class="module-card__text">
-    {{ icon('info') }} {{ review_summary.review_scope_note }}
-    {{ review_summary.review_golden_note }}
-  </p>
-  <dl class="kv-list">
-    <dt>Pending review</dt>
-    <dd>{{ review_summary.review_counts.pending }}</dd>
-    <dt>Review confirmed candidate</dt>
-    <dd>{{ review_summary.review_counts.confirmed }}</dd>
-    <dt>Review rejected candidate</dt>
-    <dd>{{ review_summary.review_counts.rejected }}</dd>
-    <dt>Clarification required</dt>
-    <dd>{{ review_summary.review_counts.needs_clarification }}</dd>
-  </dl>
-  <div class="table-wrap">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th scope="col">Requirement</th>
-          <th scope="col">Candidate match</th>
-          <th scope="col">Golden claim</th>
-          <th scope="col">Bid review</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in review_summary.rows %}
-        <tr>
-          <td>{{ row.requirement_id }}</td>
-          <td>{{ row.match_status }}</td>
-          <td>{{ row.claim_status }}</td>
-          <td>{{ row.review.label }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <p class="actions">
-    <a class="btn btn--secondary" href="{{ url_for('show_knowledge_assessment', run_key=run.key) }}">
-      Open the review surface {{ icon('arrow-right') }}
-    </a>
-  </p>
-</section>
-{% endif %}
 {% else %}
 <section aria-label="Raw artifact view">
   <pre class="artifact-pre">{{ raw_text }}</pre>

@@ -1,165 +1,124 @@
 {% extends "base.html" %}
-{% block title %}Knowledge assessment · {{ view.run_key }} — BidFusion{% endblock %}
+{% from "partials/trust_macros.html" import machine_chip, knowledge_chip, human_chip, evidence_cards %}
+{% block title %}Requirement workbench · {{ view.run_key }} — BidFusion{% endblock %}
+{% block hero %}
+<div class="hero hero--workspace hero--compact">
+  <div class="container hero__inner">
+    <p class="ocd-overline">Requirement Workbench</p>
+    <div class="hero-title-row">
+      <div><h1>Review the requirement, then <span class="hero__accent">make the bid decision</span>.</h1><p class="lede">{{ view.package_name }} · {{ view.run_key }}. Machine evidence supports the review; it never replaces it.</p></div>
+      <div class="outcome-block"><span class="outcome-block__label">Human review</span><strong>{{ (workbench.total - workbench.pending) }} / {{ workbench.total }}</strong><span>decisions recorded</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
 {% block content %}
-<div class="page-head">
-  <p class="ocd-overline">Requirement knowledge assessment</p>
-  <h1>RFP requirements against the golden knowledge pilot.</h1>
-  <p class="lede">
-    Run {{ view.run_key }} ({{ view.package_name }}): every extracted requirement,
-    its deterministic normalization, and its candidate match with evidence.
-  </p>
-  <p class="module-card__badges">
-    {% for label in view.labels %}
-    <span class="status-badge status-badge--warning">{{ icon('alert') }} {{ label }}</span>
-    {% endfor %}
-  </p>
+<nav class="bid-context-nav" aria-label="Bid workspace">
+  <a href="{{ url_for('show_run', run_key=view.run_key) }}">Command center</a>
+  <a class="bid-context-nav__active" href="{{ url_for('show_knowledge_assessment', run_key=view.run_key) }}" aria-current="page">Requirements &amp; review</a>
+  <a href="{{ url_for('show_working_package', run_key=view.run_key) }}">Working package</a>
+  <a href="#assessment-audit">Evidence &amp; audit</a>
+</nav>
+
+<section aria-labelledby="review-summary-heading" class="review-overview">
+  <div class="section-heading-row">
+    <div><p class="section-kicker">Reviewed working package projection</p><h2 id="review-summary-heading">Human decision coverage</h2></div>
+    <p class="section-summary"><strong>{{ workbench.pending }}</strong> pending · <strong>{{ workbench.mandatory }}</strong> mandatory · <strong>{{ workbench.evidence_gaps }}</strong> evidence gaps</p>
+  </div>
+  <p>{{ icon('alert') }} {{ view.candidate_note }}. {{ view.review_scope_note }} {{ view.review_golden_note }}</p>
+  <details class="disclosure review-overview__details">
+    <summary>Review state and provenance</summary>
+    <div class="disclosure__body">
+      <p class="provenance-labels">{% for label in view.labels %}<span class="status-badge status-badge--warning">{{ icon('alert') }} {{ label }}</span>{% endfor %}</p>
+      <div class="summary-strip" aria-label="Review decision counts">
+        <div><span>Pending</span><strong>{{ view.review_counts.pending }}</strong></div><div><span>Confirmed candidate</span><strong>{{ view.review_counts.confirmed }}</strong></div><div><span>Rejected candidate</span><strong>{{ view.review_counts.rejected }}</strong></div><div><span>Clarification</span><strong>{{ view.review_counts.needs_clarification }}</strong></div>
+      </div>
+    </div>
+  </details>
+</section>
+
+{% if not view.reviews_available %}<section aria-labelledby="reviews-broken-heading" class="card"><h2 id="reviews-broken-heading">Review records unavailable</h2><p>{{ icon('alert') }} {{ view.reviews_note }}</p></section>{% endif %}
+{% if not view.store_available %}<section aria-labelledby="store-heading" class="card"><h2 id="store-heading">Golden knowledge store not used</h2><p>{{ icon('unlink') }} {{ view.store_note }}</p></section>{% endif %}
+
+{% set dot_states = {'REVIEW CONFIRMED CANDIDATE': 'confirmed', 'REVIEW REJECTED CANDIDATE': 'rejected', 'CLARIFICATION REQUIRED': 'clarify'} %}
+<div class="workbench-filters" aria-label="Filter requirements">
+  <a class="{{ 'is-active' if workbench.active_filter == 'all' }}" href="{{ url_for('show_knowledge_assessment', run_key=view.run_key, filter='all') }}">All <span>{{ workbench.total }}</span></a>
+  <a class="{{ 'is-active' if workbench.active_filter == 'pending' }}" href="{{ url_for('show_knowledge_assessment', run_key=view.run_key, filter='pending') }}">Pending <span>{{ workbench.pending }}</span></a>
+  <a class="{{ 'is-active' if workbench.active_filter == 'mandatory' }}" href="{{ url_for('show_knowledge_assessment', run_key=view.run_key, filter='mandatory') }}">Mandatory <span>{{ workbench.mandatory }}</span></a>
+  <a class="{{ 'is-active' if workbench.active_filter == 'evidence-gaps' }}" href="{{ url_for('show_knowledge_assessment', run_key=view.run_key, filter='evidence-gaps') }}">Evidence gaps <span>{{ workbench.evidence_gaps }}</span></a>
 </div>
 
-<section aria-labelledby="review-heading" class="card card--accent">
-  <h2 id="review-heading">{{ view.review_banner }}</h2>
-  <p class="module-card__text">{{ icon('alert') }} {{ view.candidate_note }}.</p>
-  <p class="module-card__text">{{ view.method_note }}</p>
-  <p class="module-card__text">
-    {{ icon('info') }} {{ view.review_scope_note }} {{ view.review_golden_note }}
-  </p>
-</section>
+{% if workbench.selected %}
+{% set row = workbench.selected %}
+<div class="requirement-workbench">
+  <aside class="requirement-queue" aria-labelledby="queue-heading">
+    <div class="workbench-column-head"><span>01</span><div><h2 id="queue-heading">Requirement queue</h2><p>{{ workbench.rows|length }} in this view</p></div></div>
+    <ol>
+      {% for queue_row in workbench.rows %}
+      <li>
+        <a class="requirement-queue__item{% if queue_row.requirement_id == row.requirement_id %} is-selected{% endif %}" href="{{ url_for('show_knowledge_assessment', run_key=view.run_key, filter=workbench.active_filter, focus=queue_row.requirement_id) }}" {% if queue_row.requirement_id == row.requirement_id %}aria-current="true"{% endif %}>
+          <span class="state-dot state-dot--{{ dot_states.get(queue_row.review.label, 'pending') }}" aria-hidden="true"></span>
+          <span><strong>{{ queue_row.requirement_id }}</strong><small>{{ queue_row.requirement_text|truncate(74) }}</small></span>
+          {% if queue_row.requirement_id == row.requirement_id %}<em>Selected</em>{% else %}{{ human_chip(queue_row.review.label) }}{% endif %}
+        </a>
+      </li>
+      {% endfor %}
+    </ol>
+  </aside>
 
-<section aria-labelledby="review-summary-heading" class="card">
-  <h2 id="review-summary-heading">Reviewed working package projection</h2>
-  <dl class="metric-grid">
-    <div class="metric">
-      <dt class="metric__label">Pending review</dt>
-      <dd class="metric__value">{{ view.review_counts.pending }}</dd>
-      <dd class="metric__note">No human decision recorded yet</dd>
+  <section aria-labelledby="analysis-heading" class="requirement-analysis">
+    <div class="workbench-column-head"><span>02</span><div><h2 id="analysis-heading">Analysis &amp; evidence</h2><p>Machine and knowledge layers</p></div></div>
+    <div class="requirement-analysis__body">
+      <div class="req-card__head"><span class="req-card__id">{{ row.requirement_id }}</span>{% if row.is_mandatory %}<span class="status-badge status-badge--warning">{{ icon('alert') }} {{ row.modality }} · mandatory</span>{% else %}<span class="status-badge status-badge--neutral">{{ icon('info') }} {{ row.modality }}</span>{% endif %}<span class="source-chip">{{ icon('file') }} {{ row.source }}</span></div>
+      <blockquote class="requirement-quote">{{ row.requirement_text }}</blockquote>
+      <dl class="requirement-facts"><div><dt>Language</dt><dd>{{ row.language }}</dd></div><div><dt>Technology hint</dt><dd>{{ row.technology_hint }}</dd></div><div><dt>Capability hints</dt><dd>{{ row.capability_hints|join(', ') if row.capability_hints else '—' }}</dd></div></dl>
+      <div class="trust-layer trust-layer--machine"><div><span>Machine layer</span><h3>Candidate match</h3></div><div>{{ machine_chip(row.match_status) }} <strong>{{ row.matched_capability }}</strong></div><p>{{ row.rationale }}</p><small>Candidate only — no bid decision.</small></div>
+      <div class="trust-layer trust-layer--knowledge"><div><span>Knowledge layer</span><h3>Golden claim</h3></div><div>{{ knowledge_chip(row.claim_status) }}</div><p>Knowledge state — unchanged by any bid review.</p></div>
+      <div class="evidence-section"><h3>Evidence</h3>{% if row.evidence %}{{ evidence_cards(row.evidence) }}{% else %}<p>{{ icon('alert') }} No evidence — nothing is claimed.</p>{% endif %}</div>
     </div>
-    <div class="metric">
-      <dt class="metric__label">Review confirmed candidate</dt>
-      <dd class="metric__value">{{ view.review_counts.confirmed }}</dd>
-      <dd class="metric__note">For this bid assessment only</dd>
-    </div>
-    <div class="metric">
-      <dt class="metric__label">Review rejected candidate</dt>
-      <dd class="metric__value">{{ view.review_counts.rejected }}</dd>
-      <dd class="metric__note">Candidate not accepted for this bid</dd>
-    </div>
-    <div class="metric">
-      <dt class="metric__label">Clarification required</dt>
-      <dd class="metric__value">{{ view.review_counts.needs_clarification }}</dd>
-      <dd class="metric__note">A person could not yet resolve it</dd>
-    </div>
-  </dl>
-</section>
+  </section>
 
-{% if not view.reviews_available %}
-<section aria-labelledby="reviews-broken-heading" class="card">
-  <h2 id="reviews-broken-heading">Review records unavailable</h2>
-  <p class="module-card__text">{{ icon('alert') }} {{ view.reviews_note }}</p>
-</section>
+  <aside class="decision-panel" aria-labelledby="decision-heading">
+    <div class="workbench-column-head"><span>03</span><div><h2 id="decision-heading">Human decision</h2><p>Bid review · authoritative for this bid</p></div></div>
+    <div class="decision-panel__body">
+      <p class="decision-status">{{ human_chip(row.review.label) }}</p>
+      {% if not row.review.is_pending %}<div class="review-decision"><p>{{ icon('check') }} Reviewed by <strong>{{ row.review.reviewer }}</strong> on {{ row.review.reviewed_at }} (revision {{ row.review.review_version }}).</p>{% if row.review.review_rationale %}<p>Rationale: &ldquo;{{ row.review.review_rationale }}&rdquo;</p>{% endif %}</div>{% endif %}
+      <form class="review-form" action="{{ url_for('submit_knowledge_review', run_key=view.run_key) }}" method="post">
+        <input type="hidden" name="assessment_id" value="{{ row.assessment_id }}">
+        <input type="hidden" name="assessment_digest" value="{{ row.assessment_digest }}">
+        <input type="hidden" name="return_focus" value="{{ row.requirement_id }}">
+        <input type="hidden" name="return_filter" value="{{ workbench.active_filter }}">
+        <fieldset><legend>{{ 'Record a review decision' if row.review.is_pending else 'Record a new review decision' }}</legend>
+          <label>Decision<select name="decision" required>{% for value, label in view.decision_options %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+          <label>Reviewer<input type="text" name="reviewer" required maxlength="120" autocomplete="name"></label>
+          <label>Rationale <span>(optional)</span><textarea name="rationale" maxlength="2000" rows="5"></textarea></label>
+        </fieldset>
+        <button class="btn btn--primary" type="submit">Record decision {{ icon('arrow-right') }}</button>
+      </form>
+      <p class="decision-scope">{{ icon('info') }} Human decision applies to this bid only. Golden Knowledge remains unchanged.</p>
+    </div>
+  </aside>
+</div>
+
+<div class="review-token-index visually-hidden" aria-hidden="true">
+  {% for token_row in view.rows if token_row.requirement_id != row.requirement_id %}<input type="hidden" name="assessment_id" value="{{ token_row.assessment_id }}"><input type="hidden" name="assessment_digest" value="{{ token_row.assessment_digest }}">{% endfor %}
+</div>
+{% else %}
+<section aria-labelledby="empty-filter-heading" class="card"><h2 id="empty-filter-heading">No requirements in this filter</h2><p>Choose another filter to return to the review queue.</p></section>
+<div class="review-token-index visually-hidden" aria-hidden="true">{% for token_row in view.rows %}<input type="hidden" name="assessment_id" value="{{ token_row.assessment_id }}"><input type="hidden" name="assessment_digest" value="{{ token_row.assessment_digest }}">{% endfor %}</div>
 {% endif %}
 
-{% if not view.store_available %}
-<section aria-labelledby="store-heading" class="card">
-  <h2 id="store-heading">Golden knowledge store not used</h2>
-  <p class="module-card__text">{{ icon('unlink') }} {{ view.store_note }}</p>
+<section id="assessment-audit" aria-labelledby="assessment-audit-heading" class="audit-panel">
+  <details class="disclosure disclosure--large">
+    <summary><span><span class="section-kicker">Audit depth</span><strong id="assessment-audit-heading">All requirement sources, evidence and review records</strong></span><span>{{ view.rows|length }} canonical records</span></summary>
+    <div class="disclosure__body">
+      <p>{{ view.method_note }}</p>
+      <div class="table-wrap"><table class="data-table"><caption class="visually-hidden">Audit ledger for all requirement assessments</caption><thead><tr><th scope="col">Requirement</th><th scope="col">Source</th><th scope="col">Candidate / claim</th><th scope="col">Evidence</th><th scope="col">Human record</th></tr></thead><tbody>
+        {% for audit_row in view.rows %}<tr><td><strong>{{ audit_row.requirement_id }}</strong><br>{{ audit_row.requirement_text }}</td><td>{{ audit_row.source }}</td><td>{{ audit_row.match_status }} · {{ audit_row.matched_capability }}<br>{{ audit_row.claim_status }}</td><td>{% if audit_row.evidence %}{% for evidence in audit_row.evidence %}{{ evidence.filename }} · {{ evidence.section_id }} · {{ evidence.source_version }} · {{ evidence.locator }}{% if not loop.last %}<br>{% endif %}{% endfor %}{% else %}No evidence{% endif %}</td><td>{% if audit_row.review.is_pending %}Pending{% else %}{{ audit_row.review.label }}<br>{{ audit_row.review.reviewer }} · {{ audit_row.review.reviewed_at }} · revision {{ audit_row.review.review_version }}{% if audit_row.review.review_rationale %}<br>{{ audit_row.review.review_rationale }}{% endif %}{% endif %}</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+  </details>
 </section>
-{% endif %}
 
-{% for row in view.rows %}
-<section aria-labelledby="assessment-{{ row.requirement_id }}" class="card">
-  <h2 id="assessment-{{ row.requirement_id }}">{{ row.requirement_id }} — requirement</h2>
-  <p class="module-card__text">&ldquo;{{ row.requirement_text }}&rdquo;</p>
-  <dl class="kv-list">
-    <dt>Obligation</dt>
-    <dd>{{ row.modality }}{% if row.is_mandatory %} (mandatory){% endif %}</dd>
-    <dt>Source</dt>
-    <dd>{{ icon('file') }} {{ row.source }}</dd>
-    <dt>Language</dt>
-    <dd>{{ row.language }}</dd>
-  </dl>
-  <h3>Normalization</h3>
-  <dl class="kv-list">
-    <dt>Technology hint</dt>
-    <dd>{{ row.technology_hint }}</dd>
-    <dt>Capability hints</dt>
-    <dd>
-      {% if row.capability_hints %}{{ row.capability_hints | join(', ') }}{% else %}—{% endif %}
-    </dd>
-  </dl>
-  <h3>Candidate match, golden claim, and bid review</h3>
-  <dl class="metric-grid">
-    <div class="metric">
-      <dt class="metric__label">Candidate match</dt>
-      <dd class="metric__value">{{ row.match_status }}</dd>
-      <dd class="metric__note">
-        Machine verdict for {{ row.matched_capability }} — a candidate, not a decision
-      </dd>
-    </div>
-    <div class="metric">
-      <dt class="metric__label">Golden claim</dt>
-      <dd class="metric__value">{{ row.claim_status }}</dd>
-      <dd class="metric__note">Knowledge state — unchanged by any bid review</dd>
-    </div>
-    <div class="metric metric--warning">
-      <dt class="metric__label">Bid review</dt>
-      <dd class="metric__value">{{ row.review.label }}</dd>
-      <dd class="metric__note">{{ row.candidate_note }}</dd>
-    </div>
-  </dl>
-  <p class="module-card__text">{{ row.rationale }}</p>
-  {% if not row.review.is_pending %}
-  <p class="module-card__text">
-    {{ icon('check') }} Reviewed by {{ row.review.reviewer }} on {{ row.review.reviewed_at }}
-    (revision {{ row.review.review_version }}).
-    {% if row.review.review_rationale %}Rationale: &ldquo;{{ row.review.review_rationale }}&rdquo;{% endif %}
-  </p>
-  {% endif %}
-  <h3>Record a review decision</h3>
-  <p class="module-card__text">
-    {{ icon('info') }} {{ row.review_scope_note }} {{ row.review_golden_note }}
-  </p>
-  <form action="{{ url_for('submit_knowledge_review', run_key=view.run_key) }}" method="post">
-    <input type="hidden" name="assessment_id" value="{{ row.assessment_id }}">
-    <input type="hidden" name="assessment_digest" value="{{ row.assessment_digest }}">
-    <p>
-      <label>Decision
-        <select name="decision" required>
-          {% for value, label in view.decision_options %}
-          <option value="{{ value }}">{{ label }}</option>
-          {% endfor %}
-        </select>
-      </label>
-    </p>
-    <p>
-      <label>Reviewer
-        <input type="text" name="reviewer" required maxlength="120">
-      </label>
-    </p>
-    <p>
-      <label>Rationale (optional)
-        <textarea name="rationale" maxlength="2000" rows="2"></textarea>
-      </label>
-    </p>
-    <button class="btn btn--secondary" type="submit">
-      Record review decision {{ icon('arrow-right') }}
-    </button>
-  </form>
-  {% if row.evidence %}
-  <h3>Evidence</h3>
-  <ul>
-    {% for reference in row.evidence %}
-    <li>
-      {{ icon('file') }} {{ reference.filename }} — section {{ reference.section_id }},
-      {{ reference.locator }} (version {{ reference.source_version }})
-    </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p class="module-card__text">{{ icon('alert') }} No evidence — nothing is claimed.</p>
-  {% endif %}
-</section>
-{% endfor %}
-
-<p>
-  <a href="{{ url_for('show_run', run_key=view.run_key) }}">Back to the run</a>
-</p>
+<p><a href="{{ url_for('show_run', run_key=view.run_key) }}">Back to the command center</a></p>
 {% endblock %}

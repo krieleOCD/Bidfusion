@@ -44,6 +44,7 @@ from bidfusion.local_ui import (
     service,
     upload_service,
     upload_viewmodels,
+    workspace,
 )
 from bidfusion.local_ui.icons import icon
 from bidfusion.local_ui.registry import RunRecord, RunRegistry
@@ -293,7 +294,29 @@ def create_app(
         record = _registry(app).get(run_key)
         if record is None:
             abort(404)
-        return render_template("run.html", view=build_run_view(record))
+        view = build_run_view(record)
+        # The run page is the fallback surface for a run: when the
+        # artifact integrity re-check refuses the assessment projection,
+        # the page still renders the recorded run state and says so,
+        # instead of disappearing behind an error.
+        workspace_error: str | None = None
+        assessment = None
+        package_section = None
+        try:
+            assessment = knowledge_assessment_service.build_review_summary(
+                record, _golden_store_root(app)
+            )
+            package_section = reviewed_package_service.build_reviewed_package_section(
+                record, _golden_store_root(app)
+            )
+        except artifacts.ArtifactAccessError as refused:
+            workspace_error = str(refused)
+        return render_template(
+            "run.html",
+            view=view,
+            workspace=workspace.build_workspace_view(view, assessment, package_section),
+            workspace_error=workspace_error,
+        )
 
     @app.post("/runs/<run_key>/process")
     def process_run(run_key: str) -> WerkzeugResponse:
@@ -366,7 +389,15 @@ def create_app(
             abort(409, description=str(refused))
         if view is None:
             abort(404)
-        return render_template("knowledge_assessment.html", view=view)
+        return render_template(
+            "knowledge_assessment.html",
+            view=view,
+            workbench=workspace.build_requirement_workbench(
+                view,
+                request.args.get("focus"),
+                request.args.get("filter"),
+            ),
+        )
 
     @app.post("/runs/<run_key>/knowledge-assessment/reviews")
     def submit_knowledge_review(run_key: str) -> WerkzeugResponse:
@@ -383,7 +414,23 @@ def create_app(
             abort(409, description=str(refused))
         if review is None:
             abort(404)
-        return redirect(url_for("show_knowledge_assessment", run_key=record.key), code=303)
+        return_focus = request.form.get("return_focus", "")
+        return_filter = request.form.get("return_filter", "")
+        if (
+            len(return_focus) == 10
+            and return_focus.startswith("REQ-")
+            and return_focus[4:].isdigit()
+            and return_filter in {"all", "pending", "mandatory", "evidence-gaps"}
+        ):
+            location = url_for(
+                "show_knowledge_assessment",
+                run_key=record.key,
+                focus=return_focus,
+                filter=return_filter,
+            )
+        else:
+            location = url_for("show_knowledge_assessment", run_key=record.key)
+        return redirect(location, code=303)
 
     @app.get("/runs/<run_key>/review-package")
     def show_review_package(run_key: str) -> str:

@@ -1,11 +1,12 @@
 {% extends "product_base.html" %}
+{% from "partials/trust_macros.html" import progress %}
 {% block title %}Golden Knowledge — MTD Inventory — BidFusion{% endblock %}
 
 {% block hero %}
 <div class="hero">
   <div class="container hero__inner">
     <p class="ocd-overline">Golden Knowledge — MTD Inventory</p>
-    <h1>The Managed Threat Detection document set, inventoried and classified.</h1>
+    <h1>What BidFusion currently knows<br>about <span class="hero__accent">Managed Threat Detection</span>.</h1>
     <p class="module-card__badges">
       {% for label in view.labels %}
       <span class="status-badge status-badge--warning">{{ icon('alert') }} {{ label }}</span>
@@ -67,62 +68,67 @@
 </section>
 
 <section aria-labelledby="dist-heading" class="card">
-  <h2 id="dist-heading">Technologies and document families</h2>
-  <div class="table-wrap">
-    <table class="data-table">
-      <caption class="visually-hidden">Technology distribution</caption>
-      <thead><tr><th scope="col">Technology</th><th scope="col">Documents</th></tr></thead>
-      <tbody>
-        {% for name, count in view.technologies %}
-        <tr><th scope="row">{{ name }}</th><td>{{ count }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  <div class="table-wrap">
-    <table class="data-table">
-      <caption class="visually-hidden">Document family distribution</caption>
-      <thead><tr><th scope="col">Document family</th><th scope="col">Documents</th></tr></thead>
-      <tbody>
-        {% for name, count in view.document_families %}
-        <tr><th scope="row">{{ name }}</th><td>{{ count }}</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <h2 id="dist-heading">Knowledge by technology and document family</h2>
+  {% set tech_max = view.technologies | map(attribute=1) | max if view.technologies else 1 %}
+  <h3>Technology</h3>
+  <ul class="group-grid">
+    {% for name, count in view.technologies %}
+    <li class="group-tile">
+      <span class="group-tile__name">{{ name }}</span>
+      <span class="group-tile__count">{{ count }}</span>
+      {{ progress(((count * 100 / tech_max) | round | int), 'neutral') }}
+    </li>
+    {% endfor %}
+  </ul>
+  {% set family_max = view.document_families | map(attribute=1) | max if view.document_families else 1 %}
+  <h3>Document family</h3>
+  <ul class="group-grid">
+    {% for name, count in view.document_families %}
+    <li class="group-tile">
+      <span class="group-tile__name">{{ name }}</span>
+      <span class="group-tile__count">{{ count }}</span>
+      {{ progress(((count * 100 / family_max) | round | int), 'neutral') }}
+    </li>
+    {% endfor %}
+  </ul>
 </section>
 
 <section aria-labelledby="sources-heading" class="card">
   <h2 id="sources-heading">Inventoried sources</h2>
-  <div class="table-wrap">
-    <table class="data-table">
-      <caption class="visually-hidden">
-        Every inventoried source document with classification and status
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">Filename</th>
-          <th scope="col">Document type</th>
-          <th scope="col">Technology</th>
-          <th scope="col">Version</th>
-          <th scope="col">Parser</th>
-          <th scope="col">Ingestion</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in view.rows %}
-        <tr>
-          <th scope="row">{{ row.filename }}</th>
-          <td>{{ row.document_type }}</td>
-          <td>{{ row.technology }}</td>
-          <td>{{ row.version }}</td>
-          <td>{{ row.parse_support }}</td>
-          <td>{{ row.ingestion_status }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <details class="disclosure">
+    <summary>File inventory — {{ view.total }} source document(s)</summary>
+    <div class="disclosure__body">
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption class="visually-hidden">
+            Every inventoried source document with classification and status
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Filename</th>
+              <th scope="col">Document type</th>
+              <th scope="col">Technology</th>
+              <th scope="col">Version</th>
+              <th scope="col">Parser</th>
+              <th scope="col">Ingestion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in view.rows %}
+            <tr>
+              <th scope="row">{{ row.filename }}</th>
+              <td>{{ row.document_type }}</td>
+              <td>{{ row.technology }}</td>
+              <td>{{ row.version }}</td>
+              <td>{{ row.parse_support }}</td>
+              <td>{{ row.ingestion_status }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
   {% if view.warnings %}
   <ul class="module-card__text">
     {% for warning in view.warnings %}

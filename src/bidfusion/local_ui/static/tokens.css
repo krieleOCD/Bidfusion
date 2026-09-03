@@ -13,6 +13,8 @@
 :root {
   /* ---- Brand core ---- */
   --ocd-orange: #ff7900;
+  --ocd-orange-text: #9c4700;
+  --ocd-orange-text-hover: #713400;
   --ocd-orange-amber: #ffb400;
   --ocd-black: #000000;
   --ocd-white: #ffffff;
@@ -64,11 +66,11 @@
 
   --color-text: var(--ocd-black);
   --color-text-secondary: var(--grey-600);
-  --color-text-muted: var(--grey-500);
+  --color-text-muted: var(--grey-600);
   --color-text-inverse: var(--ocd-white);
   --color-text-inverse-secondary: rgba(255, 255, 255, 0.72);
-  --color-text-accent: var(--ocd-orange);
-  --color-text-on-primary: var(--ocd-white);
+  --color-text-accent: var(--ocd-orange-text);
+  --color-text-on-primary: var(--ocd-black);
 
   --color-border: var(--grey-300);
   --color-border-strong: var(--grey-500);
@@ -78,7 +80,7 @@
   --color-primary: var(--ocd-orange);
   --color-primary-hover: var(--ocd-orange-hover);
   --color-primary-active: var(--ocd-orange-active);
-  --color-on-primary: var(--ocd-white);
+  --color-on-primary: var(--ocd-black);
 
   --color-focus: var(--ocd-black);
   --color-focus-inverse: var(--ocd-white);
@@ -171,6 +173,29 @@
   --shadow-focus: 0 0 0 3px rgba(0, 0, 0, 0.9);
   --shadow-focus-primary: 0 0 0 3px rgba(255, 121, 0, 0.45);
 
+  /* ---- Trust layers ----
+     BidFusion separates three sources of truth and never lets them
+     share a visual voice. Each layer draws on a different corner of
+     the official palette, so a machine MATCHED can never be mistaken
+     for a human CONFIRMED at a glance:
+     - Machine assessment: neutral, informational (grey ramp).
+     - Golden Knowledge: source/evidence-oriented (secondary purple).
+     - Human review: decision-oriented (filled semantic fields). */
+  --trust-machine-text: var(--grey-700);
+  --trust-machine-border: var(--grey-500);
+  --trust-machine-bg: var(--grey-100);
+  --trust-knowledge-text: var(--ocd-purple-deep);
+  --trust-knowledge-border: var(--ocd-purple);
+  --trust-knowledge-bg: var(--ocd-purple-light);
+  --trust-human-pending-bg: var(--color-warning);
+  --trust-human-pending-text: var(--ocd-black);
+  --trust-human-confirmed-bg: var(--color-success-deep);
+  --trust-human-confirmed-text: var(--ocd-white);
+  --trust-human-rejected-bg: var(--color-danger);
+  --trust-human-rejected-text: var(--ocd-white);
+  --trust-human-clarify-bg: var(--ocd-orange-amber);
+  --trust-human-clarify-text: var(--ocd-black);
+
   /* ---- Motion ---- */
   --duration-instant: 80ms;
   --duration-fast: 150ms;
@@ -211,11 +236,11 @@ h1, h2, h3, h4, h5, h6 {
 p { margin: 0; }
 
 a {
-  color: var(--ocd-orange);
+  color: var(--ocd-orange-text);
   text-decoration: none;
 }
-a:hover { color: var(--ocd-orange-hover); text-decoration: underline; }
-a:active { color: var(--ocd-orange-active); }
+a:hover { color: var(--ocd-orange-text-hover); text-decoration: underline; }
+a:active { color: var(--ocd-orange-text-hover); }
 
 .ocd-overline {
   font-size: var(--font-size-overline);
