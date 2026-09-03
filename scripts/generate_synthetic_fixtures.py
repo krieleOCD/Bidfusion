@@ -51,17 +51,27 @@ def _pdf_escape(text: str) -> str:
     return text.replace("\\", r"\\").replace("(", r"\(").replace(")", r"\)")
 
 
-def _page_content_stream(lines: Sequence[str]) -> bytes:
+def _page_content_stream(lines: Sequence[str], *, encoding: str = "ascii") -> bytes:
     operations = []
     y = 720
     for line in lines:
         operations.append(f"BT /F1 11 Tf 72 {y} Td ({_pdf_escape(line)}) Tj ET")
         y -= 18
-    return "\n".join(operations).encode("ascii")
+    return "\n".join(operations).encode(encoding)
 
 
-def build_pdf(pages: Sequence[Sequence[str]], *, encrypt_marker: bool = False) -> bytes:
-    """Build a deterministic, minimal text PDF from per-page line lists."""
+def build_pdf(
+    pages: Sequence[Sequence[str]],
+    *,
+    encrypt_marker: bool = False,
+    encoding: str = "ascii",
+) -> bytes:
+    """Build a deterministic, minimal text PDF from per-page line lists.
+
+    ``encoding="latin1"`` declares WinAnsiEncoding on the fixture font so
+    German umlauts and ``§`` survive text extraction; the default keeps the
+    original ASCII behavior byte-for-byte for the committed fixtures.
+    """
     if not pages:
         msg = "a PDF fixture requires at least one page"
         raise ValueError(msg)
@@ -85,9 +95,14 @@ def build_pdf(pages: Sequence[Sequence[str]], *, encrypt_marker: bool = False) -
                 f"/Contents {contents_object} 0 R >>"
             ).encode("ascii")
         )
-        stream = _page_content_stream(lines)
+        stream = _page_content_stream(lines, encoding=encoding)
         objects.append(b"<< /Length %d >>\nstream\n%s\nendstream" % (len(stream), stream))
-    objects.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+    if encoding == "latin1":
+        objects.append(
+            b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
+        )
+    else:
+        objects.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
     if encrypt_object is not None:
         objects.append(b"<< /Filter /Standard /V 1 /R 2 >>")
 
@@ -264,6 +279,146 @@ COVER_TXT = "Synthetic cover note for the blocked package fixture.\n"
 REVIEW_NOTE_TXT = "Synthetic note accompanying the encrypted fixture.\n"
 
 
+# ---------------------------------------------------------------------------
+# Synthetic German procurement package (invented content only) — exercises
+# the label-free requirement rule families of extractor v0.2.
+# ---------------------------------------------------------------------------
+
+GERMAN_LB_PAGE_1 = (
+    "Leistungsbeschreibung Sicherheitsbetrieb (synthetisch)",
+    "1. Ausgangslage",
+    "Der Auftraggeber betreibt 12 Standorte mit rund 1.500 Arbeitsplätzen.",
+    "Im Bestand sind 35 Server und 8 Netzsegmente vorhanden.",
+    "Die aktuelle Umgebung nutzt Version 3.2.1 der Verwaltungssoftware.",
+    "Am 24.08.2026 fand eine Ortsbegehung statt.",
+    "2. Betriebsanforderungen",
+    "2.1 Der Dienstleister muss einen Servicedesk an Werktagen betreiben.",
+    "2.2 Die Reaktionszeit für kritische Meldungen muss 30 Minuten betragen.",
+    "2.3 Das Serviceportal soll eine Exportfunktion für Berichte anbieten.",
+    "2.4 Ein monatlicher Servicebericht ist zu erstellen",
+    "und der Ansprechperson des Auftraggebers vorzulegen.",
+    "2.5 Die Protokolldaten sind revisionssicher zu archivieren.",
+    "2.6 Alle Zugriffe auf die Plattform sind zu protokollieren.",
+    "2.7 Berichte sollen in deutscher Sprache verfasst werden.",
+)
+GERMAN_LB_PAGE_2 = (
+    "3. Sicherheitsanforderungen",
+    "3.1 Die Datenhaltung muss innerhalb der EU erfolgen.",
+    "3.2 Der Fernzugriff ist ausschließlich über gesicherte Kanäle zu führen.",
+    "3.3 Die Übertragung personenbezogener Daten darf nicht unverschlüsselt erfolgen.",
+    "3.4 Ein eigenes Rechenzentrum des Dienstleisters ist nicht erforderlich.",
+    "3.5 Die Endgerätewartung ist nicht Bestandteil der Leistung.",
+    "3.6 Der Dienstleister muss Sicherheitsvorfälle innerhalb von vier Stunden melden.",
+    "3.7 Ein Notfallhandbuch ist bereitzustellen.",
+    "3.8 Die Schnittstellendokumentation ist aktuell zu halten.",
+    "4. Optionale Leistungen",
+    "4.1 Der Dienstleister kann zusätzlich Schulungen anbieten.",
+    "4.2 Weitere Informationen können dem Anhang entnommen werden.",
+    "5. Mengengerüst",
+    "Die Anzahl der Endgeräte beträgt 2.400 Stück.",
+    "Pro Monat fallen etwa 10 Sicherheitsvorfälle an.",
+)
+GERMAN_KRITERIEN_PAGE = (
+    "Kriterienkatalog Fachkonzept (synthetisch)",
+    "Hinweise zur Bewertung",
+    "Die Bewertung erfolgt anhand gewichteter Kriterien.",
+    "A-1 Ausschlusskriterium: Der Bieter verfügt über eine gültige Zertifizierung,"
+    " ein Nachweis ist beizufügen.",
+    "A-2 Beschreiben Sie die Organisation Ihres Sicherheitsbetriebs?",
+    "A-3 Bestätigung der Vertraulichkeitsverpflichtung, das Formblatt V ist zu unterzeichnen.",
+    "B-1 Wie stellen Sie die Einhaltung der Reaktionszeiten sicher?",
+    "B-2 Darstellung des Eskalationsverfahrens als Grobkonzept, die Unterlage ist einzureichen.",
+    "B-3 Vorlage von zwei Referenzprojekten als Nachweis.",
+    "I-1 Angabe der eingesetzten Standardsoftware, eine Eigenerklärung ist ausreichend.",
+    "Kriterium 9 Die Notfallkonzepte sind dem Angebot beizufügen.",
+    "Die maximale Punktzahl beträgt 100 Punkte.",
+    "CVE-2026-1234 ist ein Beispiel ohne Anforderungscharakter.",
+)
+GERMAN_TEILNAHME_PAGE = (
+    "Teilnahmebedingungen (synthetisch)",
+    "1. Allgemeines",
+    "Die Vergabestelle beabsichtigt die Vergabe von Sicherheitsdiensten.",
+    "2. Nachweise",
+    "2.1 Dem Teilnahmeantrag ist eine aktuelle Versicherungsbestätigung beizufügen.",
+    "2.2 Eine Eigenerklärung zur Zuverlässigkeit ist einzureichen.",
+    "2.3 Der Teilnahmeantrag muss rechtsverbindlich unterschrieben sein.",
+    "2.4 Verspätete Anträge sind vom Verfahren ausgeschlossen.",
+    "2.5 Der Umsatz der letzten drei Geschäftsjahre ist nachzuweisen.",
+    "2.6 Angaben zur Anzahl der Beschäftigten sind vorzulegen.",
+    "3. Formales",
+    "3.1 Das Formblatt T1 ist vollständig auszufüllen.",
+    "Die Vergabestelle steht für Rückfragen zur Verfügung.",
+)
+GERMAN_VERTRAG_PAGE = (
+    "Dienstleistungsvertrag (synthetisch)",
+    "Präambel",
+    "Die Parteien beabsichtigen eine langfristige Zusammenarbeit.",
+    "§ 1 Der Auftragnehmer ist verpflichtet, die Leistungen gemäß Leistungsbeschreibung"
+    " zu erbringen.",
+    "§ 2 Der Auftragnehmer gewährleistet eine Verfügbarkeit von 99,5 Prozent.",
+    "§ 3 Die Wartungsfenster sind mit dem Auftraggeber abzustimmen.",
+    "§ 4 Der Auftragnehmer stellt sicher, dass Subunternehmer sorgfältig ausgewählt werden.",
+    "§ 5 Der Auftragnehmer darf vertrauliche Informationen nicht an Dritte weitergeben.",
+    "§ 6 Bei Verzug gelten die gesetzlichen Regelungen.",
+    "§ 7 Die Vertragsstrafenregelung ergibt sich aus Anlage 2.",
+    "§ 8 Die Haftung für entgangenen Gewinn ist ausgeschlossen.",
+    "§ 9 Der Auftragnehmer hat Änderungen der Leistung schriftlich anzuzeigen.",
+    "§ 10 Die Dokumentation ist durch den Auftragnehmer aktuell zu halten.",
+    "Der Vertrag unterliegt deutschem Recht.",
+)
+
+
+def build_german_lb_pdf() -> bytes:
+    """Synthetic Leistungsbeschreibung with clauses, facts, and negations."""
+    return build_pdf([GERMAN_LB_PAGE_1, GERMAN_LB_PAGE_2], encoding="latin1")
+
+
+def build_german_kriterien_pdf() -> bytes:
+    """Synthetic Kriterienkatalog with A/B/I, exclusion, and evidence criteria."""
+    return build_pdf([GERMAN_KRITERIEN_PAGE], encoding="latin1")
+
+
+def build_german_teilnahme_pdf() -> bytes:
+    """Synthetic Teilnahmebedingungen with declarations, forms, and exclusions."""
+    return build_pdf([GERMAN_TEILNAHME_PAGE], encoding="latin1")
+
+
+def build_german_vertrag_pdf() -> bytes:
+    """Synthetic Vertrag with obligations, references, and legal background."""
+    return build_pdf([GERMAN_VERTRAG_PAGE], encoding="latin1")
+
+
+def build_german_preisblatt_workbook() -> Workbook:
+    """Synthetic Preisblatt: price/sizing rows plus structured requirement rows."""
+    workbook = Workbook()
+    preise = workbook.active
+    if preise is None:  # pragma: no cover - openpyxl always creates one sheet
+        msg = "openpyxl workbook has no active sheet"
+        raise RuntimeError(msg)
+    preise.title = "Preisblatt"
+    preise.append(["Pos.", "Beschreibung", "Menge", "Einheit", "Preis"])
+    preise.append(["1", "Grundpauschale Betrieb pro Monat", "12", "Monate", ""])
+    preise.append(["2", "Einrichtung einmalig", "1", "Pauschale", ""])
+    preise.append(["Summe", "Gesamtpreis", "", "", ""])
+
+    anforderungen = workbook.create_sheet("Anforderungen")
+    anforderungen.append(["Nr.", "Anforderung", "Modalität"])
+    anforderungen.append(
+        ["P-1", "Die Preise sind für die gesamte Laufzeit verbindlich zu kalkulieren.", ""]
+    )
+    anforderungen.append(
+        ["P-2", "Der Anbieter legt eine Preisaufschlüsselung je Position vor.", "Muss"]
+    )
+    anforderungen.append(["P-3", "Rabatte können optional angeboten werden.", "Kann"])
+    anforderungen.append(["P-4", "Wie kalkulieren Sie Preisgleitklauseln?", "B"])
+    anforderungen.append(["5", "Anzahl Standorte", "12"])
+    anforderungen.append(["6", "Anzahl Endgeräte", "2400"])
+
+    workbook.properties.created = _FIXED_XLSX_TIMESTAMP
+    workbook.properties.modified = _FIXED_XLSX_TIMESTAMP
+    return workbook
+
+
 def write_fixtures(output: Path) -> list[Path]:
     """Write every synthetic fixture package below ``output``."""
     written: list[Path] = []
@@ -305,6 +460,16 @@ def write_fixtures(output: Path) -> list[Path]:
     quality_workbook_path.parent.mkdir(parents=True, exist_ok=True)
     build_quality_review_workbook().save(quality_workbook_path)
     written.append(quality_workbook_path)
+
+    german = output / "rfp-german-procurement"
+    write(german / "leistungsbeschreibung.pdf", build_german_lb_pdf())
+    write(german / "kriterienkatalog.pdf", build_german_kriterien_pdf())
+    write(german / "teilnahmebedingungen.pdf", build_german_teilnahme_pdf())
+    write(german / "vertrag.pdf", build_german_vertrag_pdf())
+    german_workbook_path = german / "preisblatt.xlsx"
+    german_workbook_path.parent.mkdir(parents=True, exist_ok=True)
+    build_german_preisblatt_workbook().save(german_workbook_path)
+    written.append(german_workbook_path)
 
     return written
 

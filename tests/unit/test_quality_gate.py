@@ -329,10 +329,9 @@ def test_table_rows_count_as_obligation_candidates(
 
     coverage = report.coverage
     assert coverage.obligation_candidates == 2, "both table rows are candidates"
-    assert coverage.obligation_matches == 1, "only the labelled row is captured"
-    assert coverage.unexplained_candidates == 1
-    assert report.status is QualityGateStatus.REVIEW_REQUIRED
-    assert "unexplained-obligation-candidates" in codes(report)
+    assert coverage.obligation_matches == 2, "v0.2 captures the unlabelled row too"
+    assert coverage.unexplained_candidates == 0
+    assert "unexplained-obligation-candidates" not in codes(report)
 
 
 def test_one_of_five_deadline_candidates_requires_review(

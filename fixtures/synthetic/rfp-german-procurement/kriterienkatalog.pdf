@@ -1,0 +1,44 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 1235 >>
+stream
+BT /F1 11 Tf 72 720 Td (Kriterienkatalog Fachkonzept \(synthetisch\)) Tj ET
+BT /F1 11 Tf 72 702 Td (Hinweise zur Bewertung) Tj ET
+BT /F1 11 Tf 72 684 Td (Die Bewertung erfolgt anhand gewichteter Kriterien.) Tj ET
+BT /F1 11 Tf 72 666 Td (A-1 Ausschlusskriterium: Der Bieter verfügt über eine gültige Zertifizierung, ein Nachweis ist beizufügen.) Tj ET
+BT /F1 11 Tf 72 648 Td (A-2 Beschreiben Sie die Organisation Ihres Sicherheitsbetriebs?) Tj ET
+BT /F1 11 Tf 72 630 Td (A-3 Bestätigung der Vertraulichkeitsverpflichtung, das Formblatt V ist zu unterzeichnen.) Tj ET
+BT /F1 11 Tf 72 612 Td (B-1 Wie stellen Sie die Einhaltung der Reaktionszeiten sicher?) Tj ET
+BT /F1 11 Tf 72 594 Td (B-2 Darstellung des Eskalationsverfahrens als Grobkonzept, die Unterlage ist einzureichen.) Tj ET
+BT /F1 11 Tf 72 576 Td (B-3 Vorlage von zwei Referenzprojekten als Nachweis.) Tj ET
+BT /F1 11 Tf 72 558 Td (I-1 Angabe der eingesetzten Standardsoftware, eine Eigenerklärung ist ausreichend.) Tj ET
+BT /F1 11 Tf 72 540 Td (Kriterium 9 Die Notfallkonzepte sind dem Angebot beizufügen.) Tj ET
+BT /F1 11 Tf 72 522 Td (Die maximale Punktzahl beträgt 100 Punkte.) Tj ET
+BT /F1 11 Tf 72 504 Td (CVE-2026-1234 ist ein Beispiel ohne Anforderungscharakter.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001528 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1625
+%%EOF

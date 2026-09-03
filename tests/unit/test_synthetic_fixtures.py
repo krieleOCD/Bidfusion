@@ -59,6 +59,10 @@ def test_pdf_fixtures_are_byte_reproducible(tmp_path: Path) -> None:
         "rfp-unsupported/blank-scan.pdf",
         "rfp-quality-review/mixed-scan.pdf",
         "rfp-mtd/mtd-requirements.docx",
+        "rfp-german-procurement/leistungsbeschreibung.pdf",
+        "rfp-german-procurement/kriterienkatalog.pdf",
+        "rfp-german-procurement/teilnahmebedingungen.pdf",
+        "rfp-german-procurement/vertrag.pdf",
     ):
         assert (regenerated / relative).read_bytes() == (FIXTURES / relative).read_bytes(), relative
 
