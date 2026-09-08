@@ -183,3 +183,15 @@ def test_prohibitions_are_detected(text: str) -> None:
 def test_positive_obligations_are_not_negations() -> None:
     assert negation_signal("Der Dienstleister muss ein Ticketsystem betreiben.") is None
     assert negation_signal("Die Frist ist einzuhalten.") is None
+
+
+def test_haben_zu_obligation_survives_a_long_clause() -> None:
+    from bidfusion.extraction.requirements.signals import modality_signal
+    from bidfusion.schemas import RequirementModality
+
+    text = (
+        "Bietergemeinschaften haben mit ihrem Angebot eine von allen Mitgliedern "
+        "unterschriebene Bietergemeinschaftserklärung auf dem hierfür vorgesehenen "
+        "Formular des Auftraggebers abzugeben."
+    )
+    assert modality_signal(text) is RequirementModality.MUST

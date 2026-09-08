@@ -32,10 +32,10 @@ def test_requirement_extraction_covers_pdf_xlsx_and_txt_with_provenance(
     )
 
     # v0.1 explicit-label behavior is locked: the nine label requirements
-    # keep their identifiers, ordering, and provenance. v0.2 additionally
-    # detects the two label-free submission rows of the formalities sheet
-    # and appends them after every explicit label.
-    assert len(result.requirements) == 11
+    # keep their identifiers, ordering, and provenance. The label-free
+    # families (v0.2 structured-table rows, v0.3 modal statements) append
+    # after every explicit label.
+    assert len(result.requirements) == 15
     assert [item.requirement_id for item in result.requirements[:3]] == [
         "REQ-000001",
         "REQ-000002",
@@ -43,8 +43,12 @@ def test_requirement_extraction_covers_pdf_xlsx_and_txt_with_provenance(
     ]
     assert all(item.extraction.method == "rule" for item in result.requirements[:9])
     assert [item.extraction.method for item in result.requirements[9:]] == [
+        "rule/modal-statement",
+        "rule/modal-statement",
+        "rule/modal-statement",
         "rule/structured-table",
         "rule/structured-table",
+        "rule/modal-statement",
     ]
 
     pdf_must = result.requirements[1]

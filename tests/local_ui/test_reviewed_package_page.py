@@ -102,8 +102,8 @@ def test_generation_posts_persists_and_renders_an_incomplete_package(
     assert "REVIEW INCOMPLETE" in html
     assert "RWP-" in html
     assert "version 1" in html
-    # All 8 fixture requirements are pending; nothing is claimed reviewed.
-    assert ">8</dd>" in html
+    # All 10 fixture requirements are pending; nothing is claimed reviewed.
+    assert ">10</dd>" in html
     files = sorted(path.name for path in _packages_root(app, run_key).iterdir())
     assert files == [
         "reviewed-working-package-v0001.audit.json",
@@ -221,7 +221,8 @@ def test_a_tampered_package_is_reported_never_rendered_valid(
     run_key = _completed_run_key(client)
     _generate(client, run_key)
     audit = _packages_root(app, run_key) / "reviewed-working-package-v0001.audit.json"
-    audit.write_bytes(audit.read_bytes().replace(b'"pending": 8', b'"pending": 0'))
+    tampered = re.sub(rb'"pending": \d+', b'"pending": 0', audit.read_bytes(), count=1)
+    audit.write_bytes(tampered)
 
     response = client.get(f"/runs/{run_key}/working-package")
     assert response.status_code == 200

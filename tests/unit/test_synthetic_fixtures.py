@@ -138,7 +138,7 @@ def test_quality_review_package_carries_the_expected_review_triggers() -> None:
     reader = PdfReader(BytesIO(pdf))
     assert len(reader.pages) == 2
     page_1 = reader.pages[0].extract_text() or ""
-    assert "The supplier MUST provide encrypted backups." in page_1
+    assert "Backups MUST exist." in page_1
     assert (reader.pages[1].extract_text() or "").strip() == ""
 
     workbook = load_workbook(

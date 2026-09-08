@@ -1,0 +1,2 @@
+# PDF fixtures are binary: xref tables carry format-mandated trailing spaces.
+*.pdf binary

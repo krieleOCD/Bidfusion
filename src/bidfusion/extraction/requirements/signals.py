@@ -104,11 +104,11 @@ _FUSED_INFINITIVE = r"[a-zäöüß]{2,}zu[a-zäöüß]{2,}(?:en|eln|ern)\b" + _C
 _MUST_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(r"\b(?:muss|müssen|must|shall)\b", re.IGNORECASE),
     re.compile(
-        rf"\b(?:ist|sind|hat|haben)\b{_IN_SENTENCE}{{0,100}}?\bzu\s+{_INFINITIVE}",
+        rf"\b(?:ist|sind|hat|haben)\b{_IN_SENTENCE}{{0,160}}?\bzu\s+{_INFINITIVE}",
         re.IGNORECASE,
     ),
     re.compile(
-        rf"\b(?:ist|sind|hat|haben)\b{_IN_SENTENCE}{{0,100}}?\b{_FUSED_INFINITIVE}",
+        rf"\b(?:ist|sind|hat|haben)\b{_IN_SENTENCE}{{0,160}}?\b{_FUSED_INFINITIVE}",
         re.IGNORECASE,
     ),
 )

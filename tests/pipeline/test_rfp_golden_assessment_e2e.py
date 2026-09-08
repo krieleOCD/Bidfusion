@@ -60,7 +60,9 @@ def test_the_fixture_yields_the_expected_requirement_contracts(
 ) -> None:
     requirements = mtd_requirements.requirements
 
-    assert len(requirements) == 8
+    # eight explicit labels plus the two v0.3 modal-statement
+    # submission requirements of the fixture's closing section
+    assert len(requirements) == 10
     assert all(item.source.canonical_artifact_id is not None for item in requirements)
     assert all(item.source.filename == "mtd-requirements.docx" for item in requirements)
     assert requirements[0].modality is RequirementModality.MUST
@@ -78,7 +80,7 @@ def test_end_to_end_assessment_over_the_synthetic_golden_snapshot(
     result = assess_requirements(mtd_requirements.requirements, snapshot)
 
     assert result.store_state is KnowledgeStoreState.AVAILABLE
-    assert len(result.assessments) == 8
+    assert len(result.assessments) == 10
 
     by_status = [item.match_status for item in result.assessments]
     assert by_status.count(MatchStatus.MATCHED) >= 1

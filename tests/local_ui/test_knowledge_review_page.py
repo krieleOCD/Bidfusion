@@ -79,7 +79,7 @@ def test_pending_reviews_and_disclaimers_are_shown_before_any_decision(
     run_key = _completed_run_key(client)
     html = client.get(f"/runs/{run_key}/knowledge-assessment").get_data(as_text=True)
 
-    assert html.count("PENDING — no decision recorded") == 8
+    assert html.count("PENDING — no decision recorded") == 10
     assert "This decision applies to this bid assessment only." in html
     assert "It does not validate or modify the underlying Golden Knowledge claim." in html
     assert "Reviewed working package projection" in html
@@ -139,7 +139,7 @@ def test_invalid_inputs_are_rejected_without_recording(client: FlaskClient) -> N
     )
 
     html = client.get(f"/runs/{run_key}/knowledge-assessment").get_data(as_text=True)
-    assert html.count("PENDING — no decision recorded") == 8
+    assert html.count("PENDING — no decision recorded") == 10
 
 
 def test_a_stale_assessment_digest_is_refused_not_applied(client: FlaskClient) -> None:
@@ -150,7 +150,7 @@ def test_a_stale_assessment_digest_is_refused_not_applied(client: FlaskClient) -
 
     assert response.status_code == 409
     html = client.get(f"/runs/{run_key}/knowledge-assessment").get_data(as_text=True)
-    assert html.count("PENDING — no decision recorded") == 8
+    assert html.count("PENDING — no decision recorded") == 10
 
 
 def test_a_snapshot_change_between_render_and_submit_stales_the_review(
@@ -170,7 +170,7 @@ def test_a_snapshot_change_between_render_and_submit_stales_the_review(
     assert response.status_code == 409
 
     html = client.get(f"/runs/{run_key}/knowledge-assessment").get_data(as_text=True)
-    assert html.count("PENDING — no decision recorded") == 8
+    assert html.count("PENDING — no decision recorded") == 10
 
 
 def test_rationale_is_escaped_in_the_rendered_page(client: FlaskClient) -> None:
@@ -219,7 +219,7 @@ def test_reviews_on_unpermitted_or_tampered_runs_are_refused(
         audit.write_bytes(original)
     # No review was recorded during the tampered window.
     html = client.get(f"/runs/{run_key}/knowledge-assessment").get_data(as_text=True)
-    assert html.count("PENDING — no decision recorded") == 8
+    assert html.count("PENDING — no decision recorded") == 10
 
 
 def test_the_working_package_page_shows_the_reviewed_projection(

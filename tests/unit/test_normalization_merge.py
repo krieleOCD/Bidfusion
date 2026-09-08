@@ -69,9 +69,9 @@ def test_merge_deduplicates_exact_duplicates_and_keeps_all_sources(
 ) -> None:
     dataset = merged_dataset(rfp_minimal_canonicals)
 
-    # 11 extracted in v0.2 (nine v0.1 records plus two label-free
-    # submission rows), one agreeing duplicate merged
-    assert len(dataset.requirements) == 10
+    # 15 extracted in v0.3 (nine v0.1 records plus six label-free
+    # detections), one agreeing duplicate merged
+    assert len(dataset.requirements) == 14
     merged_requirement = next(
         reference for reference in dataset.requirements if len(reference.sources) == 2
     )

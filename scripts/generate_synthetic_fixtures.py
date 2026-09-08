@@ -150,7 +150,10 @@ QUALITY_REVIEW_PAGE_1 = (
     "Synthetic quality-review RFP QR-2026 - partial scan sample",
     "REQ-Q1: The service MUST include weekly status calls.",
     "REQ-Q2: The provider SHOULD deliver monthly reports.",
-    "The supplier MUST provide encrypted backups.",
+    # three words with an uppercase keyword: an obligation fragment the
+    # v0.3 extractor deliberately declines (below its clause-length floor),
+    # so the quality gate must flag it for review
+    "Backups MUST exist.",
 )
 
 

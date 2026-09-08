@@ -23,11 +23,14 @@ import re
 from datetime import datetime
 
 from bidfusion.extraction.requirements.label_free import (
+    BlockDetection,
     RuleFamily,
     assemble_blocks,
     classify_block,
     classify_row,
+    refine_modality,
 )
+from bidfusion.extraction.requirements.splitting import AtomicSplit, split_block
 from bidfusion.extraction.support import (
     RowUnit,
     TextUnit,
@@ -46,7 +49,7 @@ from bidfusion.schemas.ids import ArtifactId, BidId, RunId
 from bidfusion.schemas.provenance import ExtractionInfo, SourceReference
 
 REQUIREMENT_EXTRACTOR_NAME = "bidfusion-rule-requirement-extractor"
-REQUIREMENT_EXTRACTOR_VERSION = "0.2.0"
+REQUIREMENT_EXTRACTOR_VERSION = "0.4.0"
 
 _PARAGRAPH_CANDIDATE = re.compile(r"^(REQ-[A-Za-z0-9]+)\s*:\s*(?P<text>.+)$")
 _LABEL_CELL = re.compile(r"^REQ-[A-Za-z0-9]+$")
@@ -163,6 +166,19 @@ def extract_requirements(
             detection = classify_block(block.text)
             if detection is None:
                 continue
+            splits = split_block(block.units, detection)
+            if splits:
+                for split in splits:
+                    requirements.append(
+                        _split_requirement(
+                            bid_id=bid_id,
+                            sequence=len(requirements) + 1,
+                            detection=detection,
+                            split=split,
+                            parent_unit=block.units[0],
+                        )
+                    )
+                continue
             requirements.append(
                 _requirement(
                     bid_id=bid_id,
@@ -220,6 +236,46 @@ def extract_requirements(
     )
 
 
+def _split_requirement(
+    *,
+    bid_id: BidId,
+    sequence: int,
+    detection: BlockDetection,
+    split: AtomicSplit,
+    parent_unit: TextUnit,
+) -> Requirement:
+    """Build one atomic child of a compound block detection.
+
+    The child keeps the parent's rule family and confidence; its modality is
+    re-derived from the context-inherited effective text so a child with its
+    own bounded signal (or negation) is honestly reclassified. Split
+    provenance lives in ``cross_references``: the split rule with the child's
+    position, and the parent block's first source unit.
+    """
+    modality, confidence = refine_modality(
+        split.effective_text,
+        fallback_modality=detection.modality,
+        fallback_confidence=detection.confidence,
+    )
+    parent_locator = parent_unit.source.locator.paragraph_id or "unlocated"
+    return _requirement(
+        bid_id=bid_id,
+        sequence=sequence,
+        original_text=split.original_text,
+        normalized_text=split.effective_text,
+        modality=modality,
+        unit=split.units[0],
+        additional_sources=tuple(unit.source for unit in split.units[1:])
+        + tuple(unit.source for unit in split.context_units),
+        family=detection.family,
+        confidence=confidence,
+        cross_references=(
+            f"split:{split.split_rule.value}/{split.split_index}-of-{split.split_total}",
+            f"split-parent:{parent_locator}",
+        ),
+    )
+
+
 def _requirement(
     *,
     bid_id: BidId,
@@ -231,6 +287,7 @@ def _requirement(
     additional_sources: tuple[SourceReference, ...] = (),
     family: RuleFamily | None = None,
     confidence: float | None = None,
+    cross_references: tuple[str, ...] = (),
 ) -> Requirement:
     """Build one requirement record.
 
@@ -251,6 +308,7 @@ def _requirement(
         modality=modality,
         category=_category_for(family, normalized_text or original_text),
         confidence=confidence,
+        cross_references=cross_references,
         source=unit.source,
         additional_sources=additional_sources,
         extraction=ExtractionInfo(
