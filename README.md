@@ -47,9 +47,11 @@ package. Regenerate them with `scripts/demo/capture_screenshots.mjs`.
 | --- | --- |
 | ![Working package generated from a completed synthetic run, with structured, JSON and Markdown views](docs/assets/screenshots/working-package.png) | ![Extraction quality page showing the frozen real-RFP evaluation](docs/assets/screenshots/extraction-quality.png) |
 
-A narrated three-minute walkthrough can be recorded with the
-[demo recorder](scripts/demo/README.md). The recording shows the internal
-knowledge pilot and stays inside Orange Cyberdefense.
+A narrated walkthrough (3:41) is attached to the
+[Product demo 2026-09-08 release](https://github.com/krieleOCD/Bidfusion/releases/tag/demo-2026-09-08)
+in 1080p and 720p, available to collaborators of this private repository.
+It is recorded with the [demo recorder](scripts/demo/README.md), shows the
+internal knowledge pilot and stays inside Orange Cyberdefense.
 
 ## How a bid moves through BidFusion
 
