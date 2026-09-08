@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="500" viewBox="0 0 1400 500" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <title>BidFusion: from RFP package to a reviewed working package</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000000"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#9c4700"/>
+    </marker>
+  </defs>
+
+  <!-- canvas -->
+  <rect x="0" y="0" width="1400" height="500" fill="#ffffff"/>
+  <rect x="0" y="0" width="1400" height="6" fill="#ff7900"/>
+
+  <!-- title -->
+  <text x="40" y="52" font-size="26" font-weight="700" fill="#000000">BidFusion<tspan fill="#ff7900">.</tspan></text>
+  <text x="40" y="76" font-size="14" fill="#595959">From a messy RFP package to a reviewed, evidence-backed working package. Security before intelligence, humans over machines.</text>
+
+  <!-- trust zones -->
+  <rect x="40" y="110" width="290" height="300" fill="#f6f6f6"/>
+  <rect x="350" y="110" width="210" height="300" fill="#fff0e0"/>
+  <rect x="580" y="110" width="430" height="300" fill="#fafafa" stroke="#d6d6d6"/>
+  <rect x="1030" y="110" width="330" height="300" fill="#eef9f3"/>
+
+  <g font-size="11" font-weight="700" letter-spacing="1.6" fill="#595959">
+    <text x="56" y="134">UNTRUSTED INPUT</text>
+    <text x="366" y="134" fill="#9c4700">SECURITY GATE</text>
+    <text x="596" y="134">PROCESSING ZONE</text>
+    <text x="1046" y="134" fill="#0a6e31">HUMAN DECISION</text>
+  </g>
+  <g font-size="11" fill="#8f8f8f">
+    <text x="56" y="150">bytes are contained, never parsed</text>
+    <text x="366" y="150">fail closed, hash-bound release</text>
+    <text x="596" y="150">parse once, use everywhere</text>
+    <text x="1046" y="150">machine evidence supports, never decides</text>
+  </g>
+
+  <!-- main flow boxes -->
+  <g stroke="#000000" stroke-width="1.5" fill="#ffffff">
+    <rect x="52"   y="190" width="136" height="64"/>
+    <rect x="210"  y="190" width="110" height="64"/>
+    <rect x="370"  y="190" width="170" height="64" fill="#ff7900" stroke="#ff7900"/>
+    <rect x="600"  y="190" width="120" height="64"/>
+    <rect x="750"  y="190" width="110" height="64"/>
+    <rect x="890"  y="190" width="110" height="64"/>
+    <rect x="1050" y="190" width="130" height="64"/>
+    <rect x="1210" y="190" width="130" height="64"/>
+  </g>
+
+  <g font-size="13" font-weight="700" fill="#000000" text-anchor="middle">
+    <text x="120"  y="218">RFP package</text>
+    <text x="265"  y="218">Quarantine</text>
+    <text x="455"  y="218">Security gate</text>
+    <text x="660"  y="218">Document</text>
+    <text x="805"  y="218">Extraction</text>
+    <text x="945"  y="218">Normalize</text>
+    <text x="1115" y="218">Knowledge match</text>
+    <text x="1275" y="218">Human review</text>
+  </g>
+  <g font-size="10.5" fill="#595959" text-anchor="middle">
+    <text x="120"  y="236">PDF · XLSX · DOCX · TXT</text>
+    <text x="265"  y="236">hashed, contained</text>
+    <text x="455"  y="236" fill="#000000">ALLOW · REVIEW · BLOCK</text>
+    <text x="660"  y="236">understanding</text>
+    <text x="805"  y="236">rule-based, typed</text>
+    <text x="945"  y="236">+ quality gate</text>
+    <text x="1115" y="236">candidates, not decisions</text>
+    <text x="1275" y="236">versioned, per bid</text>
+  </g>
+
+  <!-- flow arrows -->
+  <g stroke="#000000" stroke-width="1.5" fill="none" marker-end="url(#arrow)">
+    <line x1="188"  y1="222" x2="208"  y2="222"/>
+    <line x1="320"  y1="222" x2="368"  y2="222"/>
+    <line x1="540"  y1="222" x2="598"  y2="222"/>
+    <line x1="720"  y1="222" x2="748"  y2="222"/>
+    <line x1="860"  y1="222" x2="888"  y2="222"/>
+    <line x1="1000" y1="222" x2="1048" y2="222"/>
+    <line x1="1180" y1="222" x2="1208" y2="222"/>
+  </g>
+
+  <!-- processing zone: canonical model bar -->
+  <rect x="600" y="300" width="400" height="44" fill="#ffffff" stroke="#8f8f8f" stroke-dasharray="4 3"/>
+  <text x="800" y="319" font-size="12" font-weight="700" fill="#333333" text-anchor="middle">Canonical document model · versioned, hash-sealed artifacts</text>
+  <text x="800" y="335" font-size="10.5" fill="#595959" text-anchor="middle">every requirement, deadline and formality keeps its source</text>
+  <g stroke="#8f8f8f" stroke-width="1.2" fill="none">
+    <line x1="660" y1="298" x2="660" y2="256"/>
+    <line x1="805" y1="298" x2="805" y2="256"/>
+    <line x1="945" y1="298" x2="945" y2="256"/>
+  </g>
+
+  <!-- human zone: golden knowledge + reviewed working package -->
+  <rect x="1050" y="300" width="130" height="64" fill="#ffffff" stroke="#0a6e31" stroke-dasharray="4 3"/>
+  <text x="1115" y="326" font-size="12" font-weight="700" fill="#0a6e31" text-anchor="middle">Golden knowledge</text>
+  <text x="1115" y="343" font-size="10.5" fill="#595959" text-anchor="middle">evidence claims, governed</text>
+  <line x1="1115" y1="298" x2="1115" y2="256" stroke="#0a6e31" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="1210" y="300" width="130" height="64" fill="#000000"/>
+  <text x="1275" y="326" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">Reviewed working</text>
+  <text x="1275" y="343" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">package</text>
+  <line x1="1275" y1="256" x2="1275" y2="298" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- gate outcomes -->
+  <g font-size="10.5" fill="#9c4700">
+    <text x="455" y="286" text-anchor="middle">BLOCK stops the whole package</text>
+    <text x="455" y="302" text-anchor="middle">REVIEW keeps it out of processing</text>
+    <text x="455" y="318" text-anchor="middle">ALLOW releases exact, hashed bytes</text>
+  </g>
+  <line x1="455" y1="256" x2="455" y2="272" stroke="#9c4700" stroke-width="1.5" marker-end="url(#arrow-orange)"/>
+
+  <!-- untrusted zone note -->
+  <g font-size="10.5" fill="#595959">
+    <text x="60" y="290">Browser upload or a verified</text>
+    <text x="60" y="306">synthetic fixture package.</text>
+    <text x="60" y="330">Filenames, MIME types and sizes</text>
+    <text x="60" y="346">are never trusted.</text>
+  </g>
+
+  <!-- scope footer -->
+  <rect x="40" y="430" width="1320" height="40" fill="#141414"/>
+  <text x="56" y="455" font-size="12" fill="#ffffff"><tspan font-weight="700" fill="#ff7900">LEVEL 1A</tspan>  local synthetic and authorized internal test data only  ·  no production customer data  ·  no model call, CRM or autonomous agent connected in this build</text>
+</svg>
