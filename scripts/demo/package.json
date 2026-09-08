@@ -1,0 +1,10 @@
+{
+  "name": "bidfusion-demo-recorder",
+  "private": true,
+  "description": "Automated product-demo recording of the BidFusion local UI (internal only).",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "devDependencies": {
+    "playwright": "1.60.0"
+  }
+}
