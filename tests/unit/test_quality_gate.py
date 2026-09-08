@@ -277,10 +277,13 @@ def test_one_hit_per_stream_with_many_missed_lowercase_and_german_obligations(
                 "REQ-A1: The supplier MUST provide a status report.",
                 "Submission deadline: 2026-09-30 17:00",
                 "Offers must be submitted via the procurement portal.",
-                "the vendor must deliver weekly quality summaries.",
-                "the contractor shall maintain an asset inventory.",
-                "der auftragnehmer muss ein sicherheitskonzept pflegen.",
-                "die dokumentation soll monatlich aktualisiert werden.",
+                # v0.3 detects plain modal statements, so the uncovered
+                # candidates below use shapes the extractor declines:
+                # party-less possibilities and subjunctive phrasing.
+                "additional improvements may be proposed by any vendor.",
+                "weitere optionen können der anlage entnommen werden.",
+                "die dokumentation sollte regelmäßig geprüft werden.",
+                "die preise sollten transparent aufgeschlüsselt werden.",
                 "suppliers may propose additional improvements.",
             ]
         )
@@ -329,10 +332,9 @@ def test_table_rows_count_as_obligation_candidates(
 
     coverage = report.coverage
     assert coverage.obligation_candidates == 2, "both table rows are candidates"
-    assert coverage.obligation_matches == 1, "only the labelled row is captured"
-    assert coverage.unexplained_candidates == 1
-    assert report.status is QualityGateStatus.REVIEW_REQUIRED
-    assert "unexplained-obligation-candidates" in codes(report)
+    assert coverage.obligation_matches == 2, "v0.2 captures the unlabelled row too"
+    assert coverage.unexplained_candidates == 0
+    assert "unexplained-obligation-candidates" not in codes(report)
 
 
 def test_one_of_five_deadline_candidates_requires_review(

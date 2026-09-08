@@ -86,9 +86,11 @@ def test_clean_package_produces_valid_working_package_json_and_markdown(
     package = WorkingPackage.model_validate(
         json.loads((run_directory / "working-package" / "working-package.audit.json").read_text())
     )
-    assert package.requirements_summary.total == 8
+    # v0.2 additionally captures the two label-free MUST submission
+    # rows of the formalities sheet
+    assert package.requirements_summary.total == 14
     assert len(package.timeline) == 5
-    assert len(package.critical_requirements) == 4
+    assert len(package.critical_requirements) == 10
 
     markdown = (run_directory / "working-package" / "working-package.md").read_text()
     assert f"# Bid Working Package — {BID_ID}" in markdown

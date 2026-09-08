@@ -21,12 +21,13 @@
       "type": "string"
     },
     "DataClassification": {
-      "description": "Data classification, drives handling and data-policy decisions.",
+      "description": "Data classification, drives handling and data-policy decisions.\n\n``ANONYMIZED_INTERNAL_PILOT`` labels anonymized real RFP content the\noperator has explicitly cleared for the Orange LLM pilot. It is an\noperator assertion, never an automated claim that anonymization is\ncomplete or perfect.",
       "enum": [
         "PUBLIC",
         "INTERNAL",
         "CONFIDENTIAL",
-        "RESTRICTED"
+        "RESTRICTED",
+        "ANONYMIZED_INTERNAL_PILOT"
       ],
       "title": "DataClassification",
       "type": "string"

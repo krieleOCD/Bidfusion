@@ -1,0 +1,71 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 1293 >>
+stream
+BT /F1 11 Tf 72 720 Td (Leistungsbeschreibung Sicherheitsbetrieb \(synthetisch\)) Tj ET
+BT /F1 11 Tf 72 702 Td (1. Ausgangslage) Tj ET
+BT /F1 11 Tf 72 684 Td (Der Auftraggeber betreibt 12 Standorte mit rund 1.500 Arbeitsplätzen.) Tj ET
+BT /F1 11 Tf 72 666 Td (Im Bestand sind 35 Server und 8 Netzsegmente vorhanden.) Tj ET
+BT /F1 11 Tf 72 648 Td (Die aktuelle Umgebung nutzt Version 3.2.1 der Verwaltungssoftware.) Tj ET
+BT /F1 11 Tf 72 630 Td (Am 24.08.2026 fand eine Ortsbegehung statt.) Tj ET
+BT /F1 11 Tf 72 612 Td (2. Betriebsanforderungen) Tj ET
+BT /F1 11 Tf 72 594 Td (2.1 Der Dienstleister muss einen Servicedesk an Werktagen betreiben.) Tj ET
+BT /F1 11 Tf 72 576 Td (2.2 Die Reaktionszeit für kritische Meldungen muss 30 Minuten betragen.) Tj ET
+BT /F1 11 Tf 72 558 Td (2.3 Das Serviceportal soll eine Exportfunktion für Berichte anbieten.) Tj ET
+BT /F1 11 Tf 72 540 Td (2.4 Ein monatlicher Servicebericht ist zu erstellen) Tj ET
+BT /F1 11 Tf 72 522 Td (und der Ansprechperson des Auftraggebers vorzulegen.) Tj ET
+BT /F1 11 Tf 72 504 Td (2.5 Die Protokolldaten sind revisionssicher zu archivieren.) Tj ET
+BT /F1 11 Tf 72 486 Td (2.6 Alle Zugriffe auf die Plattform sind zu protokollieren.) Tj ET
+BT /F1 11 Tf 72 468 Td (2.7 Berichte sollen in deutscher Sprache verfasst werden.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 1275 >>
+stream
+BT /F1 11 Tf 72 720 Td (3. Sicherheitsanforderungen) Tj ET
+BT /F1 11 Tf 72 702 Td (3.1 Die Datenhaltung muss innerhalb der EU erfolgen.) Tj ET
+BT /F1 11 Tf 72 684 Td (3.2 Der Fernzugriff ist ausschließlich über gesicherte Kanäle zu führen.) Tj ET
+BT /F1 11 Tf 72 666 Td (3.3 Die Übertragung personenbezogener Daten darf nicht unverschlüsselt erfolgen.) Tj ET
+BT /F1 11 Tf 72 648 Td (3.4 Ein eigenes Rechenzentrum des Dienstleisters ist nicht erforderlich.) Tj ET
+BT /F1 11 Tf 72 630 Td (3.5 Die Endgerätewartung ist nicht Bestandteil der Leistung.) Tj ET
+BT /F1 11 Tf 72 612 Td (3.6 Der Dienstleister muss Sicherheitsvorfälle innerhalb von vier Stunden melden.) Tj ET
+BT /F1 11 Tf 72 594 Td (3.7 Ein Notfallhandbuch ist bereitzustellen.) Tj ET
+BT /F1 11 Tf 72 576 Td (3.8 Die Schnittstellendokumentation ist aktuell zu halten.) Tj ET
+BT /F1 11 Tf 72 558 Td (4. Optionale Leistungen) Tj ET
+BT /F1 11 Tf 72 540 Td (4.1 Der Dienstleister kann zusätzlich Schulungen anbieten.) Tj ET
+BT /F1 11 Tf 72 522 Td (4.2 Weitere Informationen können dem Anhang entnommen werden.) Tj ET
+BT /F1 11 Tf 72 504 Td (5. Mengengerüst) Tj ET
+BT /F1 11 Tf 72 486 Td (Die Anzahl der Endgeräte beträgt 2.400 Stück.) Tj ET
+BT /F1 11 Tf 72 468 Td (Pro Monat fallen etwa 10 Sicherheitsvorfälle an.) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000001592 00000 n 
+0000001718 00000 n 
+0000003045 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+3142
+%%EOF

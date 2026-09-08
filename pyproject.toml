@@ -20,6 +20,7 @@ dependencies = [
 
 [project.scripts]
 bidfusion-preflight = "bidfusion.security.local_runner:cli"
+bidfusion-rfp-api-pilot = "bidfusion.rfp_api_pilot.pilot_run:cli"
 bidfusion-run = "bidfusion.orchestration.local_pipeline:cli"
 bidfusion-ui = "bidfusion.local_ui.app:cli"
 

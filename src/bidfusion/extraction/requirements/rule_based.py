@@ -1,10 +1,20 @@
 """Deterministic rule-based requirement extraction over canonical documents.
 
-MVP rule: a requirement candidate is a paragraph of the form
-``REQ-<label>: <text>`` or a table row containing a ``REQ-<label>`` cell.
-Modality comes from explicit keyword matches; a candidate without a modality
-keyword is honestly reported as ``UNKNOWN`` with low confidence instead of
-being guessed.
+v0.1 rule (unchanged, always applied first): a requirement candidate is a
+paragraph of the form ``REQ-<label>: <text>`` or a table row containing a
+``REQ-<label>`` cell.
+
+v0.2 adds bounded label-free rule families for structured procurement
+language (numbered/§ clauses with modality signals, criterion/question
+structures, contractual party obligations, and structured table rows) —
+see :mod:`.label_free` and :mod:`.signals`. Explicit labels keep their
+v0.1 identifiers and ordering; label-free detections are appended after
+them, and one source occurrence is never emitted twice.
+
+Modality comes from explicit keyword matches; a candidate without a
+modality keyword is honestly reported as ``UNKNOWN`` with low confidence
+instead of being guessed, and explicitly negated statements are never
+emitted as positive obligations.
 """
 
 from __future__ import annotations
@@ -12,7 +22,17 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
+from bidfusion.extraction.requirements.label_free import (
+    BlockDetection,
+    RuleFamily,
+    assemble_blocks,
+    classify_block,
+    classify_row,
+    refine_modality,
+)
+from bidfusion.extraction.requirements.splitting import AtomicSplit, split_block
 from bidfusion.extraction.support import (
+    RowUnit,
     TextUnit,
     paragraph_units,
     row_units,
@@ -26,10 +46,10 @@ from bidfusion.schemas.common import (
 from bidfusion.schemas.document import CanonicalDocument
 from bidfusion.schemas.extraction import Requirement, RequirementExtractionResult
 from bidfusion.schemas.ids import ArtifactId, BidId, RunId
-from bidfusion.schemas.provenance import ExtractionInfo
+from bidfusion.schemas.provenance import ExtractionInfo, SourceReference
 
 REQUIREMENT_EXTRACTOR_NAME = "bidfusion-rule-requirement-extractor"
-REQUIREMENT_EXTRACTOR_VERSION = "0.1.0"
+REQUIREMENT_EXTRACTOR_VERSION = "0.4.0"
 
 _PARAGRAPH_CANDIDATE = re.compile(r"^(REQ-[A-Za-z0-9]+)\s*:\s*(?P<text>.+)$")
 _LABEL_CELL = re.compile(r"^REQ-[A-Za-z0-9]+$")
@@ -67,6 +87,27 @@ _EXPLICIT_CONFIDENCE = 0.9
 _UNCLEAR_CONFIDENCE = 0.4
 
 
+def _paragraph_key(document: CanonicalDocument, unit: TextUnit) -> tuple[object, ...]:
+    locator = unit.source.locator
+    return (document.document_id, "paragraph", locator.page, locator.paragraph_id)
+
+
+def _row_key(document: CanonicalDocument, row: RowUnit) -> tuple[object, ...]:
+    return (
+        document.document_id,
+        "row",
+        tuple(
+            (
+                cell.source.locator.table_id,
+                cell.source.locator.row,
+                cell.source.locator.column,
+                cell.source.locator.cell_id,
+            )
+            for cell in row.cells
+        ),
+    )
+
+
 def extract_requirements(
     documents: tuple[CanonicalDocument, ...],
     *,
@@ -75,13 +116,21 @@ def extract_requirements(
     artifact_id: ArtifactId,
     created_at: datetime,
 ) -> RequirementExtractionResult:
-    """Extract requirement candidates from every provided canonical document."""
+    """Extract requirement candidates from every provided canonical document.
+
+    Pass 1 is the unchanged v0.1 explicit ``REQ-<label>`` rule, so explicit
+    labels keep their identifiers and ordering. Pass 2 applies the bounded
+    label-free rule families to every source occurrence pass 1 did not
+    already claim.
+    """
     requirements: list[Requirement] = []
+    claimed: set[tuple[object, ...]] = set()
     for document in documents:
         for unit in paragraph_units(document):
             match = _PARAGRAPH_CANDIDATE.match(unit.text)
             if match is None:
                 continue
+            claimed.add(_paragraph_key(document, unit))
             requirements.append(
                 _requirement(
                     bid_id=bid_id,
@@ -98,6 +147,7 @@ def extract_requirements(
             text_unit = _requirement_text_cell(row.cells)
             if text_unit is None:
                 continue
+            claimed.add(_row_key(document, row))
             requirements.append(
                 _requirement(
                     bid_id=bid_id,
@@ -106,6 +156,59 @@ def extract_requirements(
                     normalized_text=text_unit.text,
                     modality=_row_modality(row.cells, text_unit),
                     unit=text_unit,
+                )
+            )
+
+    for document in documents:
+        for block in assemble_blocks(paragraph_units(document)):
+            if any(_paragraph_key(document, unit) in claimed for unit in block.units):
+                continue
+            detection = classify_block(block.text)
+            if detection is None:
+                continue
+            splits = split_block(block.units, detection)
+            if splits:
+                for split in splits:
+                    requirements.append(
+                        _split_requirement(
+                            bid_id=bid_id,
+                            sequence=len(requirements) + 1,
+                            detection=detection,
+                            split=split,
+                            parent_unit=block.units[0],
+                        )
+                    )
+                continue
+            requirements.append(
+                _requirement(
+                    bid_id=bid_id,
+                    sequence=len(requirements) + 1,
+                    original_text=block.text,
+                    normalized_text=detection.normalized_text,
+                    modality=detection.modality,
+                    unit=block.units[0],
+                    additional_sources=tuple(unit.source for unit in block.units[1:]),
+                    family=detection.family,
+                    confidence=detection.confidence,
+                )
+            )
+        for row in row_units(document):
+            if _row_key(document, row) in claimed:
+                continue
+            row_detection = classify_row(tuple(cell.text for cell in row.cells))
+            if row_detection is None:
+                continue
+            text_unit = row.cells[row_detection.text_cell_index]
+            requirements.append(
+                _requirement(
+                    bid_id=bid_id,
+                    sequence=len(requirements) + 1,
+                    original_text=text_unit.text,
+                    normalized_text=row_detection.normalized_text,
+                    modality=row_detection.modality,
+                    unit=text_unit,
+                    family=row_detection.family,
+                    confidence=row_detection.confidence,
                 )
             )
 
@@ -133,6 +236,46 @@ def extract_requirements(
     )
 
 
+def _split_requirement(
+    *,
+    bid_id: BidId,
+    sequence: int,
+    detection: BlockDetection,
+    split: AtomicSplit,
+    parent_unit: TextUnit,
+) -> Requirement:
+    """Build one atomic child of a compound block detection.
+
+    The child keeps the parent's rule family and confidence; its modality is
+    re-derived from the context-inherited effective text so a child with its
+    own bounded signal (or negation) is honestly reclassified. Split
+    provenance lives in ``cross_references``: the split rule with the child's
+    position, and the parent block's first source unit.
+    """
+    modality, confidence = refine_modality(
+        split.effective_text,
+        fallback_modality=detection.modality,
+        fallback_confidence=detection.confidence,
+    )
+    parent_locator = parent_unit.source.locator.paragraph_id or "unlocated"
+    return _requirement(
+        bid_id=bid_id,
+        sequence=sequence,
+        original_text=split.original_text,
+        normalized_text=split.effective_text,
+        modality=modality,
+        unit=split.units[0],
+        additional_sources=tuple(unit.source for unit in split.units[1:])
+        + tuple(unit.source for unit in split.context_units),
+        family=detection.family,
+        confidence=confidence,
+        cross_references=(
+            f"split:{split.split_rule.value}/{split.split_index}-of-{split.split_total}",
+            f"split-parent:{parent_locator}",
+        ),
+    )
+
+
 def _requirement(
     *,
     bid_id: BidId,
@@ -141,24 +284,47 @@ def _requirement(
     normalized_text: str,
     modality: RequirementModality,
     unit: TextUnit,
+    additional_sources: tuple[SourceReference, ...] = (),
+    family: RuleFamily | None = None,
+    confidence: float | None = None,
+    cross_references: tuple[str, ...] = (),
 ) -> Requirement:
+    """Build one requirement record.
+
+    Without a ``family`` this is the unchanged v0.1 explicit-label shape
+    (``method="rule"``, v0.1 confidence rules). Label-free detections carry
+    their rule family in the extraction method (``rule/<family>``) and
+    their own deterministic confidence.
+    """
+    if confidence is None:
+        confidence = (
+            _UNCLEAR_CONFIDENCE if modality is RequirementModality.UNKNOWN else _EXPLICIT_CONFIDENCE
+        )
     return Requirement(
         requirement_id=f"REQ-{sequence:06d}",
         bid_id=bid_id,
         original_text=original_text,
-        normalized_text=normalized_text,
+        normalized_text=normalized_text or original_text,
         modality=modality,
-        category=_category_from_text(normalized_text),
-        confidence=(
-            _UNCLEAR_CONFIDENCE if modality is RequirementModality.UNKNOWN else _EXPLICIT_CONFIDENCE
-        ),
+        category=_category_for(family, normalized_text or original_text),
+        confidence=confidence,
+        cross_references=cross_references,
         source=unit.source,
+        additional_sources=additional_sources,
         extraction=ExtractionInfo(
-            method="rule",
+            method="rule" if family is None else f"rule/{family.value}",
             producer=REQUIREMENT_EXTRACTOR_NAME,
             producer_version=REQUIREMENT_EXTRACTOR_VERSION,
         ),
     )
+
+
+def _category_for(family: RuleFamily | None, text: str) -> RequirementCategory:
+    """v0.1 keyword categories, with one bounded refinement per new family."""
+    category = _category_from_text(text)
+    if category is RequirementCategory.TECHNICAL and family is RuleFamily.CONTRACTUAL_OBLIGATION:
+        return RequirementCategory.CONTRACTUAL
+    return category
 
 
 def _modality_from_text(text: str) -> RequirementModality:

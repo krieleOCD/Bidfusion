@@ -42,20 +42,26 @@ _MAX_TOTAL_MESSAGE_CONTENT_CHARS = 32 * 1024
 class StructuredLlmOperation(StrEnum):
     """Allowlisted business operations. No free operation names.
 
-    Only one operation is implemented in this slice. Future operations
-    (e.g. requirement extraction, complex review) are documented in
-    ``policy.py`` but deliberately not added as members here until they
-    are actually implemented — an undeclared operation cannot be
-    constructed or executed.
+    Future operations (e.g. requirement extraction, complex review) are
+    documented in ``policy.py`` but deliberately not added as members
+    here until they are actually implemented — an undeclared operation
+    cannot be constructed or executed.
+
+    ``RFP_REQUIREMENT_NORMALIZATION`` normalizes exactly one anonymized,
+    security-cleared requirement text into a strict structured candidate
+    interpretation. The output is a machine normalization candidate for
+    human evaluation, never a compliance or deliverability decision.
     """
 
     SYNTHETIC_STRUCTURED_SMOKE = "synthetic_structured_smoke"
+    RFP_REQUIREMENT_NORMALIZATION = "rfp_requirement_normalization"
 
 
 class ModelPolicyKey(StrEnum):
     """Allowlisted keys into the model policy. Never a free model name."""
 
     SYNTHETIC_STRUCTURED_SMOKE = "synthetic_structured_smoke"
+    RFP_REQUIREMENT_NORMALIZATION = "rfp_requirement_normalization"
 
 
 class GuardrailPolicyKey(StrEnum):

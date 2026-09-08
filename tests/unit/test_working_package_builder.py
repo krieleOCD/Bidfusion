@@ -107,8 +107,11 @@ def test_working_package_summary_counts_and_critical_requirements(
     assert package.bid_id == BID_ID
     assert package.source_dataset == dataset.artifact.as_reference()
     summary = package.requirements_summary
-    assert summary.total == 8
-    assert summary.by_modality[RequirementModality.MUST] == 4
+    # label-free families add to the eight v0.1 records: the v0.2
+    # structured-table submission rows plus the v0.3 modal statements
+    # of the invitation PDF and the notes file (all MUST).
+    assert summary.total == 14
+    assert summary.by_modality[RequirementModality.MUST] == 10
     assert summary.by_modality[RequirementModality.UNKNOWN] == 1
     assert sum(summary.by_modality.values()) == summary.total
     assert sum(summary.by_category.values()) == summary.total
@@ -117,6 +120,14 @@ def test_working_package_summary_counts_and_critical_requirements(
         "REQ-000002",
         "REQ-000006",
         "REQ-000009",
+        # the label-free MUST detections (modal statements and
+        # structured submission rows)
+        "REQ-000010",
+        "REQ-000011",
+        "REQ-000012",
+        "REQ-000013",
+        "REQ-000014",
+        "REQ-000015",
     )
 
 
@@ -691,7 +702,7 @@ def test_builder_succeeds_with_exact_report_dataset_and_extraction_lineage(
         generated_at=NOW,
     )
 
-    assert package.requirements_summary.total == 8
+    assert package.requirements_summary.total == 14
     assert package.source_dataset == dataset.artifact.as_reference()
 
 

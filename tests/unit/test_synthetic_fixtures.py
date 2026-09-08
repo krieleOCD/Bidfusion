@@ -59,6 +59,10 @@ def test_pdf_fixtures_are_byte_reproducible(tmp_path: Path) -> None:
         "rfp-unsupported/blank-scan.pdf",
         "rfp-quality-review/mixed-scan.pdf",
         "rfp-mtd/mtd-requirements.docx",
+        "rfp-german-procurement/leistungsbeschreibung.pdf",
+        "rfp-german-procurement/kriterienkatalog.pdf",
+        "rfp-german-procurement/teilnahmebedingungen.pdf",
+        "rfp-german-procurement/vertrag.pdf",
     ):
         assert (regenerated / relative).read_bytes() == (FIXTURES / relative).read_bytes(), relative
 
@@ -134,7 +138,7 @@ def test_quality_review_package_carries_the_expected_review_triggers() -> None:
     reader = PdfReader(BytesIO(pdf))
     assert len(reader.pages) == 2
     page_1 = reader.pages[0].extract_text() or ""
-    assert "The supplier MUST provide encrypted backups." in page_1
+    assert "Backups MUST exist." in page_1
     assert (reader.pages[1].extract_text() or "").strip() == ""
 
     workbook = load_workbook(
