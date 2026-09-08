@@ -1,0 +1,56 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 662 >>
+stream
+BT /F1 11 Tf 72 720 Td (Synthetic RFP BF-2026-DEMO - Invitation to Tender) Tj ET
+BT /F1 11 Tf 72 702 Td (Customer: Example Testing Corp \(synthetic test data\)) Tj ET
+BT /F1 11 Tf 72 684 Td (This request for proposal is fully synthetic and contains no real data.) Tj ET
+BT /F1 11 Tf 72 666 Td (Submission deadline: 2026-09-30 17:00) Tj ET
+BT /F1 11 Tf 72 648 Td (Q&A deadline: 2026-09-11 12:00) Tj ET
+BT /F1 11 Tf 72 630 Td (Offers must be submitted via the Example procurement portal.) Tj ET
+BT /F1 11 Tf 72 612 Td (Proposals must be submitted in PDF format.) Tj ET
+BT /F1 11 Tf 72 594 Td (The offer letter must be signed by an authorized representative.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 578 >>
+stream
+BT /F1 11 Tf 72 720 Td (Requirements) Tj ET
+BT /F1 11 Tf 72 702 Td (REQ-P1: The supplier MUST provide a 24x7 security operations center.) Tj ET
+BT /F1 11 Tf 72 684 Td (REQ-P2: The supplier MUST encrypt customer data at rest and in transit.) Tj ET
+BT /F1 11 Tf 72 666 Td (REQ-P3: The service SHOULD include monthly vulnerability reports.) Tj ET
+BT /F1 11 Tf 72 648 Td (REQ-P4: The supplier MAY offer an optional on-site workshop.) Tj ET
+BT /F1 11 Tf 72 630 Td (REQ-P5: The solution handles peak load appropriately.) Tj ET
+BT /F1 11 Tf 72 612 Td (Contract start: 2027-01-01) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000960 00000 n 
+0000001086 00000 n 
+0000001715 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+1785
+%%EOF

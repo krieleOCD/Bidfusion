@@ -59,7 +59,10 @@
         "extraction_result",
         "normalized_bid_dataset",
         "compliance_matrix",
-        "working_package"
+        "working_package",
+        "reviewed_working_package",
+        "upload_manifest",
+        "bid_run_record"
       ],
       "title": "ArtifactType",
       "type": "string"

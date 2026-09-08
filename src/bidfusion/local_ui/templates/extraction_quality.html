@@ -1,0 +1,219 @@
+{% extends "product_base.html" %}
+{% block title %}Extraction Quality — BidFusion{% endblock %}
+
+{% block hero %}
+<div class="hero hero--compact">
+  <div class="container hero__inner">
+    <p class="ocd-overline">Real-RFP Evaluation</p>
+    <h1>Real-RFP Requirement Extraction</h1>
+    <p class="lede">{{ view.evaluation.context }}</p>
+    <p class="module-card__badges">
+      <span class="status-badge status-badge--info">{{ icon('file') }} {{ view.evaluation.source_label }} · extractor {{ view.evaluation.extractor_version }}</span>
+      <span class="status-badge status-badge--neutral">{{ icon('info') }} Hand-frozen snapshot, not a live measurement</span>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section aria-labelledby="headline-heading" class="eval-section">
+  <h2 id="headline-heading" class="visually-hidden">Headline result</h2>
+  <dl class="metric-grid">
+    <div class="metric metric--success">
+      <dt class="metric__label">Inclusive recall</dt>
+      <dd class="metric__value">{{ '%.1f' % view.evaluation.recall.inclusive_percent }}%</dd>
+      <dd class="metric__note">Requirement detected within a broader candidate block, including partial source alignment.</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Strict recall</dt>
+      <dd class="metric__value">{{ '%.1f' % view.evaluation.recall.strict_percent }}%</dd>
+      <dd class="metric__note">Requirement detected with sufficiently precise atomic and source alignment.</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Candidates</dt>
+      <dd class="metric__value">{{ view.evaluation.candidate_count }}</dd>
+      <dd class="metric__note">Against {{ view.evaluation.ground_truth_count }} curated Ground Truth requirements.</dd>
+    </div>
+    <div class="metric metric--warning">
+      <dt class="metric__label">Remaining misses</dt>
+      <dd class="metric__value">{{ view.evaluation.matches.missed }}</dd>
+      <dd class="metric__note">Every miss is classified in the gap taxonomy below.</dd>
+    </div>
+  </dl>
+  <details class="disclosure disclosure--facts">
+    <summary>How the {{ view.evaluation.ground_truth_count }} Ground Truth requirements map to candidates</summary>
+    <div class="disclosure__body">
+      <dl class="metric-grid">
+        <div class="metric"><dt class="metric__label">Exact matches</dt><dd class="metric__value">{{ view.evaluation.matches.exact }}</dd><dd class="metric__note">Counted in strict recall.</dd></div>
+        <div class="metric"><dt class="metric__label">Partial matches</dt><dd class="metric__value">{{ view.evaluation.matches.partial }}</dd><dd class="metric__note">Counted in inclusive recall only.</dd></div>
+        <div class="metric"><dt class="metric__label">Ambiguous matches</dt><dd class="metric__value">{{ view.evaluation.matches.ambiguous }}</dd><dd class="metric__note">More than one close candidate; counted in neither recall figure.</dd></div>
+        <div class="metric"><dt class="metric__label">Unmapped candidates</dt><dd class="metric__value">{{ view.evaluation.matches.unmapped_candidates }}</dd><dd class="metric__note">{{ view.evaluation.unmapped_note }}</dd></div>
+        <div class="metric"><dt class="metric__label">Duplicate extractions</dt><dd class="metric__value">{{ view.evaluation.matches.duplicate_extractions }}</dd><dd class="metric__note">No requirement was extracted twice.</dd></div>
+      </dl>
+    </div>
+  </details>
+</section>
+
+<section aria-labelledby="trend-heading" class="eval-section">
+  <div class="section-heading-row"><div><p class="section-kicker">The improvement loop is measured</p><h2 id="trend-heading">From zero real detections to Milestone A</h2></div></div>
+  <ol class="flow-band flow-band--quiet" aria-label="Inclusive recall progression">
+    <li>v0.1 · 0% <span aria-hidden="true">→</span></li>
+    <li>v0.2 · 18.4% <span aria-hidden="true">→</span></li>
+    <li><strong>v0.3h · 75.8%</strong></li>
+  </ol>
+  <div class="table-wrap">
+    <table class="data-table eval-trend">
+      <caption class="visually-hidden">Inclusive and strict recall per extractor iteration</caption>
+      <thead>
+        <tr><th scope="col">Version</th><th scope="col">Inclusive recall</th><th scope="col">Strict</th><th scope="col">Candidates</th><th scope="col">Added detection</th></tr>
+      </thead>
+      <tbody>
+        {% for row in view.history_rows %}
+        <tr{% if row.is_current %} class="eval-trend__row--current"{% endif %}>
+          <th scope="row">{{ row.version }}</th>
+          <td class="eval-trend__bar-cell">
+            <div class="progress-track" role="img" aria-label="{{ row.version }}: inclusive recall {{ row.inclusive_label }}"><span class="progress-track__bar p{{ row.inclusive_bar_percent }}"></span></div>
+            <span class="eval-trend__value">{{ row.inclusive_label }}</span>
+          </td>
+          <td>{{ row.strict_label }}</td>
+          <td>{{ row.candidates }}</td>
+          <td>{{ row.added }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="milestone-heading" class="eval-section">
+  <h2 id="milestone-heading" class="visually-hidden">Milestones and pilot readiness</h2>
+  <div class="module-grid module-grid--two">
+    <article class="card" aria-labelledby="milestone-card-heading">
+      <p class="card-eyebrow">Milestones</p>
+      <h3 id="milestone-card-heading">Where the extractor stands</h3>
+      <ul class="plain-list eval-milestones">
+        {% for milestone in view.evaluation.milestones %}
+        <li class="eval-milestone">
+          <span>{{ milestone.label }} · {{ milestone.threshold_label }}</span>
+          {% if milestone.reached %}
+          <span class="status-badge status-badge--success">{{ icon('check') }} Reached</span>
+          {% else %}
+          <span class="status-badge status-badge--neutral">{{ icon('minus') }} Not yet</span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="module-card__text">Extraction is measured, not asserted — and it is not complete.</p>
+    </article>
+    <article class="card" aria-labelledby="pilot-card-heading">
+      <p class="card-eyebrow">Pilot readiness</p>
+      <h3 id="pilot-card-heading">{{ view.evaluation.pilot.pilot_label }}</h3>
+      <p><span class="status-badge status-badge--warning">{{ icon('alert') }} {{ view.evaluation.pilot.verdict_label }}</span></p>
+      <ul class="plain-list eval-conditions">
+        {% for condition in view.evaluation.pilot.conditions %}
+        <li>{{ icon('info') }} {{ condition }}</li>
+        {% endfor %}
+      </ul>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="coverage-heading" class="eval-section">
+  <div class="section-heading-row"><div><p class="section-kicker">Requirement coverage</p><h2 id="coverage-heading">Coverage by RFP Document</h2></div></div>
+  <p class="module-card__text">{{ icon('info') }} Coverage measures the extractor against each document's curated requirements. It says nothing about the quality of the documents themselves.</p>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">Ground Truth coverage per source document</caption>
+      <thead>
+        <tr><th scope="col">Document</th><th scope="col">Ground Truth</th><th scope="col">Detected</th><th scope="col">Missed</th><th scope="col">Coverage</th><th scope="col">Signal</th></tr>
+      </thead>
+      <tbody>
+        {% for row in view.document_rows %}
+        <tr>
+          <th scope="row">{{ row.name }}</th>
+          <td>{{ row.ground_truth }}</td>
+          <td>{{ row.covered }}</td>
+          <td>{{ row.missed }}</td>
+          <td class="eval-trend__bar-cell">
+            <div class="progress-track" role="img" aria-label="{{ row.name }}: {{ row.coverage_percent }} percent covered"><span class="progress-track__bar p{{ row.coverage_percent }}"></span></div>
+            <span class="eval-trend__value">{{ row.coverage_percent }}%</span>
+          </td>
+          <td>
+            {% if row.band == 'strong' %}<span class="status-badge status-badge--success status-badge--tiny">{{ icon('check') }} {{ row.band_label }}</span>
+            {% elif row.band == 'weak' %}<span class="status-badge status-badge--warning status-badge--tiny">{{ icon('alert') }} {{ row.band_label }}</span>
+            {% else %}<span class="status-badge status-badge--neutral status-badge--tiny">{{ icon('minus') }} {{ row.band_label }}</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="gaps-heading" class="eval-section">
+  <div class="section-heading-row"><div><p class="section-kicker">Every miss has a class</p><h2 id="gaps-heading">Remaining Extraction Gaps</h2></div></div>
+  <div class="module-grid module-grid--two">
+    <div class="table-wrap">
+      <table class="data-table">
+        <caption class="visually-hidden">Missed requirements by failure class</caption>
+        <thead><tr><th scope="col">Gap class</th><th scope="col">Misses</th><th scope="col">Share of largest class</th></tr></thead>
+        <tbody>
+          {% for row in view.gap_rows %}
+          <tr>
+            <th scope="row">{{ row.label }}</th>
+            <td>{{ row.count }}</td>
+            <td class="eval-trend__bar-cell"><div class="progress-track" role="img" aria-label="{{ row.label }}: {{ row.count }} missed requirements"><span class="progress-track__bar p{{ row.bar_percent }}"></span></div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <article class="card card--accent" aria-labelledby="levers-heading">
+      <p class="card-eyebrow">Largest development levers</p>
+      <h3 id="levers-heading">Where the next recall comes from</h3>
+      <ol class="eval-levers">
+        {% for lever in view.evaluation.levers %}
+        <li>{{ lever }}</li>
+        {% endfor %}
+      </ol>
+    </article>
+  </div>
+</section>
+
+<section aria-labelledby="rules-heading" class="eval-section">
+  <div class="section-heading-row"><div><p class="section-kicker">Detection signal quality</p><h2 id="rules-heading">What is working</h2></div></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">Matched candidates per detection rule family</caption>
+      <thead><tr><th scope="col">Detection family</th><th scope="col">Matched</th><th scope="col">Signal quality</th></tr></thead>
+      <tbody>
+        {% for row in view.rule_rows %}
+        <tr>
+          <th scope="row">{{ row.label }}</th>
+          <td>{{ row.matched }} of {{ row.outputs }}</td>
+          <td>
+            {% if row.band == 'high-precision' %}<span class="status-badge status-badge--success status-badge--tiny">{{ icon('check') }} {{ row.band_label }}</span>
+            {% elif row.band == 'useful' %}<span class="status-badge status-badge--info status-badge--tiny">{{ icon('info') }} {{ row.band_label }}</span>
+            {% else %}<span class="status-badge status-badge--warning status-badge--tiny">{{ icon('alert') }} {{ row.band_label }}</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="next-heading" class="eval-section">
+  <h2 id="next-heading" class="visually-hidden">Next engineering step</h2>
+  <div class="next-action">
+    <p class="next-action__label">Next engineering step</p>
+    <h3>{{ view.evaluation.next_step.title }}</h3>
+    <p class="next-action__text">{{ view.evaluation.next_step.description }}</p>
+    <p class="next-action__text">{{ view.evaluation.next_step.reason }}</p>
+  </div>
+  <ol class="flow-band flow-band--quiet" aria-label="After the next step">
+    <li>{{ view.evaluation.next_step.title }} <span aria-hidden="true">→</span></li>
+    <li>{{ view.evaluation.pilot.pilot_label }} — {{ view.evaluation.next_step.after }}</li>
+  </ol>
+</section>
+{% endblock %}

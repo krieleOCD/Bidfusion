@@ -12,17 +12,23 @@ license = { text = "Proprietary" }
 authors = [{ name = "BidFusion Team" }]
 keywords = ["rfp", "bid-management", "document-intelligence", "llm"]
 dependencies = [
+    "flask>=3.1,<4",
+    "openpyxl>=3.1,<4",
     "pydantic>=2.7,<3",
+    "pypdf>=5,<7",
 ]
 
 [project.scripts]
 bidfusion-preflight = "bidfusion.security.local_runner:cli"
+bidfusion-run = "bidfusion.orchestration.local_pipeline:cli"
+bidfusion-ui = "bidfusion.local_ui.app:cli"
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.2",
     "ruff>=0.6",
     "mypy>=1.11",
+    "types-openpyxl>=3.1,<4",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -39,6 +45,10 @@ select = ["E", "F", "I", "UP", "W", "B", "C4"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "static_policy: separately authorized static repository-policy check (reads tracked templates such as .env.example, never .env)",
+    "allow_subprocess: explicitly allowlisted test that may spawn child processes (e.g. the fixture-generator reproducibility check)",
+]
 
 [tool.mypy]
 python_version = "3.12"

@@ -1,0 +1,84 @@
+{% extends "preview/_preview_base.html" %}
+{% block headline %}From a reviewed package to a response someone signed off.{% endblock %}
+{% block module %}
+
+<section aria-labelledby="mode-heading" class="card card--accent">
+  <h2 id="mode-heading">What this is, and what it is not</h2>
+  <p class="lede">
+    The stages below are a model of how a response would be produced. They are not
+    running, and there is nothing here to start.
+  </p>
+  <div class="fact-columns">
+    <div class="fact-block">
+      <h3>Current mode</h3>
+      <ul>
+        <li>Static workflow preview</li>
+        <li>No stage executes</li>
+        <li>No autonomous agent runtime exists</li>
+      </ul>
+    </div>
+    <div class="fact-block">
+      <h3>Fixed rules</h3>
+      <ul>
+        <li>No customer-facing text is generated from uploaded files</li>
+        <li>No model is called from this interface</li>
+        <li>Nothing reaches a customer unless a person sends it</li>
+      </ul>
+    </div>
+    <div class="fact-block">
+      <h3>Terminology</h3>
+      <ul>
+        <li>A "stage" is a step in a process a person drives</li>
+        <li>Naming a stage does not make it a running service</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="lifecycle-heading">
+  <div class="group-head">
+    <h2 id="lifecycle-heading">Response lifecycle</h2>
+    <p>
+      In order. Every stage names the human step that has to happen inside it — those are
+      not review gates bolted onto the end, they are part of the stage.
+    </p>
+  </div>
+  <ol class="stage-flow">
+    {% for stage in section.stages %}
+    <li class="stage-flow__item">
+      <div class="stage-flow__head">
+        <span class="stage-flow__index">{{ loop.index }}</span>
+        <h3 class="stage-flow__name">{{ stage.name }}</h3>
+        <span class="type-tag">{{ stage.target_phase }}</span>
+      </div>
+      <p class="stage-flow__purpose">{{ stage.purpose }}</p>
+      <div class="stage-flow__detail">
+        <div class="fact-block">
+          <h4>Would work from</h4>
+          <ul>
+            {% for entry in stage.inputs %}
+            <li>{{ entry }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <p class="stage-flow__human">
+          {{ icon('users') }} <strong>Human step:</strong> {{ stage.human_step }}
+        </p>
+      </div>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+
+<div class="split split--even">
+  <section aria-labelledby="grounding-heading" class="card">
+    <h2 id="grounding-heading">Grounding rule</h2>
+    <p class="lede">{{ section.grounding_rule }}</p>
+  </section>
+
+  <section aria-labelledby="export-heading" class="card">
+    <h2 id="export-heading">Export</h2>
+    <p class="lede">{{ section.export_note }}</p>
+  </section>
+</div>
+{% endblock %}

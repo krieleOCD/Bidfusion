@@ -787,6 +787,7 @@ def test_ocr_rejects_canonicalized_hash_mismatched_and_duplicate_blocks() -> Non
         OCRResult.model_validate(duplicate)
 
 
+@pytest.mark.allow_subprocess
 def test_checked_in_json_schemas_match_exported_models(tmp_path: Path) -> None:
     schema_dir = ROOT / "schemas"
     subprocess.run(

@@ -1,0 +1,622 @@
+{
+  "schema_version": "1.0.0",
+  "key": "clean-opportunity",
+  "title": "Clean opportunity",
+  "summary": "A well-specified managed security tender from a manufacturing group. Requirements are clear, the scope sits inside standard capability, and the open items are conditions rather than blockers.",
+  "synthetic_notice": "Nordwerk Industrie AG is an invented company. Every requirement, signal, figure, and stakeholder role on this page was written for demonstration and describes no real organization, opportunity, or person.",
+  "opportunity": {
+    "customer": "Nordwerk Industrie AG (invented)",
+    "sector": "Industrial manufacturing",
+    "region": "Germany",
+    "scope": "24/7 security monitoring, managed detection and response, and vulnerability management across eleven sites and roughly 1,400 users, with handover from two incumbent IT providers.",
+    "volume_band": "Mid seven figures over the initial term",
+    "timeline": [
+      {
+        "label": "Participation request",
+        "date": "Week 1",
+        "note": "Two-stage procedure. The participation request gates everything that follows.",
+        "is_critical": true
+      },
+      {
+        "label": "Invitation to tender",
+        "date": "Week 4",
+        "note": "Expected shortly after the participation stage closes.",
+        "is_critical": false
+      },
+      {
+        "label": "Proposal deadline",
+        "date": "Week 11",
+        "note": "Firm deadline. Electronic submission through the customer's portal.",
+        "is_critical": true
+      },
+      {
+        "label": "Presentation",
+        "date": "Week 16",
+        "note": "Named team members are expected to attend in person.",
+        "is_critical": false
+      },
+      {
+        "label": "Service start",
+        "date": "Month 8",
+        "note": "Contractual go-live. Transition must complete before it.",
+        "is_critical": true
+      }
+    ]
+  },
+  "customer_intelligence": {
+    "relationship_strength": 2,
+    "relationship_summary": "A new prospect. There is prior contact through a small assessment for a subsidiary, but no service relationship and no incumbent position to defend.",
+    "sources": [
+      {
+        "key": "crm",
+        "name": "CRM",
+        "kind": "Opportunity and account system of record",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Direct API", "Governed connector platform"],
+        "expected_data": [
+          "Opportunity metadata, stage, and value band",
+          "Account ownership and territory",
+          "Recorded activity history"
+        ],
+        "governance": [
+          "Field-level access decision",
+          "Data-classification sign-off before any retrieval"
+        ]
+      },
+      {
+        "key": "bid-archive",
+        "name": "Bid archive",
+        "kind": "Document store of prior proposals and agreements",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Direct API", "Governed connector platform"],
+        "expected_data": [
+          "Prior proposals to the same account group",
+          "Agreements and non-disclosure status",
+          "Reusable approved content"
+        ],
+        "governance": [
+          "Permission model that respects the original document restrictions",
+          "Retention rules for anything cached"
+        ]
+      },
+      {
+        "key": "collaboration",
+        "name": "Collaboration workspace",
+        "kind": "Meeting and channel records",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Governed connector platform"],
+        "expected_data": [
+          "Recorded meeting summaries relating to the account",
+          "Channel decisions that affect the bid"
+        ],
+        "governance": [
+          "Works council and privacy review",
+          "Explicit scoping to bid-related records only"
+        ]
+      },
+      {
+        "key": "mailbox",
+        "name": "Mailbox",
+        "kind": "Correspondence with the account",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-B",
+        "integration_options": ["Governed connector platform"],
+        "expected_data": [
+          "Thread summaries relating to the opportunity",
+          "Commitments made in writing"
+        ],
+        "governance": [
+          "Privacy review before any mailbox is read",
+          "Per-user consent and scope limitation"
+        ]
+      },
+      {
+        "key": "knowledge-base",
+        "name": "Service knowledge base",
+        "kind": "Governed capability and evidence catalog",
+        "connection": "NOT_CONNECTED",
+        "target_phase": "L2-D",
+        "integration_options": ["Direct API"],
+        "expected_data": [
+          "Service definitions and their current scope",
+          "Approved reference projects and certifications"
+        ],
+        "governance": ["Catalog ownership and review cadence"]
+      }
+    ],
+    "insights": [
+      {
+        "text": "The customer runs two IT providers alongside each other and has no single party accountable for security across both. A single point of accountability is likely to matter more than any individual technical feature.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "text": "An earlier monitoring rollout at the group did not reach the coverage that was planned. Transition credibility will be examined closely.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "text": "Budget is committed for the initial term but described internally as tight. Price will need to be positioned as an investment against incident cost, not as a rate.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "text": "A prior assessment for a subsidiary means the organization is not a complete stranger. That is a foot in the door, not a relationship.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      }
+    ],
+    "stakeholders": [
+      {
+        "role": "Head of Information Security",
+        "interest": "Coverage across both providers, and evidence that alerts are actually acted on",
+        "influence": 5,
+        "engagement": 4
+      },
+      {
+        "role": "Head of IT Operations",
+        "interest": "A transition that does not disrupt production systems",
+        "influence": 4,
+        "engagement": 3
+      },
+      {
+        "role": "Procurement lead",
+        "interest": "A comparable, auditable price and a defensible award",
+        "influence": 4,
+        "engagement": 2
+      },
+      {
+        "role": "Works council representative",
+        "interest": "Monitoring scope and what it means for staff",
+        "influence": 2,
+        "engagement": 2
+      }
+    ],
+    "account_timeline": [
+      {
+        "period": "Two years ago",
+        "summary": "Security assessment delivered for a subsidiary. Small scope, closed cleanly.",
+        "classification": "DEMO"
+      },
+      {
+        "period": "Last year",
+        "summary": "Market dialogue on managed detection. No follow-up at the time.",
+        "classification": "DEMO"
+      },
+      {
+        "period": "This quarter",
+        "summary": "Tender published. First formal opportunity with the group itself.",
+        "classification": "DEMO"
+      }
+    ]
+  },
+  "compliance": {
+    "open_clarifications": [
+      "Whether processing may take place outside the stated region for support cases",
+      "Whether the named-team requirement applies to the transition phase as well"
+    ],
+    "items": [
+      {
+        "reference": "EX-01",
+        "requirement": "All data processing takes place within the stated region.",
+        "state": "COMPLIANT",
+        "is_exclusion_criterion": true,
+        "evidence": "Regional service delivery confirmed for the offered platform",
+        "owner": "Delivery architecture",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "EX-02",
+        "requirement": "The bidder holds a current information security management certification.",
+        "state": "COMPLIANT",
+        "is_exclusion_criterion": true,
+        "evidence": "Certificate on file, valid through the tender period",
+        "owner": "Compliance",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-01",
+        "requirement": "Round-the-clock monitoring with defined incident severities and response times.",
+        "state": "COMPLIANT",
+        "is_exclusion_criterion": false,
+        "evidence": "Standard service definition with the required severities",
+        "owner": "Service management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-02",
+        "requirement": "Support in the local language outside business hours for the two highest severities.",
+        "state": "PARTIALLY_COMPLIANT",
+        "is_exclusion_criterion": false,
+        "evidence": "Local-language cover confirmed in hours; night and weekend staffing to be confirmed",
+        "owner": "Service management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-03",
+        "requirement": "Named transition manager for the duration of the handover.",
+        "state": "EVIDENCE_REQUIRED",
+        "is_exclusion_criterion": false,
+        "evidence": "Role is standard; the named individual is not yet allocated",
+        "owner": "Delivery management",
+        "origin": "Demonstration scenario"
+      },
+      {
+        "reference": "M-04",
+        "requirement": "Three comparable reference projects from the last three years.",
+        "state": "CLARIFICATION_REQUIRED",
+        "is_exclusion_criterion": false,
+        "evidence": "Candidates identified; customer approval to name them is outstanding",
+        "owner": "Bid management",
+        "origin": "Demonstration scenario"
+      }
+    ]
+  },
+  "capability_fit": {
+    "catalog_note": "Coverage would be matched against the governed service catalog and the approved evidence store. Until those exist, nothing on this page states what the organization can actually do.",
+    "items": [
+      {
+        "requirement": "Round-the-clock security monitoring with defined severities",
+        "capability": "Managed detection and response",
+        "coverage": "CONFIRMED",
+        "evidence": "Service definition and two comparable engagements",
+        "validity": "Current",
+        "owner": "Service management"
+      },
+      {
+        "requirement": "Vulnerability management across eleven sites",
+        "capability": "Managed vulnerability management",
+        "coverage": "CONFIRMED",
+        "evidence": "Service definition covering the stated estate size",
+        "validity": "Current",
+        "owner": "Service management"
+      },
+      {
+        "requirement": "Integration with two existing IT providers",
+        "capability": "Multi-provider service integration",
+        "coverage": "PARTIAL",
+        "evidence": "Comparable multi-provider setups exist; this specific combination does not",
+        "validity": "Needs confirmation",
+        "owner": "Delivery architecture"
+      },
+      {
+        "requirement": "Local-language support at night and at weekends",
+        "capability": "Follow-the-sun operations",
+        "coverage": "EVIDENCE_REQUIRED",
+        "evidence": "Staffing model to be confirmed for the required hours",
+        "validity": "Unconfirmed",
+        "owner": "Operations"
+      },
+      {
+        "requirement": "Operational technology monitoring at two production sites",
+        "capability": "Industrial network monitoring",
+        "coverage": "GAP",
+        "evidence": "Not part of the standard portfolio; would need a partner",
+        "validity": "Unconfirmed",
+        "owner": "Portfolio management"
+      }
+    ]
+  },
+  "qualification": {
+    "system_assessment": "GO_WITH_CONDITIONS",
+    "assessment_rationale": "Scope sits inside standard capability and both exclusion criteria are met. Three items are open, and each of them has a named owner and a date rather than an argument.",
+    "decision_owner": "Bid board",
+    "approval_state": "Not submitted for decision",
+    "factors": [
+      {
+        "name": "Exclusion criteria",
+        "verdict": "STRONG",
+        "note": "Both criteria are met with evidence on file.",
+        "owner": "Compliance",
+        "is_must_pass": true
+      },
+      {
+        "name": "Capability coverage",
+        "verdict": "STRONG",
+        "note": "Core scope is standard portfolio. One gap sits outside the critical path.",
+        "owner": "Portfolio management",
+        "is_must_pass": true
+      },
+      {
+        "name": "Relationship",
+        "verdict": "WEAK",
+        "note": "New prospect with a single prior touchpoint. No advocate inside the account.",
+        "owner": "Account management",
+        "is_must_pass": false
+      },
+      {
+        "name": "Commercial fit",
+        "verdict": "ADEQUATE",
+        "note": "Volume band fits. Price pressure is expected but not disqualifying.",
+        "owner": "Commercial",
+        "is_must_pass": false
+      },
+      {
+        "name": "Delivery capacity",
+        "verdict": "ADEQUATE",
+        "note": "Transition window is workable if the start date holds.",
+        "owner": "Delivery management",
+        "is_must_pass": true
+      },
+      {
+        "name": "Legal and contractual",
+        "verdict": "UNKNOWN",
+        "note": "Penalty schedule has not been reviewed.",
+        "owner": "Legal",
+        "is_must_pass": false
+      }
+    ],
+    "conditions": [
+      {
+        "text": "Confirm night and weekend local-language staffing for the two highest severities.",
+        "owner": "Operations",
+        "due": "Before the proposal deadline"
+      },
+      {
+        "text": "Obtain customer approval to name three reference projects.",
+        "owner": "Bid management",
+        "due": "Within two weeks"
+      },
+      {
+        "text": "Legal review of the penalty schedule.",
+        "owner": "Legal",
+        "due": "Before the proposal deadline"
+      }
+    ],
+    "evidence_gaps": [
+      "Named transition manager not yet allocated",
+      "Operational technology monitoring would require a partner"
+    ]
+  },
+  "competitive_intelligence": {
+    "collection_note": "Signals would come from approved, attributable sources with the collection date recorded alongside each one, so a claim that has gone stale is visible as stale. Nothing here was collected: it is written demonstration content.",
+    "intended_sources": [
+      "Approved public sources under a recorded collection policy",
+      "Prior bid archive and recorded loss reviews",
+      "Analyst input reviewed by product marketing"
+    ],
+    "competitors": [
+      {
+        "key": "alpha-systems",
+        "name": "Alpha Systems (invented)",
+        "positioning": "Large generalist integrator. Broad IT services with security as one line among many, strong existing footprint in industrial accounts.",
+        "threat_band": "HIGH",
+        "threat_level": 4,
+        "claims": [
+          "Single supplier for the whole IT estate",
+          "Transition completed within one quarter"
+        ],
+        "signals": [
+          {
+            "text": "Published a managed-security offer aimed at mid-sized industrial customers.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          },
+          {
+            "text": "Recruiting monitoring analysts in the customer's region.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          },
+          {
+            "text": "Existing framework agreement with one of the incumbent providers.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          }
+        ],
+        "comparison": [
+          {
+            "dimension": "Security specialization",
+            "own_level": 5,
+            "competitor_level": 3,
+            "takeaway": "Depth is the difference. Their security practice sits inside a general IT business."
+          },
+          {
+            "dimension": "Account footprint",
+            "own_level": 2,
+            "competitor_level": 4,
+            "takeaway": "They are already in the building. We are not."
+          },
+          {
+            "dimension": "Threat intelligence",
+            "own_level": 5,
+            "competitor_level": 3,
+            "takeaway": "Own research and published findings versus a purchased feed."
+          },
+          {
+            "dimension": "Price position",
+            "own_level": 3,
+            "competitor_level": 4,
+            "takeaway": "Expect to be undercut on headline rate. Argue on incident cost."
+          }
+        ]
+      },
+      {
+        "key": "beta-secure",
+        "name": "Beta Secure (invented)",
+        "positioning": "Regional security specialist. Comparable depth, smaller delivery capacity, aggressive on price.",
+        "threat_band": "MEDIUM",
+        "threat_level": 3,
+        "claims": ["Local team, local language, around the clock"],
+        "signals": [
+          {
+            "text": "Announced an expansion of their monitoring capacity.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          },
+          {
+            "text": "Named in a comparable award in the same sector.",
+            "collected": "Demonstration content, no collection date",
+            "origin": "Demonstration scenario",
+            "classification": "DEMO"
+          }
+        ],
+        "comparison": [
+          {
+            "dimension": "Security specialization",
+            "own_level": 5,
+            "competitor_level": 4,
+            "takeaway": "Close. Differentiation has to come from scale and evidence, not from claiming depth."
+          },
+          {
+            "dimension": "Delivery capacity",
+            "own_level": 5,
+            "competitor_level": 2,
+            "takeaway": "Eleven sites and two provider interfaces stretch a small team."
+          },
+          {
+            "dimension": "Price position",
+            "own_level": 3,
+            "competitor_level": 5,
+            "takeaway": "They will be cheaper. Do not compete there."
+          }
+        ]
+      }
+    ],
+    "battle_cards": [
+      {
+        "competitor_key": "alpha-systems",
+        "our_position": "One partner accountable for security across both existing providers, run by people who do only this.",
+        "their_weakness": "Security sits inside a general IT business, so accountability is diluted exactly where the customer says it hurts.",
+        "proof_points": [
+          "Comparable multi-provider engagements",
+          "Published threat research",
+          "Certified analysts on the delivering team"
+        ],
+        "approval_state": "Demonstration content. Not reviewed, not approved for use."
+      }
+    ]
+  },
+  "win_strategy": {
+    "approval_state": "Draft. No theme has been approved.",
+    "evaluator_takeaway": "One accountable partner for security across a split provider landscape, with a transition that has been done before and can be evidenced.",
+    "hot_buttons": [
+      {
+        "title": "One accountable party",
+        "detail": "Security currently spans two providers with no single owner. The customer has said this is what hurts.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "title": "Transition without disruption",
+        "detail": "A previous rollout fell short. Credible, evidenced transition method will be examined more closely than feature lists.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      },
+      {
+        "title": "Defensible cost",
+        "detail": "Budget is committed but tight. The case has to be made against incident cost, not against a competitor's rate.",
+        "origin": "Demonstration scenario",
+        "classification": "DEMO"
+      }
+    ],
+    "themes": [
+      {
+        "title": "One partner, one accountability",
+        "statement": "A single security authority across both existing providers, with defined interfaces to each rather than a hope that they cooperate.",
+        "classification": "DEMO",
+        "proof_point": "Comparable multi-provider engagements",
+        "evidence_gap": null
+      },
+      {
+        "title": "A transition that has been done before",
+        "statement": "A staged handover with defined checkpoints, so the service start date is met without a coverage gap in the middle.",
+        "classification": "DEMO",
+        "proof_point": null,
+        "evidence_gap": "No reference yet approved for naming in this tender"
+      },
+      {
+        "title": "Evidence, not adjectives",
+        "statement": "Certified analysts, published research, and documented process rather than claims about maturity.",
+        "classification": "DEMO",
+        "proof_point": "Published threat research and analyst certifications",
+        "evidence_gap": null
+      }
+    ],
+    "differentiators": [
+      "Security is the whole business, not a service line",
+      "Own threat research feeding the monitoring service",
+      "Multi-provider integration experience"
+    ],
+    "risks": [
+      "No relationship inside the account and no internal advocate",
+      "A generalist competitor already holds a framework with an incumbent",
+      "Night and weekend language cover is not yet confirmed"
+    ]
+  },
+  "review_approval": {
+    "submission_readiness": "Not ready. Two mandatory items are unresolved and no reviewer has been assigned.",
+    "blocking_items": [
+      "Reference projects not yet approved for naming",
+      "Penalty schedule not reviewed"
+    ],
+    "items": [
+      {
+        "reference": "REQ-014",
+        "kind": "Requirement",
+        "proposed": "Response time of fifteen minutes for the highest incident severity, around the clock.",
+        "origin": "Demonstration scenario",
+        "state": "AWAITING_REVIEW",
+        "reviewer_role": "Service management"
+      },
+      {
+        "reference": "REQ-021",
+        "kind": "Requirement",
+        "proposed": "Monthly reporting with an agreed set of service metrics.",
+        "origin": "Demonstration scenario",
+        "state": "ACCEPTED",
+        "reviewer_role": "Service management"
+      },
+      {
+        "reference": "DL-003",
+        "kind": "Deadline",
+        "proposed": "Proposal deadline in week eleven, electronic submission only.",
+        "origin": "Demonstration scenario",
+        "state": "ACCEPTED",
+        "reviewer_role": "Bid management"
+      },
+      {
+        "reference": "FM-007",
+        "kind": "Formality",
+        "proposed": "Signed declaration of eligibility required with the proposal.",
+        "origin": "Demonstration scenario",
+        "state": "CLARIFICATION_REQUESTED",
+        "reviewer_role": "Compliance"
+      },
+      {
+        "reference": "REQ-033",
+        "kind": "Requirement",
+        "proposed": "Operational technology monitoring at two production sites.",
+        "origin": "Demonstration scenario",
+        "state": "REJECTED",
+        "reviewer_role": "Portfolio management"
+      }
+    ],
+    "history": [
+      {
+        "reference": "REQ-021",
+        "outcome": "Accepted as extracted",
+        "reviewer_role": "Service management",
+        "note": "Matches the standard reporting package."
+      },
+      {
+        "reference": "REQ-033",
+        "outcome": "Rejected as extracted",
+        "reviewer_role": "Portfolio management",
+        "note": "Correctly extracted, but outside the portfolio. Raised as a partner question instead."
+      },
+      {
+        "reference": "DL-003",
+        "outcome": "Accepted as extracted",
+        "reviewer_role": "Bid management",
+        "note": "Date and channel both confirmed against the tender documents."
+      }
+    ]
+  }
+}

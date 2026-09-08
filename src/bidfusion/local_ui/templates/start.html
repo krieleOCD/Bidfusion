@@ -1,0 +1,204 @@
+{% extends "product_base.html" %}
+{% from "partials/product_macros.html" import status_chip %}
+{% block title %}Bids — BidFusion{% endblock %}
+{% block hero %}
+<div class="hero">
+  <div class="container hero__inner">
+    <p class="ocd-overline">Bids · Intake and runs</p>
+    <h1>Start or open a bid with a source of truth you can inspect.</h1>
+    <p class="lede">
+      Choose a trusted synthetic package to enter the full bid workflow, or place authorized
+      test documents into quarantine. The two lanes stay deliberately separate: only the
+      repository fixtures can turn it into actionable bid intelligence with requirements,
+      evidence, human decisions and a package.
+    </p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+
+<div class="split">
+  <div class="split__main">
+
+    <section aria-labelledby="upload-heading" class="card card--accent">
+      <p class="section-kicker">Upload authorized test RFP · Quarantine lane</p>
+      <h2 id="upload-heading">Add authorized test documents</h2>
+      <div class="banner banner--warning">
+        {{ icon('alert') }}
+        <div>
+          <p>Authorized non-production test files can be uploaded into quarantine.
+             Uploaded files are not security-cleared or processed automatically.</p>
+          <p><strong>Non-production authorized test files only.</strong></p>
+        </div>
+      </div>
+
+      <dl class="kv-list">
+        <dt>Accepted types</dt>
+        <dd>{{ upload_policy.allowed_extensions }} — no other format is accepted</dd>
+        <dt>Limits</dt>
+        <dd>
+          Up to {{ upload_policy.max_files_per_package }} files,
+          {{ upload_policy.max_file_size_label }} per file,
+          {{ upload_policy.max_package_size_label }} per package.
+        </dd>
+        <dt>What happens next</dt>
+        <dd>
+          The package is inventoried, hashed, and held. Nothing is parsed, extracted,
+          or cleared — that lane is planned for {{ upload_next_phase }}.
+        </dd>
+      </dl>
+
+      <form action="{{ url_for('submit_upload') }}" method="post" enctype="multipart/form-data">
+        <div class="field">
+          <label class="field-label" for="upload-files">Files</label>
+          <input type="file" id="upload-files" name="files" multiple required>
+        </div>
+
+        <label class="checkbox-field">
+          <input type="checkbox" name="authorization_confirmed">
+          <span>{{ authorization_statement }}</span>
+        </label>
+
+        <div class="actions">
+          <button class="btn btn--secondary" type="submit">
+            Upload to quarantine {{ icon('arrow-right') }}
+          </button>
+        </div>
+      </form>
+
+      {% if uploads %}
+      <section aria-labelledby="uploads-heading">
+        <h3 id="uploads-heading">Uploads this session</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Upload</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for upload in uploads %}
+              <tr>
+                <td><a href="{{ url_for('show_upload', upload_key=upload.key) }}">{{ upload.key }}</a></td>
+                <td>
+                  <span class="status-badge status-badge--warning">
+                    {{ icon('alert') }} QUARANTINED
+                  </span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      {% endif %}
+    </section>
+
+    <section aria-labelledby="synthetic-heading" class="card">
+      <p class="section-kicker">Synthetic demo packages · Bid workflow lane</p>
+      <h2 id="synthetic-heading">Start with a verified synthetic package</h2>
+      <p class="lede">
+        These are the repository's own generated fixture packages. They are the only
+        packages the full pipeline will process, and they exercise it for real: security
+        gate, parsing, extraction, normalization, quality gate, and package generation.
+      </p>
+
+      <form action="{{ url_for('start_run') }}" method="post">
+        <fieldset class="package-fieldset">
+          <legend class="visually-hidden">Synthetic RFP package</legend>
+          <div class="package-grid">
+            {% for package in packages %}
+            <label class="package-option card">
+              <input type="radio" name="package" value="{{ package.name }}"
+                     {% if loop.first %}checked{% endif %}>
+              <span class="package-option__head">{{ icon('file') }} {{ package.name }}</span>
+              <span class="package-option__meta">
+                {{ package.document_count }} document{{ '' if package.document_count == 1 else 's' }}
+              </span>
+              <ul class="file-list">
+                {% for file in package.files %}
+                <li>
+                  <span class="file-name">{{ file.name }}</span>
+                  <span class="type-tag">{{ file.file_type }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+        <div class="actions">
+          <button class="btn btn--primary" type="submit">Run security checks {{ icon('arrow-right') }}</button>
+        </div>
+      </form>
+
+      {% if runs %}
+      <section aria-labelledby="runs-heading">
+        <h3 id="runs-heading">Runs this session</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Run</th>
+                <th scope="col">Package</th>
+                <th scope="col">Mode</th>
+                <th scope="col">Outcome</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for run in runs %}
+              <tr>
+                <td><a href="{{ url_for('show_run', run_key=run.key) }}">{{ run.key }}</a></td>
+                <td>{{ run.package_name }}</td>
+                <td>{{ 'Full analysis' if run.requested_processing else 'Security checks' }}</td>
+                <td>{{ run.summary.outcome }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      {% else %}
+      <p class="module-card__text">
+        {{ icon('info') }} No run has been started in this session yet. Runs live in memory
+        only; their artifacts are written to a private directory outside this repository.
+      </p>
+      {% endif %}
+    </section>
+
+  </div>
+
+  <aside class="split__side" aria-labelledby="lifecycle-heading">
+    <section class="card">
+      <h2 id="lifecycle-heading">What happens to an RFP package</h2>
+      <p class="module-card__text">
+        In order, with what is actually built today. Every status below comes from the
+        same record as the rest of the interface.
+      </p>
+      <ol class="lifecycle">
+        {% for step in lifecycle %}
+        <li class="lifecycle__step">
+          <span class="lifecycle__title">
+            {% if step.endpoint %}
+            <a href="{{ url_for(step.endpoint) }}">{{ step.title }}</a>
+            {% else %}
+            {{ step.title }}
+            {% endif %}
+          </span>
+          <span class="lifecycle__meta">
+            {{ status_chip(step.status) }}
+            <span class="lifecycle__phase">{{ step.phase_id }}</span>
+          </span>
+        </li>
+        {% endfor %}
+      </ol>
+      <p class="actions">
+        <a class="btn btn--secondary" href="{{ url_for('architecture_roadmap') }}">
+          {{ icon('map') }} Roadmap
+        </a>
+      </p>
+    </section>
+  </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "preview/_preview_base.html" %}
+{% from "partials/product_macros.html" import status_chip, meter, classified %}
+{% block headline %}What the company already knows about this account.{% endblock %}
+{% block module %}
+
+<section aria-labelledby="sources-heading">
+  <div class="group-head">
+    <h2 id="sources-heading">Sources</h2>
+    <p>
+      Each of these would supply a different part of the picture. None of them is
+      connected: the cards below state what would be retrieved, how, and what has to be
+      agreed first.
+    </p>
+  </div>
+  <div class="module-grid">
+    {% for source in section.sources %}
+    <article class="source-card">
+      <h3 class="module-card__title">{{ source.name }}</h3>
+      <p class="module-card__badges">
+        {{ status_chip(source.connection) }}
+        <span class="type-tag">{{ source.target_phase }}</span>
+      </p>
+      <p class="module-card__text">{{ source.kind }}</p>
+      <div class="fact-block">
+        <h4>Would supply</h4>
+        <ul>
+          {% for entry in source.expected_data %}
+          <li>{{ entry }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% if source.integration_options %}
+      <div class="fact-block">
+        <h4>Integration options</h4>
+        <ul>
+          {% for entry in source.integration_options %}
+          <li>{{ entry }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <div class="fact-block">
+        <h4>Has to be agreed first</h4>
+        <ul>
+          {% for entry in source.governance %}
+          <li>{{ entry }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="split">
+  <div class="split__main">
+    <section aria-labelledby="insights-heading" class="card">
+      <h2 id="insights-heading">Key insights</h2>
+      <p class="module-card__text">
+        Each statement carries where it came from and how well it is backed. In a real
+        engagement most of these would be evidence-backed or model inferences; here they
+        are all demonstration content.
+      </p>
+      <ul class="classified-list">
+        {% for row in section.insights %}
+        {{ classified(row) }}
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section aria-labelledby="stakeholders-heading" class="card">
+      <h2 id="stakeholders-heading">Stakeholder map</h2>
+      <p class="module-card__text">
+        Roles only. BidFusion will not hold names, contact details, or anything
+        attributable to an individual on this surface.
+      </p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption class="visually-hidden">Stakeholder roles, influence and engagement</caption>
+          <thead>
+            <tr>
+              <th scope="col">Role</th>
+              <th scope="col">What they care about</th>
+              <th scope="col">Influence</th>
+              <th scope="col">Engagement</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for person in section.stakeholders %}
+            <tr>
+              <th scope="row">{{ person.role }}</th>
+              <td>{{ person.interest }}</td>
+              <td>{{ meter(person.influence, 'neutral') }}</td>
+              <td>{{ meter(person.engagement, 'neutral') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <aside class="split__side">
+    <section class="card" aria-labelledby="relationship-heading">
+      <h2 id="relationship-heading">Relationship strength</h2>
+      <p>{{ meter(section.relationship, 'success') }}</p>
+      <p class="module-card__text">{{ section.relationship_summary }}</p>
+    </section>
+
+    <section class="card" aria-labelledby="account-heading">
+      <h2 id="account-heading">Account history</h2>
+      <ul class="classified-list">
+        {% for row in section.account_timeline %}
+        {{ classified(row) }}
+        {% endfor %}
+      </ul>
+    </section>
+  </aside>
+</div>
+{% endblock %}

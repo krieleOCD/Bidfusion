@@ -1,0 +1,143 @@
+{% extends "preview/_preview_base.html" %}
+{% from "partials/product_macros.html" import status_chip, meter, classified, bullet_list %}
+{% block headline %}Who else is bidding, what they claim, and where the difference is.{% endblock %}
+{% block module %}
+
+<div class="split">
+  <aside class="split__side" aria-labelledby="field-heading">
+    <section class="card">
+      <h2 id="field-heading">The field</h2>
+      <ul class="competitor-list">
+        {% for competitor in section.competitors %}
+        <li class="competitor-list__item{% if competitor.key == section.selected.key %} competitor-list__item--active{% endif %}">
+          <a href="{{ url_for(request.endpoint, scenario=page.header.key, focus=competitor.key) }}"
+             {% if competitor.key == section.selected.key %}aria-current="true"{% endif %}>
+            <span class="competitor-list__name">{{ competitor.name }}</span>
+            <span class="competitor-list__meta">
+              {{ status_chip(competitor.threat) }}
+            </span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="module-card__text">
+        Threat bands are coarse on purpose. A demonstration must not imply a precision
+        that no measurement stands behind.
+      </p>
+    </section>
+  </aside>
+
+  <div class="split__main">
+    <section aria-labelledby="competitor-heading" class="card card--accent">
+      <h2 id="competitor-heading">{{ section.selected.name }}</h2>
+      <p class="module-card__badges">
+        {{ status_chip(section.selected.threat) }}
+        {{ meter(section.selected.threat_meter, 'danger') }}
+      </p>
+      <p class="lede">{{ section.selected.positioning }}</p>
+    </section>
+
+    <div class="split split--even">
+      <section aria-labelledby="signals-heading" class="card">
+        <h2 id="signals-heading">Signals</h2>
+        <p class="module-card__text">
+          Every signal carries its origin and the date it was collected, so a claim that
+          has gone stale is visible as stale.
+        </p>
+        <ul class="classified-list">
+          {% for row in section.selected.signals %}
+          {{ classified(row) }}
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section aria-labelledby="claims-heading" class="card">
+        <h2 id="claims-heading">What they claim in this tender</h2>
+        {% if section.selected.claims %}
+        {{ bullet_list(section.selected.claims) }}
+        {% else %}
+        <p class="module-card__text">No claims recorded for this competitor.</p>
+        {% endif %}
+      </section>
+    </div>
+
+    <section aria-labelledby="comparison-heading" class="card">
+      <h2 id="comparison-heading">Us against them</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption class="visually-hidden">
+            Comparison by dimension, as coarse bands with a takeaway
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Dimension</th>
+              <th scope="col">Us</th>
+              <th scope="col">Them</th>
+              <th scope="col">What it means</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in section.selected.comparison %}
+            <tr>
+              <th scope="row">{{ row.dimension }}</th>
+              <td>{{ meter(row.own, 'success') }}</td>
+              <td>{{ meter(row.competitor, 'danger') }}</td>
+              <td>{{ row.takeaway }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    {% if section.selected.battle_card %}
+    {% set card = section.selected.battle_card %}
+    <section aria-labelledby="battlecard-heading" class="card card--accent">
+      <h2 id="battlecard-heading">Battle card</h2>
+      <div class="banner banner--warning">
+        {{ icon('alert') }}
+        <div>
+          <p>Not approved for use.</p>
+          <p>{{ card.approval_state }}</p>
+        </div>
+      </div>
+      <dl class="kv-list">
+        <dt>Our position</dt>
+        <dd>{{ card.our_position }}</dd>
+        <dt>Where they are weak</dt>
+        <dd>{{ card.their_weakness }}</dd>
+      </dl>
+      <div class="fact-block">
+        <h3>Proof points</h3>
+        <ul>
+          {% for entry in card.proof_points %}
+          <li>{{ entry }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </section>
+    {% else %}
+    <section aria-labelledby="nocard-heading" class="card">
+      <h2 id="nocard-heading">Battle card</h2>
+      <p class="module-card__text">
+        {{ icon('info') }} No battle card exists for {{ section.selected.name }} in this
+        scenario. A card is written and reviewed deliberately, not generated per competitor.
+      </p>
+    </section>
+    {% endif %}
+  </div>
+</div>
+
+<section aria-labelledby="collection-heading" class="card">
+  <h2 id="collection-heading">Where this would come from</h2>
+  <p class="lede">{{ section.collection_note }}</p>
+  <div class="fact-block">
+    <h3>Intended sources</h3>
+    <ul>
+      {% for entry in section.intended_sources %}
+      <li>{{ entry }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}

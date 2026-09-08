@@ -1,0 +1,129 @@
+{% extends "preview/_preview_base.html" %}
+{% from "partials/product_macros.html" import status_chip %}
+{% block headline %}Where a person corrects the machine, and says so on the record.{% endblock %}
+{% block module %}
+
+<section aria-labelledby="readiness-heading" class="card card--accent">
+  <h2 id="readiness-heading">Submission readiness</h2>
+  <p class="lede">{{ section.submission_readiness }}</p>
+  <dl class="metric-grid">
+    <div class="metric metric--warning">
+      <dt class="metric__label">Awaiting review</dt>
+      <dd class="metric__value">{{ section.awaiting_count }}</dd>
+      <dd class="metric__note">Nobody has decided yet</dd>
+    </div>
+    <div class="metric metric--danger">
+      <dt class="metric__label">Blocking</dt>
+      <dd class="metric__value">{{ section.blocking_items|length }}</dd>
+      <dd class="metric__note">Stops submission until closed</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Items in review</dt>
+      <dd class="metric__value">{{ section.items|length }}</dd>
+      <dd class="metric__note">In this demonstration scenario</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Decisions recorded</dt>
+      <dd class="metric__value">{{ section.history|length }}</dd>
+      <dd class="metric__note">Append-only history</dd>
+    </div>
+  </dl>
+  {% if section.blocking_items %}
+  <div class="banner banner--warning">
+    {{ icon('alert') }}
+    <div>
+      <p>Blocking items.</p>
+      <ul>
+        {% for entry in section.blocking_items %}
+        <li>{{ entry }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<section aria-labelledby="queue-heading" class="card">
+  <h2 id="queue-heading">Items awaiting a decision</h2>
+  <p class="module-card__text">
+    A reviewer sees what was extracted, where it came from, and decides. The controls
+    below are shown to make the intended layout concrete; none of them is active, and
+    nothing on this page changes any recorded state.
+  </p>
+  <ul class="review-list">
+    {% for item in section.items %}
+    <li class="review-item">
+      <div class="review-item__head">
+        <span class="review-item__ref">{{ item.reference }}</span>
+        <span class="type-tag">{{ item.kind }}</span>
+        {{ status_chip(item.state) }}
+      </div>
+      <p class="review-item__proposed">{{ item.proposed }}</p>
+      <p class="review-item__meta">
+        <span class="source-chip">{{ icon('file') }} {{ item.origin }}</span>
+        <span class="review-item__reviewer">{{ icon('users') }} {{ item.reviewer_role }}</span>
+      </p>
+      <p class="review-item__actions" aria-hidden="true">
+        <span class="ghost-button">Accept</span>
+        <span class="ghost-button">Reject</span>
+        <span class="ghost-button">Needs clarification</span>
+      </p>
+      <p class="review-item__inactive">
+        {{ icon('info') }} Controls shown for layout only. Review is not implemented in
+        this build.
+      </p>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section aria-labelledby="history-heading" class="card">
+  <h2 id="history-heading">Decision history</h2>
+  <p class="module-card__text">
+    Append-only. A later decision supersedes an earlier one; it never erases it, because
+    why a bid said what it said matters after the fact.
+  </p>
+  <div class="table-wrap">
+    <table class="data-table">
+      <caption class="visually-hidden">Recorded review decisions</caption>
+      <thead>
+        <tr>
+          <th scope="col">Reference</th>
+          <th scope="col">Outcome</th>
+          <th scope="col">Reviewer role</th>
+          <th scope="col">Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for decision in section.history %}
+        <tr>
+          <th scope="row">{{ decision.reference }}</th>
+          <td>{{ decision.outcome }}</td>
+          <td>{{ decision.reviewer_role }}</td>
+          <td>{{ decision.note }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="evidence-heading" class="card">
+  <h2 id="evidence-heading">Evidence viewer</h2>
+  <p class="lede">
+    A reviewer should never have to trust an extraction. The intended layout puts the
+    source passage beside the extracted item, so accepting it is a judgement about the
+    document rather than about the software.
+  </p>
+  <p class="module-card__text">
+    {{ icon('info') }} Not implemented. Extracted statements with their document, page,
+    or cell already exist for the repository's own fixture packages and can be seen in a
+    working package today.
+  </p>
+  <p class="actions">
+    <a class="btn btn--secondary" href="{{ url_for('index') }}">
+      {{ icon('arrow-right') }} Run a synthetic package
+    </a>
+  </p>
+</section>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "preview/_preview_base.html" %}
+{% from "partials/product_macros.html" import status_chip %}
+{% block headline %}What the tender demands, and where each demand stands.{% endblock %}
+{% block module %}
+
+<section aria-labelledby="summary-heading" class="card card--accent">
+  <h2 id="summary-heading">Where compliance stands</h2>
+  <dl class="metric-grid">
+    <div class="metric">
+      <dt class="metric__label">Exclusion criteria</dt>
+      <dd class="metric__value">{{ section.exclusion_criteria|length }}</dd>
+      <dd class="metric__note">Failing one of these ends the bid</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Mandatory requirements</dt>
+      <dd class="metric__value">{{ section.mandatory|length }}</dd>
+      <dd class="metric__note">Must be answered to be considered</dd>
+    </div>
+    <div class="metric metric--warning">
+      <dt class="metric__label">Not yet resolved</dt>
+      <dd class="metric__value">{{ section.unresolved_count }}</dd>
+      <dd class="metric__note">Anything not confirmed compliant</dd>
+    </div>
+    <div class="metric metric--warning">
+      <dt class="metric__label">Open clarifications</dt>
+      <dd class="metric__value">{{ section.open_clarifications|length }}</dd>
+      <dd class="metric__note">Questions to put to the customer</dd>
+    </div>
+  </dl>
+  <p class="module-card__text">
+    {{ icon('info') }} Unknown is a state in its own right here. An item nobody has looked
+    at is never shown as compliant.
+  </p>
+</section>
+
+{% macro compliance_table(caption, rows) %}
+<div class="table-wrap">
+  <table class="data-table">
+    <caption class="visually-hidden">{{ caption }}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Reference</th>
+        <th scope="col">Requirement</th>
+        <th scope="col">State</th>
+        <th scope="col">Evidence</th>
+        <th scope="col">Owner</th>
+        <th scope="col">Origin</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <th scope="row">{{ row.reference }}</th>
+        <td>{{ row.requirement }}</td>
+        <td>{{ status_chip(row.state) }}</td>
+        <td>{{ row.evidence }}</td>
+        <td>{{ row.owner }}</td>
+        <td>{{ row.origin }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endmacro %}
+
+<section aria-labelledby="exclusion-heading" class="card">
+  <h2 id="exclusion-heading">Exclusion criteria</h2>
+  <p class="module-card__text">
+    Pass or fail. There is no partial credit and no scoring behind these.
+  </p>
+  {{ compliance_table('Exclusion criteria and their compliance state', section.exclusion_criteria) }}
+</section>
+
+<section aria-labelledby="mandatory-heading" class="card">
+  <h2 id="mandatory-heading">Mandatory requirements</h2>
+  {{ compliance_table('Mandatory requirements and their compliance state', section.mandatory) }}
+</section>
+
+{% if section.open_clarifications %}
+<section aria-labelledby="clarifications-heading" class="card">
+  <h2 id="clarifications-heading">Questions for the customer</h2>
+  <p class="module-card__text">
+    Each of these has to be asked inside the clarification window. After it closes, an
+    unanswered question becomes an assumption carried into the price.
+  </p>
+  <ul class="plain-list">
+    {% for entry in section.open_clarifications %}
+    <li>{{ entry }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section aria-labelledby="real-heading" class="card">
+  <h2 id="real-heading">The real thing, today</h2>
+  <p class="lede">
+    Requirements, deadlines, and formalities <em>are</em> extracted for real from the
+    repository's own fixture packages, each with the document, page, or cell it came
+    from. That extraction is reachable now — this matrix, with its states, owners, and
+    evidence, is what would be built on top of it.
+  </p>
+  <p class="actions">
+    <a class="btn btn--secondary" href="{{ url_for('index') }}">
+      {{ icon('arrow-right') }} Run a synthetic package
+    </a>
+  </p>
+</section>
+{% endblock %}

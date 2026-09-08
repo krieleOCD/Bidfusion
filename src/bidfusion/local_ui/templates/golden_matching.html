@@ -1,0 +1,71 @@
+{% extends "product_base.html" %}
+{% block title %}Capability Matching (Pilot) — BidFusion{% endblock %}
+
+{% block hero %}
+<div class="hero">
+  <div class="container hero__inner">
+    <p class="ocd-overline">Capability Matching (Pilot)</p>
+    <h1>Synthetic demo requirements against extracted, unverified MTD claims.</h1>
+    <p class="module-card__badges">
+      {% for label in view.labels %}
+      <span class="status-badge status-badge--warning">{{ icon('alert') }} {{ label }}</span>
+      {% endfor %}
+      <span class="status-badge status-badge--info">{{ icon('info') }} DETERMINISTIC PILOT MATCH</span>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<section aria-labelledby="method-heading" class="card card--accent">
+  <h2 id="method-heading">How these matches are made</h2>
+  <p class="module-card__text">{{ icon('info') }} {{ view.method_note }}</p>
+</section>
+
+{% if not view.available %}
+<section aria-labelledby="empty-heading" class="card">
+  <h2 id="empty-heading">No matching data</h2>
+  <p class="module-card__text">{{ icon('unlink') }} {{ view.note }}</p>
+</section>
+{% else %}
+
+{% for row in view.rows %}
+<section aria-labelledby="match-{{ row.requirement_id }}" class="card">
+  <h2 id="match-{{ row.requirement_id }}">
+    {{ row.requirement_id }} — {{ view.requirement_label }}
+  </h2>
+  <p class="module-card__text">&ldquo;{{ row.requirement_text }}&rdquo;</p>
+  <dl class="metric-grid">
+    <div class="metric">
+      <dt class="metric__label">Match status</dt>
+      <dd class="metric__value">{{ row.match_status }}</dd>
+      <dd class="metric__note">DETERMINISTIC PILOT MATCH</dd>
+    </div>
+    <div class="metric">
+      <dt class="metric__label">Matched capability</dt>
+      <dd class="metric__value">{{ row.capability }}</dd>
+      <dd class="metric__note">Confidence band: {{ row.confidence_band }}</dd>
+    </div>
+    <div class="metric metric--warning">
+      <dt class="metric__label">Human review</dt>
+      <dd class="metric__value">{{ row.human_review }}</dd>
+      <dd class="metric__note">Claim status: EXTRACTED UNVERIFIED</dd>
+    </div>
+  </dl>
+  <p class="module-card__text">{{ row.rationale }}</p>
+  {% if row.evidence %}
+  <h3>Evidence sources</h3>
+  <ul>
+    {% for reference in row.evidence %}
+    <li>{{ reference.filename }} — section {{ reference.section_id }} (version {{ reference.source_version }})</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="module-card__text">{{ icon('alert') }} No evidence — nothing is claimed.</p>
+  {% endif %}
+</section>
+{% endfor %}
+
+{% endif %}
+{% endblock %}

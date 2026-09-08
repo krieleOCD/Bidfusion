@@ -28,7 +28,7 @@ from bidfusion.schemas import (
 
 ROOT = Path(__file__).resolve().parents[1]
 _ENV_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
-_DEFAULT_SECRET_REF = "secret://env/BIDFUSION_LLM_API_KEY"
+_DEFAULT_SECRET_REF = "secret://env/BIDFUSION_ANTHROPIC_API_KEY"
 
 
 def _read_dotenv(path: Path) -> dict[str, str]:

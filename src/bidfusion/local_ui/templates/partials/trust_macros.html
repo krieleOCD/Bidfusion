@@ -1,0 +1,67 @@
+{# The three trust layers, each with its own visual voice. Machine and
+   knowledge chips are outlined information; human decisions are filled
+   fields. The state class is derived from the projected label itself,
+   so a new state degrades to the neutral human style, never to a
+   misleadingly positive one. #}
+
+{% macro machine_chip(status) %}
+<span class="trust-chip trust-chip--machine">{{ status }}</span>
+{% endmacro %}
+
+{% macro knowledge_chip(status) %}
+<span class="trust-chip trust-chip--knowledge">{{ status }}</span>
+{% endmacro %}
+
+{% macro human_chip(label) %}
+{% set slug = label.split('—')[0].strip()|lower|replace(' ', '-') %}
+<span class="trust-chip trust-chip--human trust-chip--human-{{ slug }}">{{ label }}</span>
+{% endmacro %}
+
+{% macro evidence_cards(evidence) %}
+<ul class="evidence-list">
+  {% for reference in evidence %}
+  <li class="evidence-card">
+    {% if reference.filename is defined and reference.filename %}
+    <span class="evidence-card__name">{{ icon('file') }} {{ reference.filename }}</span>
+    {% endif %}
+    <span class="evidence-card__meta">Section {{ reference.section_id }}</span>
+    {% if reference.locator is defined and reference.locator %}
+    <span class="evidence-card__meta">{{ reference.locator }}</span>
+    {% endif %}
+    <span class="evidence-card__meta">Source version {{ reference.source_version }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endmacro %}
+
+{% macro workflow_stepper(steps) %}
+<ol class="workflow">
+  {% for step in steps %}
+  <li class="workflow__step workflow__step--{{ step.state }}">
+    <span class="workflow__node" aria-hidden="true"></span>
+    <span class="workflow__index" aria-hidden="true"></span>
+    <span class="workflow__label">{{ step.label }}</span>
+    <span class="workflow__state">{{ step.state_label }}</span>
+    {% if step.note %}<span class="workflow__note">{{ step.note }}</span>{% endif %}
+  </li>
+  {% endfor %}
+</ol>
+{% endmacro %}
+
+{# Single-value coverage gauge: one brand hue against a neutral track.
+   The value also stands in the hole as text, and the aria-label carries
+   the whole statement — never color alone. #}
+{% macro donut(percent, value, label) %}
+<div class="donut p{{ percent }}" role="img" aria-label="{{ label }}: {{ value }}">
+  <div class="donut__hole" aria-hidden="true">
+    <span class="donut__value">{{ value }}</span>
+    <span class="donut__label">{{ label }}</span>
+  </div>
+</div>
+{% endmacro %}
+
+{% macro progress(percent, tone='') %}
+<div class="progress{% if tone %} progress--{{ tone }}{% endif %}" aria-hidden="true">
+  <div class="progress__fill p{{ percent }}"></div>
+</div>
+{% endmacro %}

@@ -1,0 +1,66 @@
+{% extends "product_base.html" %}
+{% from "partials/product_macros.html" import preview_notice, fact_block, status_chip %}
+{% block title %}{{ detail.status.title }} — BidFusion{% endblock %}
+{% block hero %}
+<div class="hero">
+  <div class="container hero__inner">
+    <p class="ocd-overline">{{ detail.status.title }}</p>
+    <h1>{{ detail.status.short_description }}</h1>
+    <p class="module-card__badges">
+      {{ status_chip(detail.status.status) }}
+      {{ status_chip(detail.status.data_mode) }}
+    </p>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+
+{{ preview_notice(detail.status) }}
+
+<section aria-labelledby="intent-heading" class="card card--accent">
+  <h2 id="intent-heading">What this module is for</h2>
+  <p class="lede">{{ detail.phase_summary }}</p>
+  <dl class="kv-list">
+    <dt>Target phase</dt>
+    <dd>{{ detail.status.phase_id }} — {{ detail.status.phase_title }}</dd>
+    <dt>Owner</dt>
+    <dd>{{ detail.owner }}</dd>
+    <dt>Current source</dt>
+    <dd>{{ detail.status.current_source }}</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="scope-heading" class="card">
+  <h2 id="scope-heading">Scope</h2>
+  <div class="fact-columns">
+    {{ fact_block('Available now', detail.current_capabilities, 'Nothing on this page runs yet.') }}
+    {{ fact_block('Planned', detail.planned_capabilities, 'No further work is planned.') }}
+    {{ fact_block('Not possible today', detail.limitations, 'No limitations recorded.') }}
+  </div>
+</section>
+
+<section aria-labelledby="sources-heading" class="card">
+  <h2 id="sources-heading">Where the data would come from</h2>
+  <div class="fact-columns">
+    {{ fact_block('Connected today', detail.current_sources, 'No source is connected.') }}
+    {{ fact_block('Intended sources', detail.future_sources, 'No further sources are intended.') }}
+    {{ fact_block('Open dependencies', detail.dependencies, 'No open dependencies.') }}
+  </div>
+</section>
+
+<section aria-labelledby="acceptance-heading" class="card">
+  <h2 id="acceptance-heading">How we will know it works</h2>
+  <div class="fact-columns">
+    {{ fact_block(
+         'Acceptance criteria', detail.acceptance_criteria, 'No acceptance criteria recorded.') }}
+  </div>
+  <p class="actions">
+    <a class="btn btn--secondary" href="{{ url_for('feature_detail', feature_key=detail.status.key) }}">
+      {{ icon('file') }} Full feature record
+    </a>
+    <a class="btn btn--secondary" href="{{ url_for('architecture_roadmap') }}">
+      {{ icon('map') }} Roadmap
+    </a>
+  </p>
+</section>
+{% endblock %}

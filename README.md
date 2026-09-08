@@ -1,301 +1,327 @@
 # BidFusion
 
-> Secure, evidence-driven RFP intelligence and bid automation.
+> The operating system for a bid you can defend: secure, evidence-driven RFP intelligence for bid teams.
 
-## What is BidFusion?
+![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-000000?labelColor=ff7900)
+![mypy strict](https://img.shields.io/badge/mypy-strict-000000?labelColor=ff7900)
+![ruff](https://img.shields.io/badge/lint-ruff-000000?labelColor=ff7900)
+![tests](https://img.shields.io/badge/tests-1713_collected-000000?labelColor=ff7900)
+![scope](https://img.shields.io/badge/scope-Level_1A_internal_test_data-000000?labelColor=ff7900)
+![license](https://img.shields.io/badge/license-proprietary-000000?labelColor=595959)
 
-BidFusion turns complex customer RFP/RFI packages into structured,
-verifiable **bid intelligence**. RFP packages are multimodal and messy:
-PDFs, scanned documents, Word, Excel, CSV, PowerPoint, screenshots,
-technical drawings, network diagrams, price sheets, contracts, forms, and
-compliance/security questionnaires.
+![BidFusion at a glance: from an untrusted RFP package through quarantine and the security gate into the processing zone, and on to human review and a reviewed working package](docs/assets/bidfusion-overview.svg)
 
-BidFusion processes such packages through a security-first pipeline and
-produces results that humans can verify, decide on, and act on — from the
-first structured overview (the *Bid Working Package*) to evidence-backed
-capability matching and, later, bid response support.
+BidFusion turns a customer RFP package — PDFs, spreadsheets, Word files,
+forms, scans, drawings — into structured, checkable bid knowledge. Every
+requirement, deadline and formality keeps its source. Machine evidence
+supports the bid team's decisions; it never replaces them. Nothing is
+parsed before a security gate has cleared the package.
 
-## Why BidFusion?
+This README describes the `feat/ui-bid-workspace` integration branch, the
+most complete state of the product. `main` still carries the Foundation
+baseline and will catch up by pull request.
 
-RFPs are:
+## Where the product stands today
 
-- **multimodal** — text, tables, images, drawings, scans
-- **complex** — hundreds of explicit and implicit requirements
-- **fragmented** — information spread across many related documents
-- **time-critical** — hard deadlines with knock-out criteria
-- **manual** — today they are largely evaluated by hand, under pressure
+| | |
+| --- | --- |
+| **Verified local bid loop — LIVE** | Authorized upload into quarantine, deterministic security gate, parsing, rule-based extraction, normalization, quality gate, working package, evidence-backed candidate matching, versioned human review and a sealed reviewed working package. All on synthetic fixture packages, driven from the local UI. |
+| **Requirement extraction — MEASURED** | Frozen Evaluation #3 against 364 hand-curated Ground Truth requirements from an 8-document real tender package: **75.8 % inclusive / 67.3 % strict recall** with a deterministic extractor and no model call. Milestone A (70 % inclusive) reached. Evaluation #4 on `feat/requirement-extractor-v0-2` (atomic splitting) stands at 76.1 % / 69.8 % with over-merged blocks cut from 151 to 60. |
+| **Golden knowledge — PILOT** | A local, gitignored knowledge store built from a real internal service description (Managed Threat Detection) feeds capability matching and per-requirement knowledge assessments. Every record stays marked for human review; nothing of it is committed. |
+| **Engineering gates — GREEN** | 1,713 tests, `ruff`, `ruff format`, `mypy --strict`, checked-in JSON schemas that must match the Pydantic models, sealed integrity manifests for every run. |
 
-The goal: turn customer documents into structured, checkable bid knowledge —
-with evidence attached to important source-derived claims, so bid managers,
-pre-sales, security, legal and management can make safer decisions.
+What is deliberately **not** in this build: no production customer data,
+no model call in the pipeline, no CRM, archive or communication data, no
+web research, no autonomous agent. Every preview surface in the UI says so.
 
-## Core Principle
+## A look at the product
 
-```text
-Documents
-→ Structured Evidence
-→ Bid Intelligence
-→ Human Decision Support
-```
+All screenshots come from the repository's own synthetic `rfp-minimal`
+package. Regenerate them with `scripts/demo/capture_screenshots.mjs`.
 
-Documents become structured evidence. Structured evidence becomes bid
-intelligence. Bid intelligence supports humans in making and executing bid
-decisions.
+| Product overview | Bid command center |
+| --- | --- |
+| ![Product overview: operating model, decision stages and product truth](docs/assets/screenshots/overview.png) | ![Bid command center for a synthetic run: recorded outcome, five-stage progress and the decision queue](docs/assets/screenshots/bid-command-center.png) |
 
-## High-Level Architecture
+| Working package | Extraction quality |
+| --- | --- |
+| ![Working package generated from a completed synthetic run, with structured, JSON and Markdown views](docs/assets/screenshots/working-package.png) | ![Extraction quality page showing the frozen real-RFP evaluation](docs/assets/screenshots/extraction-quality.png) |
 
-This is the concept view — the map of the whole system. The detailed
-engineering view lives in
-[docs/architecture/engineering-architecture.md](docs/architecture/engineering-architecture.md).
+A narrated three-minute walkthrough can be recorded with the
+[demo recorder](scripts/demo/README.md). The recording shows the internal
+knowledge pilot and stays inside Orange Cyberdefense.
+
+## How a bid moves through BidFusion
 
 ```mermaid
-flowchart TD
-    O["OPPORTUNITY"] --> Q["QUALIFICATION / BID DECISION"]
-    Q --> A["RFP PACKAGE<br/>PDF, Excel, Word, Images, Drawings"]
-    A --> B["SECURITY GATE<br/>Allow / Pending Review / Quarantine / Block"]
-    B -- "SecurityClearedArtifact" --> C["DOCUMENT INVENTORY"]
-
-    C --> DU
-
-    subgraph DU["DOCUMENT UNDERSTANDING"]
-        direction LR
-        P1["PDF Parser"]
-        P2["Excel Parser"]
-        P3["OCR"]
-        P4["Tables / Layout"]
-        P5["Vision / Diagrams"]
-    end
-
-    DU --> CDM["CANONICAL DOCUMENT MODEL"]
-
-    subgraph BE["BUSINESS EXTRACTION"]
-        direction LR
-        E1["Requirements"]
-        E2["Formalities"]
-        E3["Deadlines"]
-        E4["Scope"]
-        E5["Security / Compliance"]
-    end
-
-    CDM --> BE
-    BE --> NM["NORMALIZATION / MERGE"]
-    NM --> NBD["NORMALIZED BID DATASET"]
-    NBD --> COMP["COMPLIANCE MATRIX"]
-    COMP --> QA["QA / AI VALIDATION / BUSINESS REVIEW"]
-    QA --> WP["BID WORKING PACKAGE"]
-
-    WP --> BI
-
-    subgraph BI["BID INTELLIGENCE"]
+flowchart LR
+    subgraph UNTRUSTED["Untrusted input"]
         direction TB
-        CM["CAPABILITY MATCHING"]
-        COV["CAPABILITY COVERAGE"]
-        GAP["GAP ANALYSIS"]
-        SME["SME / PRESALES TASKS"]
-        RG["RESPONSE GENERATION"]
-        HR["HUMAN REVIEW"]
-        FB["FINAL BID"]
-        CM --> COV --> GAP --> SME --> RG --> HR --> FB
+        UP["Browser upload<br/>or synthetic fixture"] --> Q["Quarantine<br/>hashed, contained, never parsed"]
     end
 
-    GD["GOVERNED ENTERPRISE KNOWLEDGE"] -.-> CM
-    ES["EVIDENCE STORE"] -.-> CM
+    subgraph GATE["Security gate"]
+        direction TB
+        PF["Deterministic preflight<br/>per document"] --> PG["Package gate policy<br/>ALLOW · REVIEW · BLOCK"]
+    end
+
+    subgraph PROC["Processing zone"]
+        direction LR
+        DU["Document<br/>understanding"] --> CDM["Canonical<br/>document model"]
+        CDM --> EX["Extraction<br/>requirements · deadlines · formalities"]
+        EX --> NM["Normalization<br/>+ quality gate"]
+    end
+
+    subgraph HUMAN["Human decision"]
+        direction LR
+        WP["Working package"] --> KM["Knowledge match<br/>candidates only"]
+        KM --> HR["Human review<br/>versioned per bid"]
+        HR --> RWP["Reviewed working package<br/>sealed, versioned"]
+    end
+
+    Q --> PF
+    PG -- "SecurityClearedArtifact<br/>exact, hash-bound bytes" --> DU
+    NM --> WP
+    GK["Golden knowledge<br/>evidence claims"] -.-> KM
 ```
 
-## Pipeline
+Three rules hold across the whole flow:
 
-```text
-Security
-→ Inventory
-→ Document Understanding
-→ Extraction
-→ Normalization
-→ QA
-→ Working Package
-→ Matching
-→ Bid Intelligence
+- **Security before intelligence.** A `BLOCK` on one document blocks the
+  package; any error, unknown outcome or pending manual review keeps the
+  package out of processing. Only an exact, hash-bound `ALLOW` releases bytes.
+- **Provenance first.** Every derived statement carries its document, page
+  and text span. Runs are sealed with an integrity manifest and re-verified
+  before the UI shows them.
+- **Human outranks machine.** A machine candidate, a golden knowledge claim
+  and a human bid decision never share one status. Reviews are immutable,
+  versioned and bound to the exact assessment they answer.
+
+### BidRun lifecycle
+
+Every bid attempt is one `BidRun` with a recorded state and an explicit
+transition allowlist. Solid transitions exist today; dashed ones are the
+next Level 1 slices.
+
+```mermaid
+stateDiagram-v2
+    [*] --> CREATED
+    CREATED --> UPLOADED: files uploaded
+    UPLOADED --> QUARANTINED: package quarantined
+    QUARANTINED --> SECURITY_REVIEW: slice 2
+    SECURITY_REVIEW --> CLEARED: slice 3
+    SECURITY_REVIEW --> BLOCKED: slice 3
+    CLEARED --> PROCESSING: slice 3
+    PROCESSING --> REVIEW_REQUIRED: slice 4
+    PROCESSING --> COMPLETED: slice 5
+    REVIEW_REQUIRED --> COMPLETED: slice 5
+    PROCESSING --> FAILED: slice 5
+    COMPLETED --> [*]
+    BLOCKED --> [*]
+    FAILED --> [*]
 ```
 
-- **Security** — the Foundation handoff contract admits only an exact,
-  hash-bound allowed or manually released artifact. Parser API enforcement
-  and operational controls are still to be implemented.
-- **Inventory** — know what was actually received: an RFP is a package of
-  related documents, not a single file.
-- **Document Understanding** — technical parsing into one canonical
-  document model. Parse once, use everywhere.
-- **Extraction** — specialized atomic agents extract requirements,
-  formalities, deadlines, entities, scope, commercial, security and
-  compliance observations into focused typed results.
-- **Normalization** — fan-in: deduplication, conflict detection,
-  consistent IDs and explicit extraction completeness into the
-  `NormalizedBidDataset` contract.
-- **Compliance Matrix** — requirement-specific compliance posture,
-  capability/evidence, owner, risk, clarification, response, and review
-  status. Contract only.
-- **QA / Review** — AI/extraction validation remains distinct from
-  business review and approval.
-- **Working Package** — the first human-oriented product: overview,
-  timeline, submission rules, requirements, risks, open questions — all
-  with evidence.
-- **Matching / Bid Intelligence** — evidence-backed capability matching
-  against governed enterprise knowledge, capability coverage, gap analysis, SME routing
-  and response support. (Prepared, not implemented.)
+Synthetic fixture packages already run the full processing path through
+the pipeline's own run records; the `BidRun` lifecycle wraps the upload
+lane and grows slice by slice.
 
-## Architecture Principles
+## Capability status
 
-```text
-Security before Intelligence
-Architecture before Migration
-Parse once, use everywhere
-Schema first
-Provenance first
-Evidence over assumptions
-Atomic Agents
-Model agnostic
-Human in the loop
-Evaluation first
-BidFusion owns contracts; providers are adapters
-```
+Feature maturity and data provenance are independent: a surface can be
+built and still render demonstration data. The
+[feature registry](src/bidfusion/local_ui/feature_registry.py) is the single
+source of truth; the UI and this table project it.
 
-Each principle is pinned down in an [Architecture Decision Record](docs/adr/README.md).
+**Status:** LIVE = implemented on its real source · DEMO = implemented over
+curated data · PLANNED = information model only · REVIEW_REQUIRED = built,
+not connected pending review · BLOCKED = waits for an external decision.
+**Data mode:** verified artifacts, synthetic fixture, curated demo, static
+preview, local internal pilot, not connected.
 
-## Project Status
+| Area | Capability | Status | Data mode |
+| --- | --- | --- | --- |
+| Bids | RFP intake and quarantine | 🟢 LIVE | Verified artifacts |
+| Bids | Package security gate | 🟢 LIVE | Verified artifacts |
+| Bids | Synthetic RFP analysis (parse, extract, normalize) | 🟢 LIVE | Synthetic fixture |
+| Bids | Quality gate and review package | 🟢 LIVE | Verified artifacts |
+| Bids | Working package (structured, JSON, Markdown) | 🟢 LIVE | Verified artifacts |
+| Bids | Security review of uploaded packages | ⚪ PLANNED | Not connected |
+| Bids | Review and approval workflow | ⚪ PLANNED | Static preview |
+| Bids | Compliance matrix | 🟡 DEMO | Curated demo |
+| Bids | Capability fit · Qualification · Proposal factory | ⚪ PLANNED | Curated demo / static preview |
+| Knowledge | Golden knowledge inventory (MTD pilot) | 🟢 LIVE | Local internal pilot |
+| Knowledge | Capability matching (pilot) | 🟢 LIVE | Local internal pilot |
+| Knowledge | Requirement knowledge assessment + human review | 🟢 LIVE | Local internal pilot |
+| Portfolio and strategy | Competitive intelligence | 🟡 DEMO | Curated demo |
+| Portfolio and strategy | Customer intelligence · Win strategy | ⚪ PLANNED | Curated demo |
+| Platform | Extraction quality (frozen evaluation) | 🟢 LIVE | Static preview |
+| Platform | Architecture and roadmap | 🟢 LIVE | Static preview |
+| Platform | Governed model egress (Orange LLM proxy) | 🟠 REVIEW_REQUIRED | Not connected |
+| Platform | Production customer data | 🔴 BLOCKED | Not connected |
 
-**Current phase: Phase 2 — controlled component migration against the
-Foundation 1.2 baseline.**
+### Extraction quality, measured
 
-This repository contains the target architecture, contracts and
-engineering foundation. The domains below are **not implemented** unless
-explicitly stated otherwise. The first controlled migration slice now
-implements deterministic Security Gate preflight assessments; it does not
-yet implement complete gate policy or orchestration.
+The deterministic requirement extractor is evaluated against a hand-curated
+Ground Truth of 364 requirements from a real 8-document tender package
+(evaluator v1.1.0, identical Ground Truth hash across all runs). Records
+are frozen in the gitignored runtime store and rendered on the
+`/extraction-quality` page.
 
-Foundation 1.2 preserves the provider-independent LLM, OCR, and
-artifact-store ports plus deterministic test fakes. Phase 2 now includes a
-small, temporary direct Anthropic adapter for explicit synthetic/public
-connectivity tests. It uses no provider SDK, is not connected to the inbox
-or Security Gate flow, and is intended to be replaced by the internal LLM
-Gateway. No OCR engine or storage backend is implemented.
+| Extractor | Candidates | Strict recall | Inclusive recall | What changed |
+| --- | ---: | ---: | ---: | --- |
+| v0.1 | 0 | 0.0 % | 0.0 % | Explicit labels only |
+| v0.2 | 88 | 15.4 % | 18.4 % | First label-free rule families |
+| v0.3 (Eval #3, shown in the UI) | 230 | 67.3 % | 75.8 % | Obligations, modal statements, service items, priced positions, exclusions, procedure statements |
+| v0.4 (Eval #4, `feat/requirement-extractor-v0-2`) | 347 | 69.8 % | 76.1 % | Atomic splitting of compound blocks, over-merge 151 → 60 |
 
-| Domain                   | Status                                   |
-| ------------------------ | ---------------------------------------- |
-| Foundation 1.2 Contracts | 🟢 Implemented and tested               |
-| Independent 1.2 Review   | 🟢 Review records available             |
-| Security Gate            | 🟡 Deterministic preflight implemented; full gate pending |
-| Direct LLM test route     | 🟡 Anthropic adapter; synthetic/public opt-in only |
-| Document Understanding   | ⚪ Planned                                |
-| Business Extraction      | ⚪ Planned                                |
-| Bid Working Package      | ⚪ Planned                                |
-| Governed Knowledge       | 🟢 Contract only                         |
-| Compliance Matrix        | 🟢 Contract only                         |
-| Capability Matching      | ⚪ Planned                                |
-| Response Generation      | ⚪ Future                                 |
+Remaining misses are classified (implicit normative language, mandatory
+documents, form fields, criterion structure, thresholds, table structure).
+The next measured step is a controlled real-RFP pilot that compares the
+deterministic extractor with a governed LLM challenger on the same package.
 
-## Run the deterministic Security Preflight
+## Quick start
+
+Prerequisites: Python ≥ 3.12, git, [uv](https://docs.astral.sh/uv/).
+Node ≥ 20 and `ffmpeg` only for the demo recorder and screenshots.
 
 ```bash
+uv sync --extra dev                  # exact install from uv.lock
+
+# Local product UI (synthetic fixtures, Level 1A lane)
+uv run bidfusion-ui --port 8765      # open http://127.0.0.1:8765/overview
+
+# Headless pipeline on a synthetic package
+uv run bidfusion-run \
+  --input fixtures/synthetic/rfp-minimal \
+  --output ~/bidfusion-demo-results \
+  --process
+
+# Deterministic security preflight over a local inbox
 cp /path/to/synthetic-or-approved-rfp.pdf inbox/
 uv run bidfusion-preflight
 ```
 
-The local runner scans every document below `inbox/` and writes assessments
-and `latest-summary.json` below `results/`. Those working contents are
-Git-ignored. This currently runs deterministic preflight only, not OCR,
-LLM analysis, final gate policy, or the downstream BidFusion pipeline. See
-[`apps/README.md`](apps/README.md) for options and exit-code semantics.
+Input and output directories are always explicit. The repository `inbox/`
+and `results/` are rejected by the pipeline runner, outputs must live
+outside any checkout, and processing anything outside `fixtures/synthetic/`
+requires `--authorized-non-production-test`. See
+[apps/README.md](apps/README.md) for options, exit codes and output
+confidentiality.
 
-The separate direct-provider connectivity check sends one fixed synthetic
-request and never reads inbox content:
+Quality gates, run from the repository root:
 
 ```bash
-uv run python scripts/check_anthropic_connection.py
+uv run pytest
+uv run ruff check . && uv run ruff format --check .
+uv run mypy src/bidfusion scripts tests
+uv run python scripts/check_markdown_links.py
 ```
 
-See
-[docs/development/local-setup.md](docs/development/local-setup.md) for its
-strict public-data policy and local `.env` settings.
+Optional, opt-in connectivity checks (never read inbox content, send one
+fixed synthetic request): `scripts/check_orange_proxy_connection.py`,
+`scripts/check_rfp_normalization_connection.py`,
+`scripts/check_anthropic_connection.py`. Policy and `.env` settings live in
+[docs/development/local-setup.md](docs/development/local-setup.md).
+
+## Architecture in one page
+
+```text
+Documents → Structured evidence → Bid intelligence → Human decision support
+```
+
+Principles, each pinned down in an
+[Architecture Decision Record](docs/adr/README.md):
+
+| Principle | Meaning in the code |
+| --- | --- |
+| Security before intelligence | Only a hash-bound `SecurityClearedArtifact` enters processing |
+| Parse once, use everywhere | One canonical document model, every consumer reads it |
+| Schema first · Provenance first | Pydantic contracts in `src/bidfusion/schemas/`, exported JSON schemas are checked in and diffed |
+| Evidence over assumptions | No derived statement without a source span; matching yields candidates, never decisions |
+| Atomic agents | Focused, typed extraction results per concern |
+| Model agnostic · Ports and adapters | BidFusion owns the contracts; LLM, OCR, storage and scanner are ports with deterministic fakes |
+| Human in the loop | Immutable, versioned reviews bound to the exact assessment digest |
+| Evaluation first | Frozen, reproducible evaluations before any claim of quality |
+
+The engineering view (data flow, state machine, trust boundaries,
+provenance) lives in [docs/architecture/](docs/architecture/overview.md);
+the binding contract for the upload lane is
+[level-1-target.md](docs/architecture/level-1-target.md).
 
 ## Roadmap
 
-1. **Phase 1 — Repository Foundation** — target architecture and
-   engineering foundation (this phase).
-2. **Independent Foundation 1.2 Gate Review** — one final fresh adversarial
-   review of contracts and documentation. No component migration before
-   approval.
-3. **Phase 2 — Existing Component Inventory** — analyze existing local
-   components (see
-   [docs/development/component-migration.md](docs/development/component-migration.md)).
-4. **Phase 3 — Migration Mapping** —
-   `Existing Component → Target Module → Keep / Move / Refactor / Split / Merge / Replace / Deprecate`.
-5. **Phase 4 — Migration** — integrate existing, working modules.
-6. **Phase 5 — Gap Implementation** — build the missing components.
-7. **Phase 6 — End-to-End RFP Analysis** — process a full dummy RFP.
-8. **Phase 7 — Governed Knowledge Matching** — integrate capability matching.
-9. **Phase 8 — Bid Intelligence & Response** — further automation.
+Phases follow the repository's own architecture contract. Everything above
+Level 1 is a proposal and marked as such in the product.
 
-The first controlled migration slice is the deterministic Security Gate
-preflight. Remaining Security Gate policy, orchestration, external scanner,
-and content-security work stays separately inventoried.
-
-## Repository Map
-
-| Path | Contents |
-| ---- | -------- |
-| `src/bidfusion/` | Domain packages (intake, security, inventory, document understanding, extraction, normalization, quality, working package, bid intelligence, golden dataset, orchestration, provenance, observability, llm gateway, storage, schemas, shared) |
-| `src/bidfusion/schemas/` | Pydantic domain contracts — the single source of truth |
-| `docs/architecture/` | Engineering architecture: data flow, state machine, trust boundaries, provenance |
-| `docs/adr/` | Architecture Decision Records |
-| `docs/agents/` | Atomic agent standard |
-| `docs/development/` | Local setup, testing, evals, component migration |
-| `prompts/` | Shared prompts + prompt-as-code template |
-| `evals/` | Evaluation datasets, metrics, runners |
-| `tests/` | Unit, integration, pipeline, security, regression tests |
-| `fixtures/` | Synthetic and safe test data (never customer data) |
-| `config/` | Non-secret example configuration |
-| `scripts/` | Development and maintenance scripts |
-| `apps/` | Future deployable entry points (empty on purpose) |
-| `deployment/` | Local first; cloud deliberately not scaffolded |
-
-## Getting Started
-
-Foundation setup only — there is no pipeline to run yet. No remote
-repository exists at this stage; everything is local.
-
-Prerequisites: Python ≥ 3.12, git, and
-[uv](https://docs.astral.sh/uv/) for the checked lockfile.
-
-```bash
-# from the repository root
-uv sync --extra dev              # installs exactly from uv.lock
-
-pytest                            # run the test suite
-ruff check .                      # lint
-mypy src/bidfusion scripts tests  # type check
-python scripts/check_markdown_links.py  # verify documentation links
+```mermaid
+timeline
+    title BidFusion delivery phases
+    section Level 0.4
+        Local synthetic walking skeleton : delivered
+    section Level 1A — authorized internal test data
+        S1 Upload and quarantine : delivered
+        S2 Security review of quarantined packages : next
+        S3 Cleared to processing : planned
+        S4 Human review over extraction : planned
+        S5 Reviewed working package : planned
+        S6 Evaluation harness : planned
+    section Golden knowledge
+        GK-P1 MTD pilot, matching, assessment, human review : delivered
+    section Level 1B
+        Production customer data : blocked pending production gate
+    section Level 2 (proposed)
+        L2-A Governed model egress : proposed
+        L2-B and L2-C Customer and competitive intelligence : proposed
+        L2-D Capability and compliance matching : proposed
+        L2-E and L2-F Qualification, win strategy, proposal factory : proposed
 ```
 
-See [docs/development/local-setup.md](docs/development/local-setup.md) for details.
+Human review and the reviewed working package exist today as part of the
+golden knowledge pilot (knowledge assessments on completed runs). The
+formal Level 1A slices S4 and S5 extend them to requirements, deadlines
+and formalities from the upload lane.
+
+## Repository map
+
+| Path | Contents |
+| --- | --- |
+| `src/bidfusion/schemas/` | Pydantic domain contracts, the single source of truth; exported copies in `schemas/` |
+| `src/bidfusion/intake/`, `bidrun/`, `security/` | Package registration, upload validation and quarantine, BidRun lifecycle, deterministic preflight and package gate |
+| `src/bidfusion/document_understanding/` | Text-based PDF, XLSX, DOCX, TXT/CSV parsers into the canonical document model |
+| `src/bidfusion/extraction/` | Rule-based and label-free requirement, deadline and formality extractors, atomic splitting |
+| `src/bidfusion/normalization/`, `quality/`, `working_package/` | Fan-in, quality gate, working and review packages |
+| `src/bidfusion/golden_dataset/`, `bid_intelligence/` | Golden knowledge ingestion, requirement matching, knowledge assessment, versioned human review, reviewed working package |
+| `src/bidfusion/llm_gateway/`, `rfp_api_pilot/` | Hardened Orange proxy gateway foundation and the opt-in LLM normalization challenger |
+| `src/bidfusion/orchestration/`, `local_ui/` | Local pipeline runner and the Flask product UI (feature registry, product shell, templates) |
+| `docs/architecture/`, `docs/adr/`, `docs/agents/`, `docs/development/` | Engineering architecture, decision records, atomic agent standard, setup, testing, evals, migration |
+| `fixtures/synthetic/` | Generated synthetic RFP packages, never customer data |
+| `evals/`, `tests/` | Evaluation datasets and runners; unit, integration, pipeline, security and UI tests |
+| `scripts/` | Schema export, fixture generator, golden ingestion, connectivity checks, demo recorder and screenshots |
+| `apps/`, `config/`, `deployment/`, `prompts/` | Entry-point docs, non-secret example configuration, local-first deployment notes, prompts as code |
 
 ## Documentation
 
-- [Architecture overview](docs/architecture/overview.md)
-- [Concept architecture](docs/architecture/concept-architecture.md)
-- [Engineering architecture](docs/architecture/engineering-architecture.md)
-- [Data flow & intermediate artifacts](docs/architecture/data-flow.md)
-- [State machine](docs/architecture/state-machine.md)
-- [Trust boundaries](docs/architecture/trust-boundaries.md)
-- [Provenance](docs/architecture/provenance.md)
-- [Architecture Decision Records](docs/adr/README.md)
-- [Atomic agent standard](docs/agents/agent-standard.md)
-- [Testing](docs/development/testing.md) · [Evals](docs/development/evals.md)
-- [Component migration](docs/development/component-migration.md)
-- [Security policy](SECURITY.md)
-
-Foundation 1.2 is the accepted architecture baseline. Independent review
-records are retained outside the product repository.
+- [Architecture overview](docs/architecture/overview.md) ·
+  [Concept](docs/architecture/concept-architecture.md) ·
+  [Engineering](docs/architecture/engineering-architecture.md) ·
+  [Level 1 target](docs/architecture/level-1-target.md)
+- [Data flow](docs/architecture/data-flow.md) ·
+  [State machine](docs/architecture/state-machine.md) ·
+  [Trust boundaries](docs/architecture/trust-boundaries.md) ·
+  [Provenance](docs/architecture/provenance.md)
+- [Architecture Decision Records](docs/adr/README.md) ·
+  [Atomic agent standard](docs/agents/agent-standard.md)
+- [Local setup](docs/development/local-setup.md) ·
+  [Testing](docs/development/testing.md) ·
+  [Evals](docs/development/evals.md) ·
+  [Golden dataset MTD pilot](docs/development/golden-dataset-mtd-pilot.md) ·
+  [Component migration](docs/development/component-migration.md)
+- [Applications](apps/README.md) · [Demo recorder](scripts/demo/README.md)
+- [Security policy](SECURITY.md) · [Contributing](CONTRIBUTING.md)
 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). The short version: architecture
 first, schema first, prompts as code, no customer data in git, every
-architectural decision gets an ADR.
+architectural decision gets an ADR, and every quality claim comes with a
+frozen evaluation.

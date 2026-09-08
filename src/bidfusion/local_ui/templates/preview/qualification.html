@@ -1,0 +1,131 @@
+{% extends "preview/_preview_base.html" %}
+{% from "partials/product_macros.html" import status_chip %}
+{% block headline %}Whether to bid — assessed by the system, decided by people.{% endblock %}
+{% block module %}
+
+<div class="split">
+  <div class="split__main">
+    <section aria-labelledby="assessment-heading" class="card card--accent">
+      <h2 id="assessment-heading">System assessment</h2>
+      <p class="module-card__badges">{{ status_chip(section.system_assessment) }}</p>
+      <p class="lede">{{ section.assessment_rationale }}</p>
+      <div class="banner banner--info">
+        {{ icon('info') }}
+        <div>
+          <p>This is an assessment, not a decision.</p>
+          <p>
+            A system reading of the evidence available. The decision belongs to
+            {{ section.decision_owner }}, who can reach a different conclusion from the
+            same facts and does not have to justify it to the software.
+          </p>
+        </div>
+      </div>
+      <dl class="kv-list">
+        <dt>Decision owner</dt>
+        <dd>{{ section.decision_owner }}</dd>
+        <dt>Approval state</dt>
+        <dd>{{ section.approval_state }}</dd>
+      </dl>
+    </section>
+
+    <section aria-labelledby="mustpass-heading" class="card">
+      <h2 id="mustpass-heading">Must-pass factors</h2>
+      <p class="module-card__text">
+        A weak reading on any of these is a stop condition, not a scoring penalty.
+      </p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption class="visually-hidden">Must-pass qualification factors</caption>
+          <thead>
+            <tr>
+              <th scope="col">Factor</th>
+              <th scope="col">Reading</th>
+              <th scope="col">Why</th>
+              <th scope="col">Owner</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for factor in section.must_pass %}
+            <tr>
+              <th scope="row">{{ factor.name }}</th>
+              <td>{{ status_chip(factor.verdict) }}</td>
+              <td>{{ factor.note }}</td>
+              <td>{{ factor.owner }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="factors-heading" class="card">
+      <h2 id="factors-heading">Other factors</h2>
+      <div class="table-wrap">
+        <table class="data-table">
+          <caption class="visually-hidden">Further qualification factors</caption>
+          <thead>
+            <tr>
+              <th scope="col">Factor</th>
+              <th scope="col">Reading</th>
+              <th scope="col">Why</th>
+              <th scope="col">Owner</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for factor in section.other_factors %}
+            <tr>
+              <th scope="row">{{ factor.name }}</th>
+              <td>{{ status_chip(factor.verdict) }}</td>
+              <td>{{ factor.note }}</td>
+              <td>{{ factor.owner }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <aside class="split__side">
+    {% if section.conditions %}
+    <section class="card" aria-labelledby="conditions-heading">
+      <h2 id="conditions-heading">Conditions</h2>
+      <p class="module-card__text">
+        Each has an owner and a date. A condition without either is a wish.
+      </p>
+      <ul class="condition-list">
+        {% for condition in section.conditions %}
+        <li class="condition">
+          <p class="condition__text">{{ condition.text }}</p>
+          <p class="condition__meta">
+            <span class="type-tag">{{ condition.owner }}</span>
+            <span class="condition__due">{{ icon('clock') }} {{ condition.due }}</span>
+          </p>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if section.evidence_gaps %}
+    <section class="card" aria-labelledby="gaps-heading">
+      <h2 id="gaps-heading">Evidence gaps</h2>
+      <ul class="plain-list">
+        {% for gap in section.evidence_gaps %}
+        <li>{{ gap }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <section class="card" aria-labelledby="decision-heading">
+      <h2 id="decision-heading">The decision itself</h2>
+      <p class="module-card__text">
+        BidFusion will record a decision once it has been taken, together with the
+        assessment it responded to. It will not take one, and no control on this page
+        submits, approves, or overrides anything.
+      </p>
+    </section>
+  </aside>
+</div>
+{% endblock %}
