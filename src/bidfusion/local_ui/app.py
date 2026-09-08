@@ -33,6 +33,7 @@ from bidfusion.bidrun.quarantine import QuarantineError, UploadedFileInput
 from bidfusion.golden_dataset.store import GoldenKnowledgeStore
 from bidfusion.local_ui import (
     artifacts,
+    extraction_evaluation,
     feature_registry,
     golden_service,
     knowledge_assessment_service,
@@ -190,6 +191,14 @@ def create_app(
             groups=product_shell.module_groups(),
             status_legend=product_shell.status_legend(),
             data_mode_legend=product_shell.data_mode_legend(),
+            extraction_summary=extraction_evaluation.summary_card(),
+        )
+
+    @app.get("/extraction-quality")
+    def extraction_quality() -> str:
+        return render_template(
+            "extraction_quality.html",
+            view=extraction_evaluation.build_page_view(),
         )
 
     @app.get("/architecture-roadmap")

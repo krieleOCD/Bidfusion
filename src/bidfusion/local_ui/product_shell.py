@@ -287,6 +287,12 @@ NAV_WORLDS: tuple[NavWorld, ...] = (
                 feature_key="product_overview",
             ),
             NavItem(
+                key="extraction_quality",
+                label="Extraction Quality",
+                endpoint="extraction_quality",
+                feature_key="extraction_quality_evaluation",
+            ),
+            NavItem(
                 key="roadmap",
                 label="Architecture and Roadmap",
                 endpoint="architecture_roadmap",

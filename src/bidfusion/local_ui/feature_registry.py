@@ -1014,6 +1014,47 @@ FEATURES: tuple[Feature, ...] = (
         visibility=Visibility.PRIMARY_NAV,
     ),
     Feature(
+        key="extraction_quality_evaluation",
+        title="Extraction Quality",
+        short_description=(
+            "The frozen real-RFP evaluation of the deterministic requirement "
+            "extractor: recall against a manually curated Ground Truth, "
+            "coverage per document, remaining gaps, and the next step."
+        ),
+        status=FeatureStatus.LIVE,
+        data_mode=DataMode.STATIC_PREVIEW,
+        target_phase="L1A-S6",
+        owner=_PLATFORM,
+        dependencies=(
+            "A frozen local evaluation record, transcribed by hand into static configuration",
+        ),
+        current_capabilities=(
+            "States strict and inclusive recall against 364 curated requirements",
+            "Shows the measured progression of every extractor iteration",
+            "Breaks remaining misses down by document and by failure class",
+            "Names the recommended next engineering step and pilot readiness",
+        ),
+        planned_capabilities=(
+            "Read evaluation results from a runtime evaluation store instead of "
+            "transcribed configuration",
+        ),
+        current_sources=(
+            "Frozen Evaluation #3 of extractor 0.3.0, transcribed as static configuration",
+        ),
+        future_sources=("A runtime evaluation harness (planned phase)",),
+        limitations=(
+            "Figures are a hand-frozen snapshot, not a live measurement",
+            "Unmapped candidates are unreviewed; they are not proven false requirements",
+            "Coverage describes the extractor, never the tender documents themselves",
+        ),
+        acceptance_criteria=(
+            "Every figure on the page matches the frozen evaluation record",
+            "No wording claims completeness or production readiness",
+        ),
+        route_name="extraction_quality",
+        visibility=Visibility.MODULE_PAGE,
+    ),
+    Feature(
         key="golden_knowledge_inventory",
         title="Golden Knowledge — MTD Inventory",
         short_description=(
